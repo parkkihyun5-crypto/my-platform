@@ -1,37 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import SectionTitle from "@/components/SectionTitle";
-import SiteFooter from "@/components/SiteFooter";
+import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import UnifiedCard from "@/components/UnifiedCard";
-import FormInput from "@/components/FormInput";
-import FormTextarea from "@/components/FormTextarea";
-import UiButton from "@/components/UiButton";
+import SiteFooter from "@/components/SiteFooter";
+import { useMemo, useState } from "react";
+import { submitInquiry } from "@/lib/inquiry-client";
 
-type BenefitGroup = {
-  title: string;
-  items: string[];
-};
-
-type PurposeType = {
-  title: string;
-  desc: string;
-};
-
-type GovernanceGroup = {
-  title: string;
-  items: string[];
-};
-
-type ServicePackage = {
-  id: string;
-  title: string;
-  desc: string;
-  price: number;
-};
-
-type ConsultationFormState = {
+type InquiryFormState = {
   organization: string;
   name: string;
   phone: string;
@@ -39,7 +14,7 @@ type ConsultationFormState = {
   message: string;
 };
 
-const socialBenefits: BenefitGroup[] = [
+const socialBenefits = [
   {
     title: "세제·보험 지원",
     items: [
@@ -62,7 +37,7 @@ const socialBenefits: BenefitGroup[] = [
   },
 ];
 
-const certificationRequirements: string[] = [
+const certificationRequirements = [
   "일정 조직형태를 갖춤",
   "사회적 목적 실현을 위해 설립",
   "1인 이상 유급근로자 고용",
@@ -88,7 +63,7 @@ const organizationTypes = {
   ],
 };
 
-const purposeTypes: PurposeType[] = [
+const purposeTypes = [
   {
     title: "일자리 제공형",
     desc: "취약계층 고용비율 30% 이상",
@@ -111,7 +86,7 @@ const purposeTypes: PurposeType[] = [
   },
 ];
 
-const governanceCards: GovernanceGroup[] = [
+const governanceCards = [
   {
     title: "내부 이해관계자",
     items: ["근로자대표"],
@@ -131,7 +106,7 @@ const governanceCards: GovernanceGroup[] = [
   },
 ];
 
-const governanceRules: [string, string][] = [
+const governanceRules = [
   ["이사 수", "3명 이상"],
   ["이사 종류", "대표이사 · 사내이사 · 사외이사"],
   [
@@ -144,7 +119,7 @@ const governanceRules: [string, string][] = [
   ],
 ];
 
-const articlesRequired: string[] = [
+const articlesRequired = [
   "목적",
   "사업내용",
   "명칭",
@@ -165,7 +140,7 @@ const incorporationDocs = {
   ],
 };
 
-const certificationSteps: [string, string, string][] = [
+const certificationSteps = [
   ["1단계", "인증계획 공고", "고용노동부"],
   ["2단계", "상담 및 컨설팅", "권역별 지원기관, 진흥원"],
   ["3단계", "인증신청 및 접수", "진흥원"],
@@ -177,7 +152,7 @@ const certificationSteps: [string, string, string][] = [
   ["9단계", "인증결과 안내 및 인증서 교부", "고용노동부, 고용센터, 진흥원"],
 ];
 
-const certificationDocs: string[] = [
+const certificationDocs = [
   "사회적기업 인증 신청서",
   "사회적기업 사실확인서(목적 유형별)",
   "법인 등기부등본",
@@ -200,7 +175,7 @@ const certificationDocs: string[] = [
   "사업장 소유증명서 또는 임대차계약서",
 ];
 
-const servicePackages: ServicePackage[] = [
+const servicePackages = [
   {
     id: "basic",
     title: "사회적기업 설립 기본형",
@@ -235,21 +210,45 @@ function formatKRW(value: number): string {
   }).format(value || 0);
 }
 
+function SectionTitle({
+  badge,
+  title,
+  desc,
+  center = false,
+}: {
+  badge: string;
+  title: string;
+  desc: string;
+  center?: boolean;
+}) {
+  return (
+    <div className={center ? "mx-auto max-w-3xl text-center" : "max-w-3xl"}>
+      <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#C9A96B]">
+        {badge}
+      </div>
+      <h2 className="mt-3 text-3xl font-bold text-[#0B1F35] md:text-4xl">
+        {title}
+      </h2>
+      <p className="mt-4 leading-7 text-slate-600">{desc}</p>
+    </div>
+  );
+}
+
 export default function SocialEnterprisePage() {
-  const [selectedPackageId, setSelectedPackageId] = useState<string>("integrated");
-  const [consultationForm, setConsultationForm] = useState<ConsultationFormState>({
+  const [selectedPackageId, setSelectedPackageId] = useState("integrated");
+  const [form, setForm] = useState<InquiryFormState>({
     organization: "",
     name: "",
     phone: "",
     email: "",
     message: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const selectedPackage: ServicePackage =
-    servicePackages.find((item: ServicePackage) => item.id === selectedPackageId) ||
-    servicePackages[2];
+  const selectedPackage =
+    servicePackages.find((item) => item.id === selectedPackageId) ?? servicePackages[2];
 
-  const packageSummaryRows: [string, string][] = useMemo(
+  const packageSummaryRows = useMemo(
     () => [
       ["기본 컨설팅", "사회적기업 설립 가능성 검토"],
       ["정관 구조화", "사회적 목적·재투자·의사결정구조 반영"],
@@ -259,139 +258,161 @@ export default function SocialEnterprisePage() {
     []
   );
 
-  const consultationMailtoHref: string = useMemo(() => {
-    const subject: string = `[사회적기업 상담요청] ${
-      consultationForm.organization || "기관명 미입력"
-    }`;
-
-    const body: string = [
-      "안녕하세요. 사회적기업 설립/인증 상담을 요청드립니다.",
+  const mailtoHref = useMemo(() => {
+    const subject = `[사회적기업 설립 상담] ${form.organization || "기관명 미입력"}`;
+    const body = [
+      "안녕하세요. 사회적기업 설립 상담 관련 문의를 드립니다.",
       "",
-      `기관명: ${consultationForm.organization}`,
-      `담당자명: ${consultationForm.name}`,
-      `연락처: ${consultationForm.phone}`,
-      `이메일: ${consultationForm.email}`,
+      `기관명: ${form.organization}`,
+      `성명: ${form.name}`,
+      `연락처: ${form.phone}`,
+      `이메일: ${form.email}`,
       "",
-      "상담 내용:",
-      consultationForm.message || "(내용 미입력)",
-      "",
-      `관심 패키지: ${selectedPackage.title}`,
+      "문의 내용:",
+      form.message || "(내용 미입력)",
     ].join("\n");
 
-    return `mailto:contact@example.com?subject=${encodeURIComponent(
+    return `mailto:npolap@ilukorea.org?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
-  }, [consultationForm, selectedPackage]);
+  }, [form]);
+
+  async function handleSubmit(
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> {
+    e.preventDefault();
+
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await submitInquiry(
+        form,
+        "social-enterprise",
+        "사회적기업설립"
+      );
+
+      if (!response.ok) {
+        window.location.href = mailtoHref;
+        return;
+      }
+
+      setForm({
+        organization: "",
+        name: "",
+        phone: "",
+        email: "",
+        message: "",
+      });
+
+      alert("문의가 정상적으로 접수되었습니다.");
+    } catch {
+      window.location.href = mailtoHref;
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#F6F3EE] text-slate-900">
       <SiteHeader
-        title="공익법인 종합컨설팅 플랫폼"
-        subtitle="SOCIAL ENTERPRISE · CONSULTING · CERTIFICATION"
-        homeLabel="공익법인설립"
-        homeHref="/"
-        navItems={[
-          { label: "사회적기업설립", href: "#hero" },
-          { label: "비용안내", href: "#cost" },
-          { label: "상담신청", href: "#contact" },
+        mode="sub"
+        logoText="NPOLAP"
+        logoHref="/"
+        inquiryHref="#contact"
+        menuItems={[
+          { label: "공익법인설립", href: "/public-interest-foundation", isLink: true },
+          { label: "사회적기업설립", href: "/social-enterprise", isLink: true },
+          { label: "브랜딩서비스", href: "/branding", isLink: true },
+          { label: "헤리티지오피스", href: "/heritage-office", isLink: true },
+          { label: "에코피언", href: "/heritage-office", isLink: true },
         ]}
       />
 
       <main>
         <section
           id="hero"
-          className="relative overflow-hidden bg-gradient-to-br from-[#07182D] via-[#0B2340] to-[#143A63] text-white"
+          className="relative h-[100vh] w-full overflow-hidden pt-24 text-white md:pt-28"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(201,169,107,0.22),transparent_24%),radial-gradient(circle_at_left_bottom,rgba(255,255,255,0.08),transparent_20%)]" />
-          <div className="relative mx-auto max-w-[1600px] px-4 py-20 md:px-10 md:py-36 lg:px-12 lg:py-40">
-            <div className="inline-flex rounded-full border border-[#C9A96B]/30 bg-white/10 px-6 py-3 text-sm text-[#EAD9BC] backdrop-blur md:text-base">
-              Social Enterprise Consulting
-            </div>
+          <div className="absolute inset-0">
+            <img
+              src="/images/hero-social-enterprise.png"
+              alt="social enterprise hero"
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40" />
+          </div>
 
-            <div className="mt-10 grid gap-14 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-              <div>
-                <h1 className="max-w-6xl text-[40px] font-bold leading-[1.08] md:text-7xl xl:text-[88px]">
-                  사회적기업 설립에서
-                  <br />
-                  인증까지 이어지는
-                  <br />
-                  종합 컨설팅 페이지
-                </h1>
-
-                <p className="mt-6 max-w-3xl text-base leading-8 text-slate-200 md:text-2xl">
-                  사회적 목적, 조직형태, 이해관계자 거버넌스, 정관, 유급근로자,
-                  영업수익, 인증서류와 현장실사 흐름까지 한 페이지에서 검토할 수 있도록
-                  구성했습니다.
-                </p>
-
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-  <UiButton href="#benefits" variant="primary" className="w-full sm:w-auto">
-    혜택 보기
-  </UiButton>
-  <UiButton href="#requirements" variant="ghost" className="w-full sm:w-auto">
-    인증 요건 보기
-  </UiButton>
-  <UiButton href="#contact" variant="ghost" className="w-full sm:w-auto">
-    상담 안내 보기
-  </UiButton>
-</div>
+          <div className="relative z-10 mx-auto flex h-full w-full max-w-[1600px] items-center px-6 md:px-10 lg:px-12">
+            <div className="max-w-5xl">
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#EAD9BC] md:text-base">
+                Social Enterprises
               </div>
 
-              <div className="rounded-[40px] border border-white/10 bg-white/10 p-9 shadow-2xl backdrop-blur md:p-10">
-                <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#E5C996] md:text-base">
-                  운영 배포 기준 반영
-                </div>
-                <div className="mt-6 space-y-4">
-                  {[
-                    "데모용 관리자 로그인 제거",
-                    "실제 전송 없는 가짜 상담 버튼 제거",
-                    "문의는 메일앱/전화 연결로 명확화",
-                    "기존 디자인 톤과 카드 선택 기능은 유지",
-                  ].map((item: string) => (
-                    <div
-                      key={item}
-                      className="rounded-3xl border border-white/10 bg-white/5 px-6 py-5 text-base leading-8 text-slate-100"
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
+              <h1 className="mt-6 text-4xl font-bold leading-[1.1] md:text-6xl xl:text-[84px]">
+                사회적기업 설립 및 인증
+                <br />
+                A to Z: 원스톱 솔루션
+              </h1>
+
+              <p className="mt-7 max-w-3xl text-base leading-8 text-slate-200 md:text-xl md:leading-9">
+                세상을 위한 고귀한 도전에 확신을 더합니다.
+                <br />
+                사회적 가치로 향하는 길, 시작부터 인증까지 함께하겠습니다.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-4">
+                <a
+                  href="#benefits"
+                  className="rounded-2xl border border-white/20 bg-white/5 px-6 py-3 font-bold text-white transition duration-300 hover:scale-105 hover:bg-white/10"
+                >
+                  혜택 보기
+                </a>
+                <a
+                  href="#requirements"
+                  className="rounded-2xl border border-white/20 bg-white/5 px-6 py-3 font-bold text-white transition duration-300 hover:scale-105 hover:bg-white/10"
+                >
+                  인증 요건 보기
+                </a>
               </div>
             </div>
           </div>
         </section>
 
-        <section
-          id="benefits"
-          className="mx-auto max-w-[1600px] px-6 py-28 md:px-10 md:py-32 lg:px-12"
-        >
+        <section id="benefits" className="mx-auto max-w-7xl px-6 py-20 md:px-10 lg:px-12">
           <SectionTitle
             badge="Benefits"
             title="사회적기업 의미와 혜택"
-            desc="사회적기업은 사회적 목적을 추구하면서 영리활동도 수행하는 기업으로, 취약계층 일자리 제공이나 사회서비스 제공, 지역사회 공헌을 핵심 목적으로 둡니다."
+            desc="빵을 팔기 위해 고용하는 것이 아니라, 고용하기 위해 빵을 팝니다. 빵은 수단일 뿐, 본질은 그 빵을 만드는 사람의 일상을 지키는 일입니다.
+            목적과 수단이 뒤바뀌지 않도록 중심을 잡는 것, 사회적 기업가가 실천해야할 가장 숭고한 약속입니다."
             center
           />
 
-          <div className="mt-16 grid gap-8 lg:grid-cols-2">
-            {socialBenefits.map((group: BenefitGroup) => (
-              <UnifiedCard key={group.title} title={group.title}>
-                <div className="space-y-4">
-                  {group.items.map((item: string) => (
+          <div className="mt-12 grid gap-6 lg:grid-cols-2">
+            {socialBenefits.map((group) => (
+              <div
+                key={group.title}
+                className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:scale-105 hover:shadow-2xl"
+              >
+                <h3 className="text-2xl font-bold text-[#0B1F35]">{group.title}</h3>
+                <div className="mt-5 space-y-3">
+                  {group.items.map((item) => (
                     <div
                       key={item}
-                      className="rounded-[22px] bg-[#F8F6F1] px-5 py-4 text-base leading-8 text-slate-700 md:text-lg"
+                      className="rounded-2xl bg-[#F8F6F1] px-4 py-3 text-sm leading-7 text-slate-700"
                     >
                       {item}
                     </div>
                   ))}
                 </div>
-              </UnifiedCard>
+              </div>
             ))}
           </div>
         </section>
 
-        <section id="requirements" className="bg-white py-28 md:py-32">
-          <div className="mx-auto max-w-[1600px] px-6 md:px-10 lg:px-12">
+        <section id="requirements" className="bg-white py-20">
+          <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="Requirements"
               title="사회적기업 인증 요건 7가지"
@@ -399,37 +420,38 @@ export default function SocialEnterprisePage() {
               center
             />
 
-            <div className="mt-16 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {certificationRequirements.map((item: string, index: number) => (
+            <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {certificationRequirements.map((item, index) => (
                 <div
                   key={item}
-                  className="rounded-[34px] border border-slate-200 bg-[#FCFBF8] p-8 shadow-sm transition duration-300 hover:scale-[1.01] hover:shadow-2xl"
+                  className="rounded-[28px] border border-slate-200 bg-[#FCFBF8] p-6 shadow-sm transition duration-300 hover:scale-105 hover:shadow-2xl"
                 >
-                  <div className="text-sm font-semibold tracking-[0.28em] text-[#C9A96B] md:text-base">
+                  <div className="text-sm font-semibold tracking-[0.24em] text-[#C9A96B]">
                     REQUIREMENT {index + 1}
                   </div>
-                  <div className="mt-4 text-2xl font-bold leading-snug text-[#0B1F35] md:text-3xl">
-                    {item}
-                  </div>
+                  <div className="mt-3 text-xl font-bold text-[#0B1F35]">{item}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1600px] px-6 py-28 md:px-10 md:py-32 lg:px-12">
-          <div className="grid gap-10 lg:grid-cols-2">
-            <UnifiedCard subtitle="Organization Types" title="조직형태">
-              <div className="grid gap-8 md:grid-cols-2">
+        <section className="mx-auto max-w-7xl px-6 py-20 md:px-10 lg:px-12">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C9A96B]">
+                Organization Types
+              </div>
+              <h3 className="mt-3 text-3xl font-bold text-[#0B1F35]">조직형태</h3>
+
+              <div className="mt-6 grid gap-6 md:grid-cols-2">
                 <div>
-                  <div className="text-base font-bold text-[#0B1F35] md:text-lg">
-                    인증 가능 형태
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {organizationTypes.possible.map((item: string) => (
+                  <div className="text-sm font-bold text-[#0B1F35]">인증 가능 형태</div>
+                  <div className="mt-3 space-y-2">
+                    {organizationTypes.possible.map((item) => (
                       <div
                         key={item}
-                        className="rounded-[20px] bg-[#F8F6F1] px-5 py-4 text-base leading-8 text-slate-700 md:text-lg"
+                        className="rounded-xl bg-[#F8F6F1] px-4 py-3 text-sm text-slate-700"
                       >
                         {item}
                       </div>
@@ -438,14 +460,12 @@ export default function SocialEnterprisePage() {
                 </div>
 
                 <div>
-                  <div className="text-base font-bold text-[#0B1F35] md:text-lg">
-                    인증 불가 형태
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {organizationTypes.impossible.map((item: string) => (
+                  <div className="text-sm font-bold text-[#0B1F35]">인증 불가 형태</div>
+                  <div className="mt-3 space-y-2">
+                    {organizationTypes.impossible.map((item) => (
                       <div
                         key={item}
-                        className="rounded-[20px] bg-rose-50 px-5 py-4 text-base leading-8 text-rose-700 md:text-lg"
+                        className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700"
                       >
                         {item}
                       </div>
@@ -453,64 +473,68 @@ export default function SocialEnterprisePage() {
                   </div>
                 </div>
               </div>
-            </UnifiedCard>
+            </div>
 
-            <UnifiedCard subtitle="Social Purpose" title="사회적 목적 유형">
-              <div className="space-y-4">
-                {purposeTypes.map((item: PurposeType) => (
+            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C9A96B]">
+                Social Purpose
+              </div>
+              <h3 className="mt-3 text-3xl font-bold text-[#0B1F35]">사회적 목적 유형</h3>
+
+              <div className="mt-6 space-y-3">
+                {purposeTypes.map((item) => (
                   <div
                     key={item.title}
-                    className="rounded-[28px] border border-slate-200 bg-[#FCFBF8] px-6 py-5"
+                    className="rounded-2xl border border-slate-200 bg-[#FCFBF8] px-4 py-4"
                   >
-                    <div className="text-xl font-bold text-[#0B1F35] md:text-2xl">
-                      {item.title}
-                    </div>
-                    <div className="mt-3 text-base leading-8 text-slate-600 md:text-lg">
-                      {item.desc}
-                    </div>
+                    <div className="text-base font-bold text-[#0B1F35]">{item.title}</div>
+                    <div className="mt-2 text-sm leading-7 text-slate-600">{item.desc}</div>
                   </div>
                 ))}
               </div>
-            </UnifiedCard>
-          </div>
-        </section>
-
-        <section className="bg-white py-28 md:py-32">
-          <div className="mx-auto max-w-[1600px] px-6 md:px-10 lg:px-12">
-            <SectionTitle
-              badge="Operation Conditions"
-              title="유급근로자 · 영업수익 · 의사결정구조"
-              desc="실제 인증 심사에서 자주 확인되는 핵심 운영요건입니다."
-              center
-            />
-
-            <div className="mt-16 grid gap-8 lg:grid-cols-3">
-              {[
-                {
-                  title: "유급근로자",
-                  desc: "1인 이상의 유급근로자가 있어야 하며, 4대 보험과 최저임금 기준 충족 여부도 중요합니다.",
-                },
-                {
-                  title: "영업수익",
-                  desc: "인증 신청일 직전 6개월 기준 영업활동 총수입이 같은 기간 총 노무비의 50% 이상이어야 합니다.",
-                },
-                {
-                  title: "이윤 사용",
-                  desc: "배분 가능한 이윤의 3분의 2 이상을 사회적 목적 달성에 우선 사용해야 합니다.",
-                },
-              ].map((item: { title: string; desc: string }) => (
-                <UnifiedCard
-                  key={item.title}
-                  title={item.title}
-                  description={item.desc}
-                  className="h-full"
-                />
-              ))}
             </div>
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1600px] px-6 py-28 md:px-10 md:py-32 lg:px-12">
+        <section className="bg-white py-20">
+          <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-12">
+            <SectionTitle
+              badge="Operation Conditions"
+              title="유급근로자 · 영업수익 · 의사결정구조"
+              desc="실제 인증 심사에서 자주 확인되는 핵심 운영요건을 따로 정리했습니다."
+              center
+            />
+
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
+              <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="text-2xl font-bold text-[#0B1F35]">유급근로자</h3>
+                <p className="mt-4 text-sm leading-7 text-slate-600">
+                  1인 이상의 유급근로자가 있어야 하며, 정규직뿐 아니라 비정규직과
+                  파트타임도 포함될 수 있습니다. 다만 4대 보험과 최저임금 기준을
+                  충족해야 합니다.
+                </p>
+              </div>
+
+              <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="text-2xl font-bold text-[#0B1F35]">영업수익</h3>
+                <p className="mt-4 text-sm leading-7 text-slate-600">
+                  인증 신청일 직전 6개월 동안 영업활동 총수입이 같은 기간 총 노무비의
+                  50% 이상이어야 하며, 재무제표와 계정별원장 등으로 입증합니다.
+                </p>
+              </div>
+
+              <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="text-2xl font-bold text-[#0B1F35]">이윤 사용</h3>
+                <p className="mt-4 text-sm leading-7 text-slate-600">
+                  배분 가능한 이윤이 발생하면 3분의 2 이상을 근로조건 개선, 사회공헌,
+                  고용확대·시설투자 등 사회적 목적에 우선 사용해야 합니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-6 py-20 md:px-10 lg:px-12">
           <SectionTitle
             badge="Governance"
             title="이해관계자 참여 의사결정구조"
@@ -518,72 +542,77 @@ export default function SocialEnterprisePage() {
             center
           />
 
-          <div className="mt-16 grid gap-10 lg:grid-cols-[1fr_1fr]">
-            {governanceCards.map((group: GovernanceGroup) => (
-              <UnifiedCard key={group.title} title={group.title}>
-                <div className="space-y-4">
-                  {group.items.map((item: string) => (
+          <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1fr]">
+            {governanceCards.map((group) => (
+              <div
+                key={group.title}
+                className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm"
+              >
+                <h3 className="text-2xl font-bold text-[#0B1F35]">{group.title}</h3>
+                <div className="mt-5 space-y-3">
+                  {group.items.map((item) => (
                     <div
                       key={item}
-                      className="rounded-[22px] bg-[#F8F6F1] px-5 py-4 text-base leading-8 text-slate-700 md:text-lg"
+                      className="rounded-2xl bg-[#F8F6F1] px-4 py-3 text-sm text-slate-700"
                     >
                       {item}
                     </div>
                   ))}
                 </div>
-              </UnifiedCard>
+              </div>
             ))}
           </div>
 
-          <UnifiedCard title="의사결정구조 기준" className="mt-10">
-            <div className="space-y-3">
-              {governanceRules.map(([label, value]: [string, string]) => (
+          <div className="mt-10 rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="text-2xl font-bold text-[#0B1F35]">의사결정구조 기준</h3>
+            <div className="mt-6 space-y-3">
+              {governanceRules.map(([label, value]) => (
                 <div
                   key={label}
-                  className="grid grid-cols-[150px_1fr] gap-4 border-b border-slate-200 py-4 text-sm last:border-b-0 md:text-base"
+                  className="grid grid-cols-[120px_1fr] gap-4 border-b border-slate-200 py-3 text-sm last:border-b-0"
                 >
                   <div className="font-semibold text-slate-500">{label}</div>
                   <div className="text-slate-800">{value}</div>
                 </div>
               ))}
             </div>
-          </UnifiedCard>
+          </div>
         </section>
 
-        <section className="bg-white py-28 md:py-32">
-          <div className="mx-auto max-w-[1600px] px-6 md:px-10 lg:px-12">
+        <section className="bg-white py-20">
+          <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="Articles & Registration"
               title="정관 필수사항과 법인 설립등기"
-              desc="사회적기업은 사회적 목적 달성을 위한 필수 항목을 포함하고, 인증 신청 시 공증받은 정관을 제출해야 합니다."
+              desc="사회적기업은 일반 회사 정관과 달리 사회적 목적 달성을 위한 필수 항목을 포함하고, 인증 신청 시 공증받은 정관을 제출해야 합니다."
               center
             />
 
-            <div className="mt-16 grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-              <UnifiedCard title="정관 필수 기재사항">
-                <div className="grid gap-4">
-                  {articlesRequired.map((item: string, index: number) => (
+            <div className="mt-12 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="text-2xl font-bold text-[#0B1F35]">정관 필수 기재사항</h3>
+                <div className="mt-5 grid gap-3">
+                  {articlesRequired.map((item, index) => (
                     <div
                       key={item}
-                      className="rounded-[22px] bg-[#F8F6F1] px-5 py-4 text-base leading-8 text-slate-700 md:text-lg"
+                      className="rounded-2xl bg-[#F8F6F1] px-4 py-3 text-sm text-slate-700"
                     >
                       {index + 1}. {item}
                     </div>
                   ))}
                 </div>
-              </UnifiedCard>
+              </div>
 
-              <UnifiedCard title="법인 설립 필요서류">
-                <div className="grid gap-8 md:grid-cols-2">
+              <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="text-2xl font-bold text-[#0B1F35]">법인 설립 필요서류</h3>
+                <div className="mt-6 grid gap-6 md:grid-cols-2">
                   <div>
-                    <div className="text-base font-bold text-[#0B1F35] md:text-lg">
-                      전자등기
-                    </div>
-                    <div className="mt-4 space-y-3">
-                      {incorporationDocs.electronic.map((item: string) => (
+                    <div className="text-sm font-bold text-[#0B1F35]">전자등기</div>
+                    <div className="mt-3 space-y-2">
+                      {incorporationDocs.electronic.map((item) => (
                         <div
                           key={item}
-                          className="rounded-[20px] bg-[#F8F6F1] px-5 py-4 text-base leading-8 text-slate-700 md:text-lg"
+                          className="rounded-xl bg-[#F8F6F1] px-4 py-3 text-sm text-slate-700"
                         >
                           {item}
                         </div>
@@ -592,14 +621,12 @@ export default function SocialEnterprisePage() {
                   </div>
 
                   <div>
-                    <div className="text-base font-bold text-[#0B1F35] md:text-lg">
-                      서류등기
-                    </div>
-                    <div className="mt-4 space-y-3">
-                      {incorporationDocs.paper.map((item: string) => (
+                    <div className="text-sm font-bold text-[#0B1F35]">서류등기</div>
+                    <div className="mt-3 space-y-2">
+                      {incorporationDocs.paper.map((item) => (
                         <div
                           key={item}
-                          className="rounded-[20px] bg-[#F8F6F1] px-5 py-4 text-base leading-8 text-slate-700 md:text-lg"
+                          className="rounded-xl bg-[#F8F6F1] px-4 py-3 text-sm text-slate-700"
                         >
                           {item}
                         </div>
@@ -608,146 +635,55 @@ export default function SocialEnterprisePage() {
                   </div>
                 </div>
 
-                <div className="mt-6 rounded-[24px] bg-[#FBF5EA] px-5 py-5 text-base leading-8 text-slate-700 md:text-lg">
-                  정관과 의사록은 설립 단계부터 인증 제출 기준을 고려해 준비하는 것이
-                  안전합니다.
+                <div className="mt-6 rounded-2xl bg-[#FBF5EA] px-4 py-4 text-sm leading-7 text-slate-700">
+                  정관, 총회의사록, 이사회의사록은 원칙적으로 공증 대상이며,
+                  자본금 10억 미만은 공증 의무가 면제될 수 있습니다. 다만 인증
+                  신청 시에는 공증 정관 제출이 필요하므로 설립 단계에서 미리 준비하는
+                  구성이 안전합니다.
                 </div>
-              </UnifiedCard>
+              </div>
             </div>
           </div>
         </section>
 
-        <section
-          id="cost"
-          className="mx-auto max-w-[1600px] px-6 py-28 md:px-10 md:py-32 lg:px-12"
-        >
+        <section className="mx-auto max-w-7xl px-6 py-20 md:px-10 lg:px-12">
           <SectionTitle
-            badge="Cost"
-            title="사회적기업 컨설팅 비용안내"
-            desc="패키지는 한 번에 1개만 선택되며, 선택된 항목은 아래 요약에 반영됩니다."
+            badge="Certification Process"
+            title="사회적기업 인증 절차와 신청서류"
+            desc="인증은 통합정보시스템에서 신청하고, 서류 검토와 현장실사, 중앙부처 추천, 전문위원회 심사를 거쳐 인증서를 교부받는 흐름입니다."
             center
           />
 
-          <div className="mt-16 grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="space-y-5">
-              {servicePackages.map((item: ServicePackage) => {
-                const selected: boolean = selectedPackageId === item.id;
-
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() =>
-                      setSelectedPackageId((prev: string) =>
-                        prev === item.id ? "" : item.id
-                      )
-                    }
-                    className={`w-full rounded-[36px] border p-8 text-left shadow-sm transition duration-300 hover:scale-[1.01] hover:shadow-xl ${
-                      selected
-                        ? "border-[#0B1F35] bg-[#0B1F35] text-white"
-                        : "border-slate-200 bg-white text-slate-900"
-                    }`}
-                  >
-                    <div className="text-3xl font-bold md:text-4xl">{item.title}</div>
-                    <div
-                      className={`mt-4 text-base leading-8 md:text-lg ${
-                        selected ? "text-slate-200" : "text-slate-600"
-                      }`}
-                    >
-                      {item.desc}
-                    </div>
-                    <div className="mt-6 text-2xl font-bold md:text-3xl">
-                      {formatKRW(item.price)}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="rounded-[40px] bg-gradient-to-br from-[#081A2F] to-[#12345A] p-8 text-white shadow-2xl lg:sticky lg:top-28 lg:self-start md:p-10">
-              <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#E5C996] md:text-base">
-                Summary
-              </div>
-              <h3 className="mt-4 text-3xl font-bold md:text-4xl">통합견적요약</h3>
-
-              {selectedPackageId ? (
-                <>
-                  <div className="mt-8 rounded-[32px] bg-white/5 p-6">
-                    <div className="text-sm text-slate-300 md:text-base">선택 상품</div>
-                    <div className="mt-3 text-3xl font-bold md:text-4xl">
-                      {selectedPackage.title}
-                    </div>
-                    <div className="mt-3 text-base leading-8 text-slate-200 md:text-lg">
-                      {selectedPackage.desc}
-                    </div>
-                    <div className="mt-6 text-3xl font-bold md:text-4xl">
-                      {formatKRW(selectedPackage.price)}
-                    </div>
-                  </div>
-
-                  <div className="mt-6 space-y-4 rounded-[32px] bg-white/5 p-6">
-                    {packageSummaryRows.map(([label, value]: [string, string]) => (
-                      <div
-                        key={label}
-                        className="grid grid-cols-[140px_1fr] gap-4 text-sm md:text-base"
-                      >
-                        <div className="text-slate-300">{label}</div>
-                        <div className="text-slate-100">{value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="mt-8 rounded-[32px] bg-white/5 p-6 text-base text-slate-200">
-                  아직 선택된 상품이 없습니다.
-                </div>
-              )}
+          <div className="mt-12 rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500">
+                    <th className="px-3 py-3 font-semibold">단계</th>
+                    <th className="px-3 py-3 font-semibold">절차</th>
+                    <th className="px-3 py-3 font-semibold">주관기관</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {certificationSteps.map(([step, process, agency]) => (
+                    <tr key={step} className="border-b border-slate-100 last:border-b-0">
+                      <td className="px-3 py-3 font-semibold text-[#0B1F35]">{step}</td>
+                      <td className="px-3 py-3 text-slate-700">{process}</td>
+                      <td className="px-3 py-3 text-slate-700">{agency}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        </section>
 
-        <section className="bg-white py-28 md:py-32">
-          <div className="mx-auto max-w-[1600px] px-6 md:px-10 lg:px-12">
-            <SectionTitle
-              badge="Certification Process"
-              title="사회적기업 인증 절차와 신청서류"
-              desc="인증은 통합정보시스템 신청, 서류검토, 현장실사, 추천, 전문위원회 심사를 거쳐 진행됩니다."
-              center
-            />
-
-            <UnifiedCard className="mt-16">
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-left text-sm md:text-base">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-500">
-                      <th className="px-4 py-4 font-semibold">단계</th>
-                      <th className="px-4 py-4 font-semibold">절차</th>
-                      <th className="px-4 py-4 font-semibold">주관기관</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {certificationSteps.map(
-                      ([step, process, agency]: [string, string, string]) => (
-                        <tr
-                          key={step}
-                          className="border-b border-slate-100 last:border-b-0"
-                        >
-                          <td className="px-4 py-5 font-semibold text-[#0B1F35]">{step}</td>
-                          <td className="px-4 py-5 text-slate-700">{process}</td>
-                          <td className="px-4 py-5 text-slate-600">{agency}</td>
-                        </tr>
-                      )
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </UnifiedCard>
-
-            <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {certificationDocs.map((item: string) => (
+          <div className="mt-10 rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="text-2xl font-bold text-[#0B1F35]">인증 신청 서류</h3>
+            <div className="mt-6 grid gap-3 md:grid-cols-2">
+              {certificationDocs.map((item) => (
                 <div
                   key={item}
-                  className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] px-5 py-5 text-base leading-8 text-slate-700 md:text-lg"
+                  className="rounded-2xl bg-[#F8F6F1] px-4 py-3 text-sm text-slate-700"
                 >
                   {item}
                 </div>
@@ -756,90 +692,217 @@ export default function SocialEnterprisePage() {
           </div>
         </section>
 
-        <section id="contact" className="py-28 md:py-32">
-          <div className="mx-auto max-w-[1240px] px-6 md:px-10">
+        <section id="cost" className="bg-white py-20">
+          <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-12">
             <SectionTitle
-              badge="Consultation"
-              title="상담 안내"
-              desc="기존처럼 실제 전송 없이 ‘상담 신청 완료’처럼 보이게 하지 않고, 메일앱으로 연결되는 운영형 구조로 바꿨습니다."
+              badge="Cost Guide"
+              title="컨설팅 서비스 비용안내"
+              desc="서비스 유형을 선택하면 예상 금액과 구성 항목을 바로 확인할 수 있도록 구성했습니다."
               center
             />
 
-            <UnifiedCard className="mt-16">
-              <div className="grid gap-5 md:grid-cols-2">
-  <FormInput
-    value={consultationForm.organization}
-    onChange={(value: string) =>
-      setConsultationForm((prev: ConsultationFormState) => ({
-        ...prev,
-        organization: value,
-      }))
-    }
-    placeholder="기관명"
-  />
-  <FormInput
-    value={consultationForm.name}
-    onChange={(value: string) =>
-      setConsultationForm((prev: ConsultationFormState) => ({
-        ...prev,
-        name: value,
-      }))
-    }
-    placeholder="담당자명"
-  />
-  <FormInput
-    value={consultationForm.phone}
-    onChange={(value: string) =>
-      setConsultationForm((prev: ConsultationFormState) => ({
-        ...prev,
-        phone: value,
-      }))
-    }
-    placeholder="연락처"
-  />
-  <FormInput
-    value={consultationForm.email}
-    onChange={(value: string) =>
-      setConsultationForm((prev: ConsultationFormState) => ({
-        ...prev,
-        email: value,
-      }))
-    }
-    placeholder="이메일"
-    type="email"
-  />
-</div>
+            <div className="mt-12 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="rounded-[32px] bg-gradient-to-br from-[#081A2F] to-[#12345A] p-6 text-white shadow-2xl">
+                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#E5C996]">
+                  Service Type
+                </div>
+                <h3 className="mt-3 text-3xl font-bold">서비스 유형 선택</h3>
 
-              <FormTextarea
-  value={consultationForm.message}
-  onChange={(value: string) =>
-    setConsultationForm((prev: ConsultationFormState) => ({
-      ...prev,
-      message: value,
-    }))
-  }
-  placeholder="현재 설립 단계, 인증 준비 수준, 궁금한 점을 입력해 주세요."
-  rows={6}
-  className="mt-5"
-/>
+                <div className="mt-6 space-y-4">
+                  {servicePackages.map((item) => {
+                    const active = selectedPackageId === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setSelectedPackageId(item.id)}
+                        className={`w-full rounded-2xl border p-4 text-left transition duration-300 hover:scale-[1.02] ${
+                          active
+                            ? "border-[#E5C996] bg-white text-[#0B1F35]"
+                            : "border-white/10 bg-white/5 text-white"
+                        }`}
+                      >
+                        <div className="text-lg font-bold">{item.title}</div>
+                        <div className="mt-2 text-sm leading-7 opacity-90">{item.desc}</div>
+                        <div className="mt-4 text-xl font-bold">{formatKRW(item.price)}</div>
+                      </button>
+                    );
+                  })}
+                </div>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-  <UiButton href={consultationMailtoHref} variant="dark" className="w-full sm:w-auto">
-    상담 메일 열기
-  </UiButton>
-  <UiButton href="tel:010-0000-0000" variant="secondary" className="w-full sm:w-auto">
-    전화 문의
-  </UiButton>
-</div>
-            </UnifiedCard>
+                <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
+                  <div className="text-sm font-semibold text-[#E5C996]">예상 총비용</div>
+                  <div className="mt-3 text-4xl font-bold">{formatKRW(selectedPackage.price)}</div>
+                </div>
+              </div>
+
+              <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C9A96B]">
+                  Breakdown
+                </div>
+                <h3 className="mt-3 text-3xl font-bold text-[#0B1F35]">비용 구성 요약</h3>
+
+                <div className="mt-6 space-y-3">
+                  {packageSummaryRows.map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="grid grid-cols-[120px_1fr] gap-4 rounded-2xl bg-[#F8F6F1] px-4 py-4 text-sm"
+                    >
+                      <div className="font-semibold text-slate-500">{label}</div>
+                      <div className="text-slate-800">{value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 rounded-2xl bg-[#FBF5EA] px-4 py-4 text-sm leading-7 text-slate-700">
+                  접수해 주셔서 감사합니다. 상담 순서에 따라 검토 후 연락드리며,
+                  최종 업무 범위와 금액은 제출자료 검토 후 확정됩니다.
+                </div>
+
+                <div className="mt-6 rounded-2xl border border-slate-200 px-4 py-4 text-sm leading-7 text-slate-700">
+                  <div><strong>입금안내</strong></div>
+                  <div className="mt-2">은행: 우리은행</div>
+                  <div>계좌번호: 1005-404-403203</div>
+                  <div>예금주: ILUNPOLAP컨설팅</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+  id="contact"
+  className="mx-auto max-w-7xl px-6 py-20 scroll-mt-20 md:px-10 md:scroll-mt-24 lg:px-12"
+>
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-[32px] border border-slate-200 bg-[#FCFBF8] p-6 shadow-sm">
+              <SectionTitle
+                badge="Support"
+                title="상담 전 준비하면 좋은 자료"
+                desc="아래 자료를 준비하면 설립 구조와 인증 가능성 진단이 더 빨라집니다."
+              />
+              <div className="mt-6 space-y-3">
+                {[
+                  "법인 또는 단체 기본 소개서",
+                  "사업 목적 초안",
+                  "정관 초안 또는 기존 정관",
+                  "근로자 현황 자료",
+                  "매출·비용 자료 또는 사업계획서",
+                  "회의록, 이해관계자 구성안",
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-2xl bg-white px-4 py-4 text-sm text-slate-700"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+              <SectionTitle
+                badge="Contact"
+                title="사회적기업 설립 상담 신청"
+                desc="설립, 인증, 정관, 현장실사, 비용안내 관련 상담을 접수할 수 있습니다."
+              />
+
+              <form onSubmit={handleSubmit} className="mt-6">
+                <div className="grid gap-5 md:grid-cols-2">
+                  <input
+                    value={form.organization}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, organization: e.target.value }))
+                    }
+                    placeholder="기관명"
+                    className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
+                  />
+                  <input
+                    value={form.name}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, name: e.target.value }))
+                    }
+                    placeholder="성명"
+                    className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
+                  />
+                  <input
+                    value={form.phone}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, phone: e.target.value }))
+                    }
+                    placeholder="연락처"
+                    className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
+                  />
+                  <input
+                    value={form.email}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, email: e.target.value }))
+                    }
+                    placeholder="이메일"
+                    className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
+                  />
+
+                  <div className="md:col-span-2">
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                      첨부파일
+                    </label>
+                    <input
+                      type="file"
+                      multiple
+                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0B1F35]"
+                    />
+                    <p className="mt-2 text-xs text-slate-500">
+                      사업계획서, 정관 초안, 회의록, 재무자료 등을 첨부할 수 있습니다.
+                    </p>
+                  </div>
+                </div>
+
+                <textarea
+                  value={form.message}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, message: e.target.value }))
+                  }
+                  rows={6}
+                  placeholder="현재 설립 단계, 인증 준비 수준, 궁금한 점을 입력해 주세요."
+                  className="mt-5 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
+                />
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`mt-6 w-full rounded-2xl bg-[#0B1F35] px-6 py-4 text-lg font-bold text-white transition duration-300 hover:scale-105 hover:shadow-2xl ${
+                    isSubmitting ? "cursor-not-allowed opacity-70" : ""
+                  }`}
+                >
+                  {isSubmitting ? "접수 중..." : "상담 신청하기"}
+                </button>
+              </form>
+            </div>
           </div>
         </section>
       </main>
 
+      <div className="bg-[#F6F3EE] px-6 pb-8">
+        <div className="mx-auto flex max-w-7xl justify-end">
+          <Link
+            href="/admin"
+            className="text-base font-bold text-[#0B1F35] transition duration-300 hover:scale-105"
+          >
+            관리자 로그인
+          </Link>
+        </div>
+      </div>
+
       <SiteFooter
-        leftText="© PARK KI HYUN, 2026.1.17"
-        rightItems={["사회적기업 설립 종합컨설팅", "인증 · 정관 · 거버넌스 · 비용안내"]}
-      />
+  leftText="NPO LAP"
+  rightItems={[
+    "공익법인설립",
+    "사회적기업설립",
+    "브랜딩서비스",
+    "헤리티지오피스",
+    "에코피언",
+  ]}
+/>
     </div>
   );
 }
