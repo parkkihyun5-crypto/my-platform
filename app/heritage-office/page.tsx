@@ -770,7 +770,7 @@ export default function HeritageOfficePage() {
 
       <SiteFooter
         leftText="International Leaders Union"
-        rightItems={["공익법인설립", "사회적기업설립", "브랜딩서비스", "헤리티지오피스"]}
+        rightItems={["공익법인설립", "사회적기업설립", "브랜딩서비스", "헤리티지오피스","에코피언"]}
       />
     </div>
   );
