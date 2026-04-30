@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🚀 Deploy (Safe)",
+      "type": "shell",
+      "command": "npm run deploy",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "⚡ Deploy (Auto)",
+      "type": "shell",
+      "command": "npm run deploy:auto",
+      "problemMatcher": []
+    }
+  ]
+}
