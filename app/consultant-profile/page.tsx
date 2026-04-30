@@ -53,12 +53,12 @@ const timelineItems = [
   },
   {
     year: "IMF 이후",
-    title: "디지털 산업과 정보중개 플랫폼 사업 추진",
+    title: "디지털 산업과 정보중개 플랫폼 활성화",
     desc: "디지털저널과 하이코리아플러스를 설립해 대한민국 경제 활성화를 위한 디지털 산업과 AI빅데이터를 활용한 정보중개 플랫폼 사업을 추진했습니다.",
   },
   {
     year: "2001 이후",
-    title: "국제지도자연합 설립과 민간외교 확장",
+    title: "국제지도자연합 설립과 민간외교 플랫폼 구축",
     desc: "대한민국의 IMF 차입금 조기 상환 이후 국가 재도약과 국제 위상 강화를 위한 민간 외교의 필요성에 주목해 국제지도자연합 설립본부장으로 참여했습니다.",
   },
   {
@@ -190,7 +190,7 @@ export default function ConsultantProfilePage() {
           <div className="relative z-10 mx-auto max-w-[1500px] px-6 md:px-10 lg:px-12">
             <div className="mb-12 max-w-5xl">
               <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#C9A96B]">
-                Speaker Profile
+                Biography
               </div>
 
               <h2 className="mt-4 text-4xl font-bold tracking-[-0.02em] text-[#0B1F35] md:text-5xl">
@@ -259,7 +259,7 @@ export default function ConsultantProfilePage() {
                     <div className="space-y-6 text-[15px] leading-8 text-slate-700 md:text-[17px] md:leading-9">
                       <p>
                         국제지도자연합(International Leaders Union) 사무총장 겸
-                        기획실장. 대한민국 벤처창업 붐을 이끌었던 1세대 실무형
+                        NPOLAP 대표. 대한민국 벤처창업 붐을 이끌었던 1세대 실무형
                         전략가로, 창업·금융·투자 분야의 현장 경험을 바탕으로
                         기업 성장 구조와 시장의 작동 원리를 체득했으며, 이후
                         국제협력과 공공 영역으로 활동 무대를 넓혀 국제사회의
