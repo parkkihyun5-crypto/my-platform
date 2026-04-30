@@ -3,11 +3,11 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "대표 에코피언 소개 | NPOLAP",
+  title: "에코피언 소개 | NPOLAP",
   description:
-    "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 대표 에코피언 박기현 프로필 페이지입니다.",
+    "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 에코피언 박기현 프로필 페이지입니다.",
   openGraph: {
-    title: "대표 에코피언 소개 | NPOLAP",
+    title: "에코피언 소개 | NPOLAP",
     description:
       "벤처 창업의 현장을 경험하고, 디지털 혁신과 세계의 흐름을 읽으며, AI시대의 지속가능한 국제사회의 미래를 고민하는 실천형 칼럼니스트.",
     url: "https://npolap.cloud/consultant-profile",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
         url: "/images/consultant-profile.png",
         width: 1200,
         height: 630,
-        alt: "대표 에코피언 박기현 프로필",
+        alt: "에코피언 박기현 프로필",
       },
     ],
     locale: "ko_KR",
@@ -25,12 +25,40 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "대표 에코피언 소개 | NPOLAP",
+    title: "에코피언 소개 | NPOLAP",
     description:
-      "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 대표 에코피언 프로필.",
+      "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 에코피언 프로필.",
     images: ["/images/consultant-profile.png"],
   },
 };
+
+const menuItems = [
+  {
+    label: "공익법인설립",
+    href: "/public-interest-foundation",
+    isLink: true,
+  },
+  {
+    label: "사회적기업설립",
+    href: "/social-enterprise",
+    isLink: true,
+  },
+  {
+    label: "브랜딩서비스",
+    href: "/branding",
+    isLink: true,
+  },
+  {
+    label: "헤리티지오피스",
+    href: "/heritage-office",
+    isLink: true,
+  },
+  {
+    label: "에코피언",
+    href: "/consultant-profile",
+    isLink: true,
+  },
+];
 
 const columnItems = [
   {
@@ -48,13 +76,13 @@ const columnItems = [
 const timelineItems = [
   {
     year: "1990s",
-    title: "벤처창업 현장과 창업지원 플랫폼 운영",
-    desc: "초기 벤처 생태계가 형성되던 시기, 대학 및 중소기업청 소관 연구기관에서 창업지원실장과 전문위원으로 활동하며 창업 강연, 창업아카데미 운영, 창업 관련 집필 활동과 제3시장 진입지원 컨설팅을 수행했습니다.",
+    title: "벤처창업 현장과 창업지원 활동",
+    desc: "초기 벤처 생태계가 형성되던 시기, 대학 및 중소기업청 소관 연구기관에서 창업지원실장과 전문위원으로 활동하며 창업 강연, 창업아카데미 운영, 창업 관련 집필 활동을 수행했습니다.",
   },
   {
     year: "IMF 이후",
-    title: "디지털 산업과 정보중개 플랫폼 사업 추진",
-    desc: "디지털저널과 하이코리아플러스를 설립해 대한민국 경제 활성화를 위한 디지털 산업과 AI빅데이터를 활용한 정보중개 플랫폼 사업을 추진했습니다.",
+    title: "디지털 산업과 금융 플랫폼 사업 추진",
+    desc: "디지털저널과 하이코리아플러스를 설립해 대한민국 경제 활성화를 위한 디지털 산업과 금융 플랫폼 사업을 추진했습니다.",
   },
   {
     year: "2001 이후",
@@ -94,77 +122,46 @@ export default function ConsultantProfilePage() {
         logoText="NPOLAP"
         logoHref="/heritage-office"
         inquiryHref="#contact"
-        menuItems={[
-          {
-            label: "공익법인설립",
-            href: "/public-interest-foundation",
-            isLink: true,
-          },
-          {
-            label: "사회적기업설립",
-            href: "/social-enterprise",
-            isLink: true,
-          },
-          {
-            label: "브랜딩서비스",
-            href: "/branding",
-            isLink: true,
-          },
-          {
-            label: "헤리티지오피스",
-            href: "/heritage-office",
-            isLink: true,
-          },
-          {
-            label: "에코피언",
-            href: "/consultant-profile",
-            isLink: true,
-          },
-        ]}
+        menuItems={menuItems}
       />
 
       <main>
-        <section className="relative min-h-[76vh] overflow-hidden pt-24 text-white md:pt-28">
+        <section className="relative h-[100vh] w-full overflow-hidden pt-24 text-white md:pt-28">
           <div className="absolute inset-0">
             <img
               src="/images/forum-stage-bg.jpg"
-              alt="forum stage background"
+              alt="ecopion profile hero background"
               className="h-full w-full object-cover object-center"
             />
-            <div className="absolute inset-0 bg-[#081A2F]/30" />
+            <div className="absolute inset-0 bg-[#081A2F]/48" />
           </div>
 
-          <div className="relative z-10 mx-auto flex min-h-[calc(76vh-112px)] max-w-[1500px] items-center px-6 py-16 md:px-10 lg:px-12">
-            <div className="max-w-5xl">
-              <div className="mb-8 flex items-center gap-4">
-                <div className="h-px w-14 bg-[#E5C996]" />
-                <div className="text-xs font-semibold uppercase tracking-[0.32em] text-[#E5C996] md:text-sm">
-                  Representative Consultant
-                </div>
+          <div className="relative z-10 mx-auto flex h-full w-full max-w-[1600px] items-center px-5 md:px-10 lg:px-12">
+            <div className="max-w-5xl text-white">
+              <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#EAD9BC] md:text-base">
+                Ecopion Profile
               </div>
 
-              <h1 className="text-[42px] font-bold leading-[1.08] tracking-[-0.055em] md:text-6xl xl:text-[80px]">
-                시대를 잇는  
+              <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-[-0.055em] md:text-6xl xl:text-[84px]">
+                구조를 설계하는
                 <br />
-                法人 구조 설계자
+                실천형 전략가
               </h1>
 
-              <div className="mt-8 max-w-3xl border-l border-[#E5C996]/45 pl-6">
-                <p className="text-lg leading-9 text-slate-200 md:text-[22px] md:leading-10">
-                  벤처의 실무와 국제금융의 통찰로, AI 시대 자연과 인류의 지속 가능한 문명을 설계하는 창조적 전략가
-                </p>
-              </div>
+              <p className="mt-7 max-w-3xl text-base leading-8 text-slate-100 md:text-xl md:leading-9">
+                벤처 창업의 현장을 경험하고, 디지털 혁신과 세계의 흐름을 읽으며,
+                <br />
+                AI시대의 지속가능한 국제사회의 미래를 고민하는 실천형 칼럼니스트.
+              </p>
 
-              <div className="mt-9 max-w-3xl text-base leading-8 text-slate-300 md:text-lg">
-                창업·금융·투자·방송·언론 분야의 현장 경험을 바탕으로 영리와 비영리 법인의 성장 구조와
-                시장의 작동 원리를 체득하고, 이후 국제협력과 공공 민간 외교 영역으로 활동 무대를 넓혀
-                지속가능한 국제사회의 발전 모델을 모색해 왔습니다.
-              </div>
+              <p className="mt-7 max-w-3xl text-base leading-8 text-slate-200 md:text-lg md:leading-9">
+                창업, 금융, 투자, 국제협력, 공공외교를 연결하며 지속가능한 미래 전략을 설계합니다.
+              </p>
 
-              <div className="mt-11 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                 <a
                   href="#speaker-profile"
-                   className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/[0.04] px-7 py-4 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-[2px] hover:border-[#E5C996]/35 hover:bg-white/[0.08] hover:text-[#F3DFB6] md:text-base"
+                  className="group inline-flex items-center justify-center rounded-full bg-[#E5C996] px-7 py-4 text-sm font-bold text-[#081A2F] shadow-[0_18px_45px_rgba(229,201,150,0.18)] transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_24px_60px_rgba(229,201,150,0.28)] md:text-base"
                 >
                   소개 보기
                   <span className="ml-2 transition-transform duration-300 group-hover:translate-x-1">
@@ -174,7 +171,7 @@ export default function ConsultantProfilePage() {
 
                 <a
                   href="#contact"
-                  className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/[0.04] px-7 py-4 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-[2px] hover:border-[#E5C996]/35 hover:bg-white/[0.08] hover:text-[#F3DFB6] md:text-base"
+                  className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/[0.08] px-7 py-4 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-[2px] hover:border-[#E5C996]/35 hover:bg-white/[0.12] hover:text-[#F3DFB6] md:text-base"
                 >
                   컨설팅 문의
                 </a>
@@ -185,41 +182,47 @@ export default function ConsultantProfilePage() {
 
         <section
           id="speaker-profile"
-          className="relative overflow-hidden bg-[#f6f3ee] py-0"
+          className="relative overflow-hidden bg-[#f6f3ee] py-16 md:py-20"
         >
-          <div className="relative h-[260px] overflow-hidden bg-[#081A2F] md:h-[340px]">
-            <div className="absolute inset-0 bg-[#081A2F]" />
-
-            <div className="relative z-10 mx-auto flex h-full max-w-[1500px] items-end px-6 pb-12 md:px-10 lg:px-12">
-              <div>
-                <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#E5C996]">
-                  Speaker Profile
-                </div>
-                <h2 className="mt-4 text-4xl font-bold tracking-[-0.02em] text-white md:text-4xl">
-                  박기현
-                </h2>
-                <p className="mt-3 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
-                  혁신과 자본, 공공가치를 연결, 자산을 유산으로 지속가능한 신뢰구조를 설계하는 전략가
-                </p>
+          <div className="relative z-10 mx-auto max-w-[1500px] px-6 md:px-10 lg:px-12">
+            <div className="mb-12 max-w-5xl">
+              <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#C9A96B]">
+                Biography
               </div>
-            </div>
-          </div>
 
-          <div className="relative z-10 mx-auto max-w-[1500px] px-6 py-16 md:px-10 md:py-20 lg:px-12">
+              <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.04em] text-[#0B1F35] md:text-5xl">
+                박기현 컨설턴트 소개
+              </h2>
+
+              <p className="mt-6 max-w-4xl text-base leading-8 text-slate-700 md:text-lg md:leading-9">
+                박기현 / PARK KI HYUN
+                <br />
+                국제지도자연합 사무총장
+                <br />
+                전문영역 / 창업 · 금융 · 투자 · 국제협력 · 공공외교
+                <br />
+                핵심역량 / 조직 설립, 성장전략, 투자구조, 공익 플랫폼 설계
+              </p>
+
+              <p className="mt-6 max-w-4xl text-base leading-8 text-slate-700 md:text-lg md:leading-9">
+                창업, 금융, 투자, 국제협력, 공공외교를 연결하며 지속가능한 미래 전략을 설계하는 실천형 칼럼니스트입니다.
+              </p>
+            </div>
+
             <div className="grid gap-10 lg:h-[980px] lg:grid-cols-[0.78fr_1.22fr] lg:items-stretch">
               <div className="relative h-full">
                 <div className="flex h-full flex-col overflow-hidden rounded-[36px] border border-slate-200 bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] md:p-5">
                   <div className="flex min-h-[520px] flex-1 items-center justify-center overflow-hidden rounded-[28px] bg-[#0f2238] lg:min-h-0">
                     <img
                       src="/images/consultant-profile.png"
-                      alt="박기현 대표 에코피언"
+                      alt="박기현 에코피언 프로필"
                       className="h-full w-full object-contain object-center"
                     />
                   </div>
 
                   <div className="shrink-0 px-4 py-6 md:px-6 md:py-7">
                     <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[#C9A96B]">
-                      Biography
+                      Ecopion
                     </div>
 
                     <h3 className="mt-3 text-2xl font-bold tracking-[-0.035em] text-[#0B1F35] md:text-3xl">
@@ -249,10 +252,10 @@ export default function ConsultantProfilePage() {
               <div className="flex h-full min-h-0 flex-col gap-8 pt-1 md:pt-2 lg:pt-0">
                 <div className="shrink-0">
                   <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#C9A96B]">
-                    Biography
+                    Consultant Story
                   </div>
                   <h3 className="mt-3 text-3xl font-bold leading-tight tracking-[-0.04em] text-[#0B1F35] md:text-5xl">
-                    제도와 구조를 만들고,
+                    구조를 만들고,
                     <br />
                     사람과 자본과 기관을 연결합니다.
                   </h3>
@@ -263,11 +266,11 @@ export default function ConsultantProfilePage() {
                     <div className="space-y-6 text-[15px] leading-8 text-slate-700 md:text-[17px] md:leading-9">
                       <p>
                         국제지도자연합(International Leaders Union) 사무총장 겸
-                        NPOLAP 대표. 대한민국 벤처창업 붐을 이끌었던 1세대 실무형
+                        기획실장. 대한민국 벤처창업 붐을 이끌었던 1세대 실무형
                         전략가로, 창업·금융·투자 분야의 현장 경험을 바탕으로
                         기업 성장 구조와 시장의 작동 원리를 체득했으며, 이후
                         국제협력과 공공 영역으로 활동 무대를 넓혀 국제사회의
-                        지속가능한 발전 모델과 대안을 모색해 온 인물이다.
+                        지속가능한 발전 모델을 모색해 온 인물이다.
                       </p>
 
                       <p>
@@ -381,9 +384,9 @@ export default function ConsultantProfilePage() {
                 </div>
 
                 <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.04em] text-[#0B1F35] md:text-5xl">
-                  한 사람의 열정이
+                  한 사람의 이력이
                   <br />
-                  제도와 구조로 이어지는 실현 과정
+                  하나의 구조로 이어지는 과정
                 </h2>
 
                 <div className="mt-10 space-y-6">
@@ -415,11 +418,11 @@ export default function ConsultantProfilePage() {
                   </div>
 
                   <h3 className="mt-5 text-3xl font-bold leading-tight tracking-[-0.04em] md:text-4xl">
-                    영리와 비영리
+                    실물경제와
                     <br />
-                    사람과 제도를 연결하는
+                    공공외교를 함께 이해하는
                     <br />
-                    신뢰 구축 설계자
+                    드문 실무형 리더
                   </h3>
 
                   <p className="mt-7 text-base leading-8 text-slate-300 md:text-lg">
@@ -456,11 +459,11 @@ export default function ConsultantProfilePage() {
                 </div>
 
                 <h2 className="mt-5 text-3xl font-bold leading-tight tracking-[-0.04em] text-[#0B1F35] md:text-5xl">
-                  전문 컨설팅 영역
+                  대표 컨설팅 영역
                 </h2>
 
                 <p className="mt-6 text-base leading-8 text-slate-600 md:text-lg">
-                  조직의 철학·제도·자본·브랜드·국제협력을
+                  단일 업무가 아니라, 조직의 철학·제도·자본·브랜드·국제협력을
                   통합적으로 연결하는 구조 설계형 컨설팅을 지향합니다.
                 </p>
               </div>
@@ -496,25 +499,29 @@ export default function ConsultantProfilePage() {
             </div>
 
             <h2 className="mt-5 text-3xl font-bold leading-tight tracking-[-0.04em] md:text-5xl">
-              한 사람의 비전이 실현되도록 
+              조직의 철학을 구조로 만들고,
               <br />
-조직의 철학과 제도를 구조로 만들고,
-              <br />
-              지속가능한 미래 성장 전략으로 연결합니다.
+              실행 가능한 미래 전략으로 연결합니다.
             </h2>
 
             <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-slate-300 md:text-lg">
-              학교와 병원, 미술관과 박물관 같은 공익적 기반 위에 사회적 기업의 혁신을 더하고, 
-              정교한 브랜딩으로 고유의 헤리티지를 정립하고, 시대를 불문하는 존재 가치를 증명합니다. 
-              국경을 넘는 공공 협력 프로젝트를 통해 한 사람의 비전이 세계적인 영향력으로 이어지도록 가치를 설계합니다.
+              공익법인 설립, 사회적기업 설립, 브랜딩, 헤리티지오피스,
+              국제협력 프로젝트에 대한 상담을 요청하실 수 있습니다.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
                 href="/heritage-office#contact"
-                className="inline-flex w-full items-center justify-center rounded-full border border-white/20 bg-white/8 px-7 py-4 text-base font-bold text-white transition-all duration-300 hover:-translate-y-[2px] hover:bg-white/12 sm:w-auto"
+                className="inline-flex w-full items-center justify-center rounded-full bg-[#E5C996] px-7 py-4 text-base font-bold text-[#081A2F] shadow-[0_18px_45px_rgba(229,201,150,0.20)] transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_24px_60px_rgba(229,201,150,0.32)] sm:w-auto"
               >
                 상담 신청하기
+              </a>
+
+              <a
+                href="tel:02-785-7874"
+                className="inline-flex w-full items-center justify-center rounded-full border border-white/20 bg-white/8 px-7 py-4 text-base font-bold text-white transition-all duration-300 hover:-translate-y-[2px] hover:bg-white/12 sm:w-auto"
+              >
+                02-785-7874
               </a>
             </div>
           </div>
