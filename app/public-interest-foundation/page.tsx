@@ -304,7 +304,7 @@ export default function PublicInterestFoundationPage() {
           { label: "사회적기업설립", href: "/social-enterprise", isLink: true },
           { label: "브랜딩서비스", href: "/branding", isLink: true },
           { label: "헤리티지오피스", href: "/heritage-office", isLink: true },
-          { label: "에코피dhs", href: "/heritage-office", isLink: true },
+          { label: "에코피온", href: "/heritage-office", isLink: true },
         ]}
        
       />
@@ -710,7 +710,7 @@ export default function PublicInterestFoundationPage() {
     "사회적기업설립",
     "브랜딩서비스",
     "헤리티지오피스",
-    "에코피dhs",
+    "에코피온",
   ]}
 />
     </div>
