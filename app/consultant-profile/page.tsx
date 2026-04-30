@@ -93,7 +93,7 @@ export default function ConsultantProfilePage() {
         mode="sub"
         logoText="NPOLAP"
         logoHref="/heritage-office"
-        inquiryHref="#contact"
+        inquiryHref="/heritage-office#contact"
         menuItems={[
           {
             label: "공익법인설립",
@@ -173,7 +173,7 @@ export default function ConsultantProfilePage() {
                 </a>
 
                 <a
-                  href="#contact"
+                  href="/heritage-office#contact"
                   className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/[0.04] px-7 py-4 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-[2px] hover:border-[#E5C996]/35 hover:bg-white/[0.08] hover:text-[#F3DFB6] md:text-base"
                 >
                   컨설팅 문의
@@ -481,7 +481,7 @@ export default function ConsultantProfilePage() {
         </section>
 
         <section
-          id="contact"
+          id="consulting-inquiry"
           className="relative overflow-hidden bg-[#081A2F] py-24 text-white md:py-32"
         >
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#E5C996]/40 to-transparent" />

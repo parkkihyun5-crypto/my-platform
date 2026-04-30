@@ -695,8 +695,11 @@ export default function HeritageOfficePage() {
 </section>
 
 <section
-  id="heritage-inquiry"
-  className="py-20 scroll-mt-14 md:scroll-mt-18 md:py-28"
+  id="contact"
+  className="py-20 scroll-mt-28 md:py-28"
+><section
+  id="contact"
+  className="py-20 scroll-mt-28 md:py-28"
 >
   <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
     <div className={`${whiteCardClass} p-6 md:p-10`}>
