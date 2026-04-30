@@ -129,6 +129,7 @@ export default function HeritageOfficePage() {
     email: "",
     message: "",
   });
+
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [heroVisible, setHeroVisible] = useState<boolean>(false);
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
@@ -139,7 +140,10 @@ export default function HeritageOfficePage() {
   const legacyFilmRef = useRef<HTMLElement | null>(null);
 
   const mailtoHref = useMemo(() => {
-    const subject = `[헤리티지오피스 문의] ${form.organization || "기관명 미입력"}`;
+    const subject = `[헤리티지오피스 문의] ${
+      form.organization || "기관명 미입력"
+    }`;
+
     const body = [
       "안녕하세요. 헤리티지오피스 관련 문의를 드립니다.",
       "",
@@ -200,6 +204,7 @@ export default function HeritageOfficePage() {
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
+
         if (entry?.isIntersecting) {
           setLegacyFilmVisible(true);
           observer.disconnect();
@@ -229,7 +234,9 @@ export default function HeritageOfficePage() {
     });
   }
 
-  async function handleInquirySubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
+  async function handleInquirySubmit(
+    e: FormEvent<HTMLFormElement>
+  ): Promise<void> {
     e.preventDefault();
 
     if (isSubmitting) return;
@@ -255,6 +262,7 @@ export default function HeritageOfficePage() {
         email: "",
         message: "",
       });
+
       setShowSuccess(true);
     } catch {
       window.location.href = mailtoHref;
@@ -272,34 +280,34 @@ export default function HeritageOfficePage() {
         mode="sub"
         logoText="HERITAGE OFFICE"
         logoHref="/heritage-office"
-        inquiryHref="#heritage-inquiry"
+        inquiryHref="#contact"
         menuItems={[
           {
-    label: "공익법인설립",
-    href: "/public-interest-foundation",
-    isLink: true,
-  },
-  {
-    label: "사회적기업설립",
-    href: "/social-enterprise",
-    isLink: true,
-  },
-  {
-    label: "브랜딩서비스",
-    href: "/branding",
-    isLink: true,
-  },
-  {
-    label: "헤리티지오피스",
-    href: "/heritage-office",
-    isLink: true,
-  },
-  {
-    label: "에코피언",
-    href: "/consultant-profile",
-    isLink: true,
-  },
-]}
+            label: "공익법인설립",
+            href: "/public-interest-foundation",
+            isLink: true,
+          },
+          {
+            label: "사회적기업설립",
+            href: "/social-enterprise",
+            isLink: true,
+          },
+          {
+            label: "브랜딩서비스",
+            href: "/branding",
+            isLink: true,
+          },
+          {
+            label: "헤리티지오피스",
+            href: "/heritage-office",
+            isLink: true,
+          },
+          {
+            label: "에코피언",
+            href: "/consultant-profile",
+            isLink: true,
+          },
+        ]}
       />
 
       {selectedRoadmapStep ? (
@@ -310,6 +318,7 @@ export default function HeritageOfficePage() {
                 <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C9A96B]">
                   ROADMAP DETAIL
                 </div>
+
                 <h3 className="mt-3 text-2xl font-bold text-[#0B1F35] md:text-3xl">
                   {selectedRoadmapStep.step}
                 </h3>
@@ -327,14 +336,20 @@ export default function HeritageOfficePage() {
 
             <div className="mt-6 grid gap-4">
               <div className="rounded-[20px] bg-[#F8F6F1] px-5 py-4">
-                <div className="text-sm font-semibold text-slate-500">주요 과업</div>
+                <div className="text-sm font-semibold text-slate-500">
+                  주요 과업
+                </div>
+
                 <div className="mt-2 text-base font-semibold text-[#0B1F35] md:text-lg">
                   {selectedRoadmapStep.task}
                 </div>
               </div>
 
               <div className="rounded-[20px] bg-[#FBF5EA] px-5 py-4">
-                <div className="text-sm font-semibold text-slate-500">핵심 도구</div>
+                <div className="text-sm font-semibold text-slate-500">
+                  핵심 도구
+                </div>
+
                 <div className="mt-2 text-base font-semibold text-[#0B1F35] md:text-lg">
                   {selectedRoadmapStep.tool}
                 </div>
@@ -401,6 +416,7 @@ export default function HeritageOfficePage() {
                 <br />
                 영원한 유산을 설계합니다
               </h1>
+
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                 <p className="mt-7 max-w-3xl text-base leading-8 text-slate-200 md:text-xl md:leading-9">
                   헤리티지 자산 설계 (Heritage Asset Design)
@@ -416,6 +432,7 @@ export default function HeritageOfficePage() {
 
         <section className="relative bg-white py-20 md:py-28">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#f6f3ee] to-transparent" />
+
           <div className="mx-auto max-w-[1100px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="PHILOSOPHY"
@@ -463,10 +480,7 @@ export default function HeritageOfficePage() {
           </div>
         </section>
 
-        <section
-          ref={legacyFilmRef}
-          className="bg-[#f6f3ee] py-20 md:py-28"
-        >
+        <section ref={legacyFilmRef} className="bg-[#f6f3ee] py-20 md:py-28">
           <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="LEGACY FILM"
@@ -528,14 +542,16 @@ export default function HeritageOfficePage() {
                   </p>
 
                   <div className="mt-6 flex flex-wrap gap-2">
-                    {["철학", "제도", "계승", "명문가문", "유산"].map((item) => (
-                      <span
-                        key={item}
-                        className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600"
-                      >
-                        {item}
-                      </span>
-                    ))}
+                    {["철학", "제도", "계승", "명문가문", "유산"].map(
+                      (item) => (
+                        <span
+                          key={item}
+                          className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600"
+                        >
+                          {item}
+                        </span>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
@@ -627,12 +643,15 @@ export default function HeritageOfficePage() {
                   <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C9A96B]">
                     {item.step}
                   </div>
+
                   <div className="mt-4 text-2xl font-bold text-[#0B1F35]">
                     {item.task}
                   </div>
+
                   <div className="mt-4 text-sm leading-7 text-slate-600">
                     {item.tool}
                   </div>
+
                   <div className="mt-6 inline-flex items-center text-sm font-semibold text-[#0B1F35]">
                     자세히 보기 →
                   </div>
@@ -658,7 +677,10 @@ export default function HeritageOfficePage() {
                   href={item.href}
                   className={`${whiteCardClass} block p-6 md:p-8`}
                 >
-                  <h3 className="text-2xl font-bold text-[#0B1F35]">{item.title}</h3>
+                  <h3 className="text-2xl font-bold text-[#0B1F35]">
+                    {item.title}
+                  </h3>
+
                   <p className="mt-4 text-sm leading-7 text-slate-600 md:text-base">
                     {item.description}
                   </p>
@@ -668,112 +690,140 @@ export default function HeritageOfficePage() {
           </div>
         </section>
 
-        <section id="contact" className="py-20 md:py-28">
-  <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
-    <SectionTitle
-      badge="CONCLUSION"
-      title="철학과 구조로 연결하는 자산과 유산 설계 플랫폼"
-      center
-    />
+        <section className="py-20 md:py-28">
+          <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
+            <SectionTitle
+              badge="CONCLUSION"
+              title="철학과 구조로 연결하는 자산과 유산 설계 플랫폼"
+              center
+            />
 
-    <div className={`${whiteCardClass} mt-14 p-6 md:p-10`}>
-      <div className="text-center text-base leading-8 tracking-[-0.01em] text-slate-700 md:text-lg md:leading-9">
-        NPO LAP (Legacy Alliance Platform)
-        <br />
-        <br />
-        공익법인 설립, 사회적기업 설립, 브랜딩 서비스,
-        <br />
-        헤리티지오피스 설립까지
-        <br />
-        <br />
-        철학과 구조로 연결하는
-        <br />
-        자산과 유산의 통합 설계 플랫폼
-      </div>
-    </div>
-  </div>
-</section>
+            <div className={`${whiteCardClass} mt-14 p-6 md:p-10`}>
+              <div className="text-center text-base leading-8 tracking-[-0.01em] text-slate-700 md:text-lg md:leading-9">
+                NPO LAP (Legacy Alliance Platform)
+                <br />
+                <br />
+                공익법인 설립, 사회적기업 설립, 브랜딩 서비스,
+                <br />
+                헤리티지오피스 설립까지
+                <br />
+                <br />
+                철학과 구조로 연결하는
+                <br />
+                자산과 유산의 통합 설계 플랫폼
+              </div>
+            </div>
+          </div>
+        </section>
 
-<section
-  id="contact"
-  className="py-20 scroll-mt-28 md:py-28"
-><section
-  id="contact"
-  className="py-20 scroll-mt-28 md:py-28"
->
-  <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
-    <div className={`${whiteCardClass} p-6 md:p-10`}>
-      <SectionTitle
-        badge="ONLINE CONSULTING"
-        title="문의하기"
-        desc="개인정보 활용: 견적 제공 및 상담을 위한 개인정보 수집에 동의하실 경우에만 문의가 접수됩니다."
-        center
-      />
+        <section id="contact" className="py-20 scroll-mt-28 md:py-28">
+          <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
+            <div className={`${whiteCardClass} p-6 md:p-10`}>
+              <SectionTitle
+                badge="ONLINE CONSULTING"
+                title="문의하기"
+                desc="개인정보 활용·견적 제공 및 상담을 위한 개인정보 수집에 동의하실 경우에만 문의를 남겨주세요."
+                center
+              />
 
-      <form onSubmit={handleInquirySubmit} className="mt-10">
-        <div className="grid gap-4 md:grid-cols-2">
-          <FormInput
-            value={form.organization}
-            onChange={(value) => setForm((prev) => ({ ...prev, organization: value }))}
-            placeholder="기관명"
-          />
-          <FormInput
-            value={form.name}
-            onChange={(value) => setForm((prev) => ({ ...prev, name: value }))}
-            placeholder="성명"
-          />
-          <FormInput
-            value={form.phone}
-            onChange={(value) => setForm((prev) => ({ ...prev, phone: value }))}
-            placeholder="연락처"
-          />
-          <FormInput
-            value={form.email}
-            onChange={(value) => setForm((prev) => ({ ...prev, email: value }))}
-            placeholder="이메일"
-            type="email"
-          />
-        </div>
+              <form onSubmit={handleInquirySubmit} className="mt-10">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormInput
+                    value={form.organization}
+                    onChange={(value) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        organization: value,
+                      }))
+                    }
+                    placeholder="기관명"
+                  />
 
-        <div className="mt-4">
-          <FormTextarea
-            value={form.message}
-            onChange={(value) => setForm((prev) => ({ ...prev, message: value }))}
-            placeholder={`상담을 원하는 내용을 입력해 주세요.
+                  <FormInput
+                    value={form.name}
+                    onChange={(value) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        name: value,
+                      }))
+                    }
+                    placeholder="성명"
+                  />
+
+                  <FormInput
+                    value={form.phone}
+                    onChange={(value) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        phone: value,
+                      }))
+                    }
+                    placeholder="연락처"
+                  />
+
+                  <FormInput
+                    value={form.email}
+                    onChange={(value) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        email: value,
+                      }))
+                    }
+                    placeholder="이메일"
+                    type="email"
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <FormTextarea
+                    value={form.message}
+                    onChange={(value) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        message: value,
+                      }))
+                    }
+                    placeholder={`상담을 원하는 내용을 입력해 주세요.
 
 - 가문의 철학을 제도적으로 남기고 싶은 분
 - 재단 설립을 통해 사회공헌 구조를 만들고 싶은 분
 - 자산 이전이 아닌 유산 계승 구조를 고민하는 분
 - 기업 사회의 공익재단 또는 사회적 가치 플랫폼을 준비하는 분
 - 창립자의 정신과 기록을 체계화하고 싶은 분`}
-          />
-        </div>
+                  />
+                </div>
 
-        <div className="mt-6 flex flex-col items-center gap-3 md:flex-row md:justify-center">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="inline-flex items-center justify-center rounded-full border border-[#E5C996]/30 bg-[#E5C996] px-6 py-3 text-sm font-semibold text-[#0B1F35] shadow-[0_10px_30px_rgba(229,201,150,0.18)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_18px_45px_rgba(229,201,150,0.28)] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSubmitting ? "접수 중..." : "문의 접수하기"}
-          </button>
+                <div className="mt-6 flex flex-col items-center gap-3 md:flex-row md:justify-center">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="inline-flex items-center justify-center rounded-full border border-[#E5C996]/30 bg-[#E5C996] px-6 py-3 text-sm font-semibold text-[#0B1F35] shadow-[0_10px_30px_rgba(229,201,150,0.18)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_18px_45px_rgba(229,201,150,0.28)] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isSubmitting ? "접수 중..." : "문의 접수하기"}
+                  </button>
 
-          <a
-            href={mailtoHref}
-            className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-[#0B1F35] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50"
-          >
-            이메일로 문의하기
-          </a>
-        </div>
-      </form>
-    </div>
-  </div>
-</section>
+                  <a
+                    href={mailtoHref}
+                    className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-[#0B1F35] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50"
+                  >
+                    이메일로 문의하기
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
       </main>
 
       <SiteFooter
         leftText="International Leaders Union"
-        rightItems={["공익법인설립", "사회적기업설립", "브랜딩서비스", "헤리티지오피스","에코피언"]}
+        rightItems={[
+          "공익법인설립",
+          "사회적기업설립",
+          "브랜딩서비스",
+          "헤리티지오피스",
+          "에코피언",
+        ]}
       />
     </div>
   );
