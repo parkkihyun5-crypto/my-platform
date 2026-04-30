@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next dev --webpack",
     "build": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build",
-    "start": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next start"
+    "start": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next start",
+
+    "deploy": "git add . && git diff --cached --quiet || git commit -m \"deploy\" && git push origin main",
+
+    "deploy:auto": "git add . && git diff --cached --quiet || git commit -m \"auto deploy %DATE% %TIME%\" && git push origin main"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1",
