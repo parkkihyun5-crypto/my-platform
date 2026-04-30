@@ -303,7 +303,7 @@ export default function HeritageOfficePage() {
             isLink: true,
           },
           {
-            label: "에코피언",
+            label: "에코피온",
             href: "/consultant-profile",
             isLink: true,
           },
@@ -822,7 +822,7 @@ export default function HeritageOfficePage() {
           "사회적기업설립",
           "브랜딩서비스",
           "헤리티지오피스",
-          "에코피언",
+          "에코피온",
         ]}
       />
     </div>
