@@ -3,11 +3,11 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "대표 에코피언 소개 | NPOLAP",
+  title: "대표 에코피온 소개 | NPOLAP",
   description:
-    "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 대표 에코피언 박기현 프로필 페이지입니다.",
+    "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 대표 에코피온 박기현 프로필 페이지입니다.",
   openGraph: {
-    title: "대표 에코피언 소개 | NPOLAP",
+    title: "대표 에코피온 소개 | NPOLAP",
     description:
       "벤처 창업의 현장을 경험하고, 디지털 혁신과 세계의 흐름을 읽으며, AI시대의 지속가능한 국제사회의 미래를 고민하는 실천형 칼럼니스트.",
     url: "https://npolap.cloud/consultant-profile",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
         url: "/images/consultant-profile.png",
         width: 1200,
         height: 630,
-        alt: "대표 에코피언 박기현 프로필",
+        alt: "대표 에코피온 박기현 프로필",
       },
     ],
     locale: "ko_KR",
@@ -25,9 +25,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "대표 에코피언 소개 | NPOLAP",
+    title: "대표 에코피온 소개 | NPOLAP",
     description:
-      "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 대표 에코피언 프로필.",
+      "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 대표 에코피온 프로필.",
     images: ["/images/consultant-profile.png"],
   },
 };
@@ -116,7 +116,7 @@ export default function ConsultantProfilePage() {
             isLink: true,
           },
           {
-            label: "에코피언",
+            label: "에코피온",
             href: "/consultant-profile",
             isLink: true,
           },
@@ -139,7 +139,7 @@ export default function ConsultantProfilePage() {
               <div className="mb-8 flex items-center gap-4">
                 <div className="h-px w-14 bg-[#E5C996]" />
                 <div className="text-xs font-semibold uppercase tracking-[0.32em] text-[#E5C996] md:text-sm">
-                  Representative Consultant
+                  Ecopion Consultant
                 </div>
               </div>
 
@@ -151,14 +151,12 @@ export default function ConsultantProfilePage() {
 
               <div className="mt-8 max-w-3xl border-l border-[#E5C996]/45 pl-6">
                 <p className="text-lg leading-9 text-slate-200 md:text-[22px] md:leading-10">
-                  벤처의 실무와 국제금융의 통찰로, AI 시대 자연과 인류의 지속 가능한 문명을 설계하는 창조적 전략가
+                  백년의 뿌리 위에 천년의 가지를 뻗는 가문의 문명을 설계합니다.
                 </p>
               </div>
 
               <div className="mt-9 max-w-3xl text-base leading-8 text-slate-300 md:text-lg">
-                창업·금융·투자·방송·언론 분야의 현장 경험을 바탕으로 영리와 비영리 법인의 성장 구조와
-                시장의 작동 원리를 체득하고, 이후 국제협력과 공공 민간 외교 영역으로 활동 무대를 넓혀
-                지속가능한 국제사회의 발전 모델을 모색해 왔습니다.
+                영리는 뿌리고 비영리는 열매입니다. 창업·금융·언론의 현장에서 체득한 자양분으로 경제적 수단으로 사회적 가치를 추구하는 가문을 설계합니다. 가문의 성취가 대를 이어 인류 문명에 기여하는 지속가능한 영속적인 로드맵을 제시합니다.
               </div>
 
               <div className="mt-11 flex flex-col gap-3 sm:flex-row">
@@ -198,7 +196,7 @@ export default function ConsultantProfilePage() {
               </h2>
 
               <p className="mt-3 max-w-3xl text-base leading-8 text-slate-700 md:text-lg md:leading-9">
-                혁신과 자본, 공공가치를 연결, 자산을 유산으로 지속가능한 신뢰구조를 설계하는 전략가
+                혁신과 자본, 공공가치를 연결, 자산을 유산으로 지속가능한 신뢰구조를 설계하는 에코피온 전략가
               </p>
             </div>
 
@@ -208,14 +206,14 @@ export default function ConsultantProfilePage() {
                   <div className="flex min-h-[520px] flex-1 items-center justify-center overflow-hidden rounded-[28px] bg-[#0f2238] lg:min-h-0">
                     <img
                       src="/images/consultant-profile.png"
-                      alt="박기현 대표 에코피언"
+                      alt="박기현 대표 에코피온"
                       className="h-full w-full object-contain object-center"
                     />
                   </div>
 
                   <div className="shrink-0 px-4 py-6 md:px-6 md:py-7">
                     <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[#C9A96B]">
-                      Biography
+                      LEAD ECO-PION
                     </div>
 
                     <h3 className="mt-3 text-2xl font-bold tracking-[-0.035em] text-[#0B1F35] md:text-3xl">
@@ -245,7 +243,7 @@ export default function ConsultantProfilePage() {
               <div className="flex h-full min-h-0 flex-col gap-8 pt-1 md:pt-2 lg:pt-0">
                 <div className="shrink-0">
                   <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#C9A96B]">
-                    Biography
+                    Heritage Architect
                   </div>
                   <h3 className="mt-3 text-3xl font-bold leading-tight tracking-[-0.04em] text-[#0B1F35] md:text-5xl">
                     제도와 구조를 만들고,
@@ -332,7 +330,7 @@ export default function ConsultantProfilePage() {
                         칼럼
                       </div>
                       <p className="mt-4 text-sm leading-7 text-slate-600">
-                        시대의 본질과 민주주의, 공공 리더십을 다룬 대표 칼럼입니다.
+                        
                       </p>
                     </div>
 
@@ -346,7 +344,7 @@ export default function ConsultantProfilePage() {
                           className="block px-6 py-6 transition-colors duration-300 hover:bg-[#faf8f4] md:px-7"
                         >
                           <div className="text-sm font-bold uppercase tracking-[0.2em] text-[#d61f4f]">
-                            칼럼
+                           
                           </div>
                           <h4 className="mt-2 text-xl font-bold leading-snug tracking-[-0.03em] text-[#0B1F35] md:text-2xl">
                             {item.title}
@@ -415,7 +413,7 @@ export default function ConsultantProfilePage() {
                     <br />
                     사람과 제도를 연결하는
                     <br />
-                    신뢰 구축 설계자
+                    신뢰구축 설계
                   </h3>
 
                   <p className="mt-7 text-base leading-8 text-slate-300 md:text-lg">
@@ -452,12 +450,12 @@ export default function ConsultantProfilePage() {
                 </div>
 
                 <h2 className="mt-5 text-3xl font-bold leading-tight tracking-[-0.04em] text-[#0B1F35] md:text-5xl">
-                  전문 컨설팅 영역
+                  Eco-pion 영역
                 </h2>
 
                 <p className="mt-6 text-base leading-8 text-slate-600 md:text-lg">
-                  조직의 철학·제도·자본·브랜드·국제협력을
-                  통합적으로 연결하는 구조 설계형 컨설팅을 지향합니다.
+                  Eco-pion은 고귀한 삶을 지키고 가꾸는 사람들입니다.
+경제(Eco-nomy)를 삶의 수단으로, 생태(Eco-logy)를 생명의 본질로 이해하고, 이를 Pio의 경건함과 책임으로 하나의 가치로 묶어냅니다. AI시대의 Eco-pion은 자연과 인류의 생명 가치를 지키며, 생태·기술·경제·정신의 균형을 설계하는 지속가능한 문명을 설계하는 직업입니다.
                 </p>
               </div>
 
@@ -502,7 +500,7 @@ export default function ConsultantProfilePage() {
             <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-slate-300 md:text-lg">
               학교와 병원, 미술관과 박물관 같은 공익적 기반 위에 사회적 기업의 혁신을 더하고,
               정교한 브랜딩으로 고유의 헤리티지를 정립하고, 시대를 불문하는 존재 가치를 증명합니다.
-              국경을 넘는 공공 협력 프로젝트를 통해 한 사람의 비전이 세계적인 영향력으로 이어지도록 가치를 설계합니다.
+              국경을 넘는 공공 협력 프로젝트를 통해 한 사람의 비전이 세계적인 영향력으로 이어지도록 에코피온의 가치를 설계합니다.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -524,7 +522,7 @@ export default function ConsultantProfilePage() {
           "사회적기업설립",
           "브랜딩서비스",
           "헤리티지오피스",
-          "에코피언",
+          "에코피온",
         ]}
       />
     </div>
