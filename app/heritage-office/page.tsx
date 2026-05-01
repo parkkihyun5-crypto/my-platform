@@ -8,7 +8,8 @@ import UnifiedCard from "@/components/UnifiedCard";
 import FormInput from "@/components/FormInput";
 import FormTextarea from "@/components/FormTextarea";
 import { submitInquiry } from "@/lib/inquiry-client";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import type { FormEvent, MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type InquiryFormState = {
   organization: string;
@@ -247,23 +248,60 @@ export default function HeritageOfficePage() {
     });
   }
 
-  function handleEmailInquiryClick(): void {
-    const isMobile =
-      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        window.navigator.userAgent
-      );
+  function handleEmailInquiryClick(
+  event: MouseEvent<HTMLButtonElement>
+): void {
+  event.preventDefault();
+  event.stopPropagation();
 
-    if (isMobile) {
-      window.location.href = mailtoHref;
-      return;
-    }
+  const isMobile =
+    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      window.navigator.userAgent
+    );
 
-    const opened = window.open(gmailComposeHref, "_blank", "noopener,noreferrer");
-
-    if (!opened) {
-      window.location.href = gmailComposeHref;
-    }
+  if (isMobile) {
+    window.location.href = mailtoHref;
+    return;
   }
+
+  const popupWidth = 760;
+  const popupHeight = 760;
+
+  const left = Math.max(
+    0,
+    window.screenX + (window.outerWidth - popupWidth) / 2
+  );
+
+  const top = Math.max(
+    0,
+    window.screenY + (window.outerHeight - popupHeight) / 2
+  );
+
+  const popup = window.open(
+    gmailComposeHref,
+    "npolapGmailInquiryWindow",
+    [
+      "popup=yes",
+      `width=${popupWidth}`,
+      `height=${popupHeight}`,
+      `left=${Math.round(left)}`,
+      `top=${Math.round(top)}`,
+      "resizable=yes",
+      "scrollbars=yes",
+      "noopener=yes",
+      "noreferrer=yes",
+    ].join(",")
+  );
+
+  if (popup) {
+    popup.focus();
+    return;
+  }
+
+  window.alert(
+    "팝업이 차단되어 Gmail 작성창을 열 수 없습니다. 브라우저의 팝업 차단을 해제한 뒤 다시 시도해 주세요."
+  );
+}
 
   async function handleInquirySubmit(
     e: FormEvent<HTMLFormElement>
@@ -834,12 +872,12 @@ export default function HeritageOfficePage() {
                   </button>
 
                   <button
-                    type="button"
-                    onClick={handleEmailInquiryClick}
-                    className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-[#0B1F35] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50"
-                  >
-                    이메일로 문의하기
-                  </button>
+  type="button"
+  onClick={handleEmailInquiryClick}
+  className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-[#0B1F35] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50"
+>
+  이메일로 문의하기
+</button>
                 </div>
               </form>
             </div>
