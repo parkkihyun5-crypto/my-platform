@@ -164,6 +164,7 @@ export default function AdminPage() {
           ...selectedItem,
           ...fields,
         };
+
         setSelectedItem(updated);
         setDetailMemo(updated.memo || "");
       }
@@ -234,7 +235,9 @@ export default function AdminPage() {
       return;
     }
 
-    const subject = `[NPOLAP 상담 안내] ${item.organization || item.name || "문의"} 관련 안내드립니다.`;
+    const subject = `[NPOLAP 상담 안내] ${
+      item.organization || item.name || "문의"
+    } 관련 안내드립니다.`;
 
     const body = [
       `${item.name || "고객"}님, 안녕하세요.`,
@@ -259,8 +262,15 @@ export default function AdminPage() {
     const popupWidth = 820;
     const popupHeight = 760;
 
-    const left = Math.max(0, window.screenX + (window.outerWidth - popupWidth) / 2);
-    const top = Math.max(0, window.screenY + (window.outerHeight - popupHeight) / 2);
+    const left = Math.max(
+      0,
+      window.screenX + (window.outerWidth - popupWidth) / 2
+    );
+
+    const top = Math.max(
+      0,
+      window.screenY + (window.outerHeight - popupHeight) / 2
+    );
 
     const popup = window.open(
       gmailUrl,
@@ -280,6 +290,108 @@ export default function AdminPage() {
       popup.focus();
     } else {
       alert("팝업이 차단되었습니다. 브라우저 팝업 차단을 해제해 주세요.");
+    }
+  }
+
+  async function openProposalEmail(item: InquiryItem) {
+    const email = item.email?.trim();
+
+    if (!email) {
+      alert("이메일 주소가 없는 문의입니다.");
+      return;
+    }
+
+    const subject = `[NPOLAP 견적 안내] ${
+      item.organization || item.name || "문의"
+    } 관련 견적 안내드립니다.`;
+
+    const body = [
+      `${item.name || "고객"}님, 안녕하세요.`,
+      "",
+      "NPOLAP 문의를 남겨주셔서 감사합니다.",
+      "",
+      "남겨주신 내용을 기준으로 아래와 같이 상담 및 견적 방향을 안내드립니다.",
+      "",
+      "────────────────────",
+      "■ 문의 정보",
+      `기관명: ${item.organization || "-"}`,
+      `담당자명: ${item.name || "-"}`,
+      `연락처: ${item.phone || "-"}`,
+      `이메일: ${item.email || "-"}`,
+      `서비스유형: ${item.serviceType || "-"}`,
+      "",
+      "■ 견적 안내",
+      "1. 기본 진단 및 상담",
+      "2. 구조 설계 방향 정리",
+      "3. 실행 범위 및 일정 협의",
+      "4. 세부 견적서 별도 제공",
+      "",
+      "※ 정확한 견적은 상담 범위, 자료 검토, 실행 난이도에 따라 조정될 수 있습니다.",
+      "────────────────────",
+      "",
+      "검토 후 회신 주시면 다음 단계 상담 일정을 조율드리겠습니다.",
+      "",
+      "감사합니다.",
+      "",
+      "International Leaders Union",
+      "NPOLAP 상담팀",
+    ].join("\n");
+
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+      email
+    )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    const popupWidth = 860;
+    const popupHeight = 780;
+
+    const left = Math.max(
+      0,
+      window.screenX + (window.outerWidth - popupWidth) / 2
+    );
+
+    const top = Math.max(
+      0,
+      window.screenY + (window.outerHeight - popupHeight) / 2
+    );
+
+    const popup = window.open(
+      gmailUrl,
+      "npolapProposalEmailWindow",
+      [
+        "popup=yes",
+        `width=${popupWidth}`,
+        `height=${popupHeight}`,
+        `left=${Math.round(left)}`,
+        `top=${Math.round(top)}`,
+        "resizable=yes",
+        "scrollbars=yes",
+      ].join(",")
+    );
+
+    if (!popup) {
+      alert("팝업이 차단되었습니다. 브라우저 팝업 차단을 해제해 주세요.");
+      return;
+    }
+
+    popup.focus();
+
+    const changeStatus = window.confirm(
+      "견적 메일 작성창을 열었습니다.\n이 문의 상태를 '견적발송'으로 변경하시겠습니까?"
+    );
+
+    if (changeStatus) {
+      await updateStatus(item.id, "proposal");
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await fetch("/api/admin-logout", {
+        method: "POST",
+        cache: "no-store",
+      });
+    } finally {
+      window.location.href = "/admin-login";
     }
   }
 
@@ -396,6 +508,7 @@ export default function AdminPage() {
         statusFilter === "all" ? true : item.status === statusFilter;
 
       const itemPriority = item.priority || "none";
+
       const matchesPriority =
         priorityFilter === "all" ? true : itemPriority === priorityFilter;
 
@@ -447,6 +560,14 @@ export default function AdminPage() {
               className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-[#0B1F35] shadow-sm transition hover:shadow-md"
             >
               새로고침
+            </button>
+
+            <button
+              type="button"
+              onClick={() => void handleLogout()}
+              className="rounded-full border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-100"
+            >
+              로그아웃
             </button>
           </div>
         </div>
@@ -667,6 +788,7 @@ export default function AdminPage() {
               <DetailCard title="이메일" value={selectedItem.email} />
               <DetailCard title="유입페이지" value={selectedItem.sourcePage} />
               <DetailCard title="서비스유형" value={selectedItem.serviceType} />
+
               <DetailCard
                 title="상태"
                 value={
@@ -677,7 +799,10 @@ export default function AdminPage() {
               />
 
               <div className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] p-5">
-                <div className="text-sm font-semibold text-slate-500">담당자 배정</div>
+                <div className="text-sm font-semibold text-slate-500">
+                  담당자 배정
+                </div>
+
                 <select
                   value={selectedItem.manager || ""}
                   onChange={(e) =>
@@ -697,7 +822,10 @@ export default function AdminPage() {
               </div>
 
               <div className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] p-5">
-                <div className="text-sm font-semibold text-slate-500">우선순위</div>
+                <div className="text-sm font-semibold text-slate-500">
+                  우선순위
+                </div>
+
                 <select
                   value={selectedItem.priority || "none"}
                   onChange={(e) =>
@@ -775,13 +903,21 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="grid gap-3 md:col-span-2 md:grid-cols-2">
+              <div className="grid gap-3 md:col-span-2 md:grid-cols-3">
                 <button
                   type="button"
                   onClick={() => openEmailToCustomer(selectedItem)}
                   className="rounded-full border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
                 >
                   고객에게 이메일 보내기
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => void openProposalEmail(selectedItem)}
+                  className="rounded-full border border-violet-200 bg-violet-50 px-5 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-100"
+                >
+                  견적발송 메일 보내기
                 </button>
 
                 <button
@@ -823,6 +959,7 @@ function SummaryCard({
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
       <div className="text-sm font-semibold text-slate-500">{title}</div>
+
       <div className={`mt-3 text-3xl font-bold ${colorMap[tone]}`}>
         {value}
       </div>
@@ -879,6 +1016,7 @@ function DetailCard({ title, value }: { title: string; value?: string }) {
   return (
     <div className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] p-5">
       <div className="text-sm font-semibold text-slate-500">{title}</div>
+
       <div className="mt-2 break-all text-lg font-bold text-[#0B1F35]">
         {value || "-"}
       </div>
@@ -888,6 +1026,8 @@ function DetailCard({ title, value }: { title: string; value?: string }) {
 
 function formatDate(value: string): string {
   const date = new Date(value);
+
   if (Number.isNaN(date.getTime())) return value || "-";
+
   return date.toLocaleString("ko-KR");
 }
