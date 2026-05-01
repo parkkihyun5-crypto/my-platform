@@ -14,6 +14,9 @@ type InquiryItem = {
   sourcePage: string;
   serviceType: string;
   status: string;
+  manager?: string;
+  priority?: string;
+  memo?: string;
 };
 
 const statusOptions = ["new", "consulting", "proposal", "contract"];
@@ -25,14 +28,30 @@ const statusLabel: Record<string, string> = {
   contract: "계약완료",
 };
 
+const priorityOptions = ["none", "low", "normal", "high", "urgent"];
+
+const priorityLabel: Record<string, string> = {
+  none: "미지정",
+  low: "낮음",
+  normal: "보통",
+  high: "높음",
+  urgent: "긴급",
+};
+
+const managerOptions = ["", "박기현", "관리자", "상담담당", "브랜딩담당"];
+
 export default function AdminPage() {
   const [items, setItems] = useState<InquiryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
   const [selectedItem, setSelectedItem] = useState<InquiryItem | null>(null);
   const [lastUpdated, setLastUpdated] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [savingFieldId, setSavingFieldId] = useState<string | null>(null);
+  const [detailMemo, setDetailMemo] = useState("");
 
   async function loadInquiries(showLoading = false) {
     try {
@@ -45,8 +64,6 @@ export default function AdminPage() {
       });
 
       const data = await res.json();
-
-      console.log("INQUIRY API RESULT:", data);
 
       if (!res.ok || data.ok === false) {
         setItems([]);
@@ -67,6 +84,8 @@ export default function AdminPage() {
 
   async function updateStatus(row: string, status: string) {
     try {
+      setSavingFieldId(row);
+
       const res = await fetch("/api/update-status", {
         method: "POST",
         headers: {
@@ -82,7 +101,9 @@ export default function AdminPage() {
         return;
       }
 
-      await loadInquiries(false);
+      setItems((prev) =>
+        prev.map((item) => (item.id === row ? { ...item, status } : item))
+      );
 
       if (selectedItem?.id === row) {
         setSelectedItem({
@@ -92,10 +113,69 @@ export default function AdminPage() {
       }
     } catch {
       alert("상태 변경 중 오류가 발생했습니다.");
+    } finally {
+      setSavingFieldId(null);
     }
   }
 
-  async function deleteInquiry(row: string) {
+  async function updateAdminFields(
+    row: string,
+    fields: {
+      manager?: string;
+      priority?: string;
+      memo?: string;
+    }
+  ) {
+    try {
+      setSavingFieldId(row);
+
+      const res = await fetch("/api/update-admin-fields", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+        body: JSON.stringify({
+          row,
+          ...fields,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        alert(data.message || "관리자 정보 저장에 실패했습니다.");
+        return;
+      }
+
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === row
+            ? {
+                ...item,
+                ...fields,
+              }
+            : item
+        )
+      );
+
+      if (selectedItem?.id === row) {
+        const updated = {
+          ...selectedItem,
+          ...fields,
+        };
+        setSelectedItem(updated);
+        setDetailMemo(updated.memo || "");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("관리자 정보 저장 중 오류가 발생했습니다.");
+    } finally {
+      setSavingFieldId(null);
+    }
+  }
+
+  async function moveToTrash(row: string) {
     const target = items.find((item) => item.id === row);
 
     const label = target
@@ -103,7 +183,7 @@ export default function AdminPage() {
       : "선택한 문의";
 
     const ok = window.confirm(
-      `[삭제 확인]\n\n${label}\n\n이 문의를 삭제하시겠습니까?\n삭제 후에는 복구할 수 없습니다.`
+      `[휴지통 이동 확인]\n\n${label}\n\n이 문의를 휴지통으로 이동하시겠습니까?\nGoogle Sheet의 원본 문의목록에서는 제거되고, 휴지통 시트와 삭제로그 시트에 기록됩니다.`
     );
 
     if (!ok) return;
@@ -117,13 +197,17 @@ export default function AdminPage() {
           "Content-Type": "application/json",
         },
         cache: "no-store",
-        body: JSON.stringify({ row }),
+        body: JSON.stringify({
+          row,
+          deletedBy: "admin",
+          deleteReason: "관리자 대시보드에서 휴지통 이동",
+        }),
       });
 
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
-        alert(data.message || "문의 삭제에 실패했습니다.");
+        alert(data.message || "문의 휴지통 이동에 실패했습니다.");
         return;
       }
 
@@ -136,10 +220,125 @@ export default function AdminPage() {
       await loadInquiries(false);
     } catch (error) {
       console.error(error);
-      alert("문의 삭제 중 오류가 발생했습니다.");
+      alert("문의 휴지통 이동 중 오류가 발생했습니다.");
     } finally {
       setDeletingId(null);
     }
+  }
+
+  function openEmailToCustomer(item: InquiryItem) {
+    const email = item.email?.trim();
+
+    if (!email) {
+      alert("이메일 주소가 없는 문의입니다.");
+      return;
+    }
+
+    const subject = `[NPOLAP 상담 안내] ${item.organization || item.name || "문의"} 관련 안내드립니다.`;
+
+    const body = [
+      `${item.name || "고객"}님, 안녕하세요.`,
+      "",
+      "NPOLAP 문의를 남겨주셔서 감사합니다.",
+      "",
+      `문의 서비스: ${item.serviceType || "-"}`,
+      `기관명: ${item.organization || "-"}`,
+      "",
+      "남겨주신 내용을 검토한 뒤 상담 일정을 안내드리겠습니다.",
+      "",
+      "감사합니다.",
+      "",
+      "International Leaders Union",
+      "NPOLAP 상담팀",
+    ].join("\n");
+
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+      email
+    )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    const popupWidth = 820;
+    const popupHeight = 760;
+
+    const left = Math.max(0, window.screenX + (window.outerWidth - popupWidth) / 2);
+    const top = Math.max(0, window.screenY + (window.outerHeight - popupHeight) / 2);
+
+    const popup = window.open(
+      gmailUrl,
+      "npolapCustomerEmailWindow",
+      [
+        "popup=yes",
+        `width=${popupWidth}`,
+        `height=${popupHeight}`,
+        `left=${Math.round(left)}`,
+        `top=${Math.round(top)}`,
+        "resizable=yes",
+        "scrollbars=yes",
+      ].join(",")
+    );
+
+    if (popup) {
+      popup.focus();
+    } else {
+      alert("팝업이 차단되었습니다. 브라우저 팝업 차단을 해제해 주세요.");
+    }
+  }
+
+  function downloadExcelCsv() {
+    const headers = [
+      "접수일시",
+      "기관명",
+      "담당자명",
+      "연락처",
+      "이메일",
+      "문의내용",
+      "유입페이지",
+      "서비스유형",
+      "상태",
+      "담당자",
+      "우선순위",
+      "관리자메모",
+    ];
+
+    const rows = filteredItems.map((item) => [
+      formatDate(item.createdAt),
+      item.organization || "",
+      item.name || "",
+      item.phone || "",
+      item.email || "",
+      item.message || "",
+      item.sourcePage || "",
+      item.serviceType || "",
+      statusLabel[item.status] || item.status || "신규",
+      item.manager || "",
+      priorityLabel[item.priority || "none"] || item.priority || "",
+      item.memo || "",
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((cell) => {
+            const value = String(cell ?? "").replace(/"/g, '""');
+            return `"${value}"`;
+          })
+          .join(",")
+      )
+      .join("\r\n");
+
+    const blob = new Blob(["\ufeff" + csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+
+    link.href = url;
+    link.download = `NPOLAP_문의목록_${date}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   useEffect(() => {
@@ -164,27 +363,45 @@ export default function AdminPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (selectedItem) {
+      setDetailMemo(selectedItem.memo || "");
+    }
+  }, [selectedItem]);
+
   const filteredItems = useMemo(() => {
     const q = keyword.trim().toLowerCase();
 
-    if (!q) return items;
+    return items.filter((item) => {
+      const matchesKeyword = !q
+        ? true
+        : [
+            item.organization,
+            item.name,
+            item.phone,
+            item.email,
+            item.message,
+            item.sourcePage,
+            item.serviceType,
+            item.status,
+            item.manager,
+            item.priority,
+            item.memo,
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(q);
 
-    return items.filter((item) =>
-      [
-        item.organization,
-        item.name,
-        item.phone,
-        item.email,
-        item.message,
-        item.sourcePage,
-        item.serviceType,
-        item.status,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(q)
-    );
-  }, [items, keyword]);
+      const matchesStatus =
+        statusFilter === "all" ? true : item.status === statusFilter;
+
+      const itemPriority = item.priority || "none";
+      const matchesPriority =
+        priorityFilter === "all" ? true : itemPriority === priorityFilter;
+
+      return matchesKeyword && matchesStatus && matchesPriority;
+    });
+  }, [items, keyword, statusFilter, priorityFilter]);
 
   const summary = useMemo(() => {
     return {
@@ -198,7 +415,7 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-[#F6F3EE] px-6 py-10 text-slate-900 md:px-10">
-      <div className="mx-auto max-w-[1500px]">
+      <div className="mx-auto max-w-[1700px]">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C9A96B]">
@@ -215,13 +432,23 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => void loadInquiries(true)}
-            className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-[#0B1F35] shadow-sm transition hover:shadow-md"
-          >
-            새로고침
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={downloadExcelCsv}
+              className="rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-100"
+            >
+              엑셀 다운로드
+            </button>
+
+            <button
+              type="button"
+              onClick={() => void loadInquiries(true)}
+              className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-[#0B1F35] shadow-sm transition hover:shadow-md"
+            >
+              새로고침
+            </button>
+          </div>
         </div>
 
         {errorMessage ? (
@@ -239,19 +466,47 @@ export default function AdminPage() {
         </div>
 
         <section className="mt-8 rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <h2 className="text-lg font-bold text-[#0B1F35]">문의 목록</h2>
 
-            <input
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="기관명, 이름, 연락처, 이메일, 문의내용 검색"
-              className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0B1F35] md:w-[420px]"
-            />
+            <div className="grid gap-3 md:grid-cols-[1fr_180px_180px] xl:w-[900px]">
+              <input
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="기관명, 이름, 연락처, 이메일, 문의내용 검색"
+                className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0B1F35]"
+              />
+
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#0B1F35]"
+              >
+                <option value="all">전체 상태</option>
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {statusLabel[status]}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+                className="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#0B1F35]"
+              >
+                <option value="all">전체 우선순위</option>
+                {priorityOptions.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {priorityLabel[priority]}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="mt-6 overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-y-3">
+            <table className="min-w-[1550px] border-separate border-spacing-y-3">
               <thead>
                 <tr className="text-left text-sm text-slate-500">
                   <th className="px-4 py-2 font-semibold">접수일시</th>
@@ -262,8 +517,10 @@ export default function AdminPage() {
                   <th className="px-4 py-2 font-semibold">서비스유형</th>
                   <th className="px-4 py-2 font-semibold">상태</th>
                   <th className="px-4 py-2 font-semibold">상태변경</th>
+                  <th className="px-4 py-2 font-semibold">담당자</th>
+                  <th className="px-4 py-2 font-semibold">우선순위</th>
                   <th className="px-4 py-2 font-semibold">상세</th>
-                  <th className="px-4 py-2 font-semibold">삭제</th>
+                  <th className="px-4 py-2 font-semibold">휴지통</th>
                 </tr>
               </thead>
 
@@ -271,7 +528,7 @@ export default function AdminPage() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={12}
                       className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] px-4 py-10 text-center text-sm text-slate-500"
                     >
                       불러오는 중입니다.
@@ -280,7 +537,7 @@ export default function AdminPage() {
                 ) : filteredItems.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={12}
                       className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] px-4 py-10 text-center text-sm text-slate-500"
                     >
                       표시할 문의가 없습니다.
@@ -301,14 +558,54 @@ export default function AdminPage() {
                       <TableCell>
                         <select
                           value={item.status || "new"}
+                          disabled={savingFieldId === item.id}
                           onChange={(e) =>
                             void updateStatus(item.id, e.target.value)
                           }
-                          className="rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
+                          className="rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-60"
                         >
                           {statusOptions.map((status) => (
                             <option key={status} value={status}>
                               {statusLabel[status]}
+                            </option>
+                          ))}
+                        </select>
+                      </TableCell>
+                      <TableCell>
+                        <select
+                          value={item.manager || ""}
+                          disabled={savingFieldId === item.id}
+                          onChange={(e) =>
+                            void updateAdminFields(item.id, {
+                              manager: e.target.value,
+                            })
+                          }
+                          className="rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-60"
+                        >
+                          <option value="">미지정</option>
+                          {managerOptions
+                            .filter(Boolean)
+                            .map((manager) => (
+                              <option key={manager} value={manager}>
+                                {manager}
+                              </option>
+                            ))}
+                        </select>
+                      </TableCell>
+                      <TableCell>
+                        <select
+                          value={item.priority || "none"}
+                          disabled={savingFieldId === item.id}
+                          onChange={(e) =>
+                            void updateAdminFields(item.id, {
+                              priority: e.target.value,
+                            })
+                          }
+                          className="rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-60"
+                        >
+                          {priorityOptions.map((priority) => (
+                            <option key={priority} value={priority}>
+                              {priorityLabel[priority]}
                             </option>
                           ))}
                         </select>
@@ -326,10 +623,10 @@ export default function AdminPage() {
                         <button
                           type="button"
                           disabled={deletingId === item.id}
-                          onClick={() => void deleteInquiry(item.id)}
+                          onClick={() => void moveToTrash(item.id)}
                           className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          {deletingId === item.id ? "삭제 중..." : "삭제"}
+                          {deletingId === item.id ? "이동 중..." : "휴지통"}
                         </button>
                       </TableCell>
                     </tr>
@@ -343,7 +640,7 @@ export default function AdminPage() {
 
       {selectedItem && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4 py-10">
-          <div className="max-h-[90vh] w-full max-w-[820px] overflow-y-auto rounded-[32px] border border-slate-200 bg-white p-6 shadow-2xl md:p-8">
+          <div className="max-h-[90vh] w-full max-w-[920px] overflow-y-auto rounded-[32px] border border-slate-200 bg-white p-6 shadow-2xl md:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C9A96B]">
@@ -379,6 +676,45 @@ export default function AdminPage() {
                 }
               />
 
+              <div className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] p-5">
+                <div className="text-sm font-semibold text-slate-500">담당자 배정</div>
+                <select
+                  value={selectedItem.manager || ""}
+                  onChange={(e) =>
+                    void updateAdminFields(selectedItem.id, {
+                      manager: e.target.value,
+                    })
+                  }
+                  className="mt-3 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700"
+                >
+                  <option value="">미지정</option>
+                  {managerOptions.filter(Boolean).map((manager) => (
+                    <option key={manager} value={manager}>
+                      {manager}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] p-5">
+                <div className="text-sm font-semibold text-slate-500">우선순위</div>
+                <select
+                  value={selectedItem.priority || "none"}
+                  onChange={(e) =>
+                    void updateAdminFields(selectedItem.id, {
+                      priority: e.target.value,
+                    })
+                  }
+                  className="mt-3 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700"
+                >
+                  {priorityOptions.map((priority) => (
+                    <option key={priority} value={priority}>
+                      {priorityLabel[priority]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="rounded-[24px] border border-slate-200 bg-white p-5 md:col-span-2">
                 <div className="text-sm font-semibold text-slate-500">
                   문의 내용
@@ -386,6 +722,33 @@ export default function AdminPage() {
 
                 <div className="mt-3 whitespace-pre-wrap break-words text-sm leading-8 text-slate-700 md:text-base">
                   {selectedItem.message || "-"}
+                </div>
+              </div>
+
+              <div className="rounded-[24px] border border-slate-200 bg-white p-5 md:col-span-2">
+                <div className="text-sm font-semibold text-slate-500">
+                  관리자 메모
+                </div>
+
+                <textarea
+                  value={detailMemo}
+                  onChange={(e) => setDetailMemo(e.target.value)}
+                  placeholder="상담 진행 내용, 후속 조치, 특이사항 등을 기록하세요."
+                  className="mt-3 min-h-[130px] w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm leading-7 text-slate-700 outline-none transition focus:border-[#0B1F35]"
+                />
+
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void updateAdminFields(selectedItem.id, {
+                        memo: detailMemo,
+                      })
+                    }
+                    className="rounded-full border border-[#0B1F35] bg-[#0B1F35] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163556]"
+                  >
+                    메모 저장
+                  </button>
                 </div>
               </div>
 
@@ -412,23 +775,24 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="rounded-[24px] border border-rose-200 bg-rose-50 p-5 md:col-span-2">
-                <div className="text-sm font-semibold text-rose-700">
-                  문의 삭제
-                </div>
-
-                <p className="mt-2 text-sm leading-7 text-rose-700/80">
-                  이 문의를 삭제하면 문의 목록에서 제거됩니다. 삭제 후 복구가
-                  필요하면 Google Sheet 백업 또는 버전 기록을 확인해야 합니다.
-                </p>
+              <div className="grid gap-3 md:col-span-2 md:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => openEmailToCustomer(selectedItem)}
+                  className="rounded-full border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+                >
+                  고객에게 이메일 보내기
+                </button>
 
                 <button
                   type="button"
                   disabled={deletingId === selectedItem.id}
-                  onClick={() => void deleteInquiry(selectedItem.id)}
-                  className="mt-4 rounded-full border border-rose-300 bg-white px-5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  onClick={() => void moveToTrash(selectedItem.id)}
+                  className="rounded-full border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {deletingId === selectedItem.id ? "삭제 중..." : "이 문의 삭제"}
+                  {deletingId === selectedItem.id
+                    ? "휴지통 이동 중..."
+                    : "이 문의 휴지통 이동"}
                 </button>
               </div>
             </div>

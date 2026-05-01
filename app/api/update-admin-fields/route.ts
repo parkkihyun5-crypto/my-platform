@@ -2,8 +2,8 @@
 
 function getGoogleSheetWebhookUrl() {
   return (
-    process.env.GOOGLE_SCRIPT_URL ||
     process.env.GOOGLE_SHEET_WEBHOOK_URL ||
+    process.env.GOOGLE_SCRIPT_URL ||
     process.env.GOOGLE_APPS_SCRIPT_URL ||
     process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL ||
     process.env.APPS_SCRIPT_URL ||
@@ -14,13 +14,14 @@ function getGoogleSheetWebhookUrl() {
 
 export async function POST(req: Request) {
   try {
-    const { row, deletedBy, deleteReason } = await req.json();
+    const body = await req.json();
+    const { row, manager, priority, memo } = body;
 
     if (!row) {
       return NextResponse.json(
         {
           ok: false,
-          message: "휴지통으로 이동할 문의 행 정보가 없습니다.",
+          message: "관리자 정보를 저장할 문의 행 정보가 없습니다.",
         },
         { status: 400 }
       );
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
         {
           ok: false,
           message:
-            "GOOGLE_SCRIPT_URL 또는 GOOGLE_SHEET_WEBHOOK_URL 환경변수가 없습니다.",
+            "Google Sheet Webhook URL 환경변수가 없습니다. Vercel 환경변수 또는 .env.local을 확인하세요.",
         },
         { status: 500 }
       );
@@ -45,10 +46,11 @@ export async function POST(req: Request) {
         "Content-Type": "text/plain;charset=utf-8",
       },
       body: JSON.stringify({
-        action: "deleteInquiry",
+        action: "updateAdminFields",
         row,
-        deletedBy: deletedBy || "admin",
-        deleteReason: deleteReason || "관리자 대시보드에서 휴지통 이동",
+        manager,
+        priority,
+        memo,
       }),
       cache: "no-store",
     });
@@ -58,7 +60,6 @@ export async function POST(req: Request) {
     let data: {
       ok?: boolean;
       message?: string;
-      row?: number | string;
       [key: string]: unknown;
     };
 
@@ -79,7 +80,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           ok: false,
-          message: data.message || "Google Apps Script에서 휴지통 이동에 실패했습니다.",
+          message: data.message || "관리자 정보 저장에 실패했습니다.",
           raw: data,
         },
         { status: 500 }
@@ -88,16 +89,15 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true,
-      message: data.message || "문의가 휴지통으로 이동되었습니다.",
-      row: data.row || row,
+      message: data.message || "관리자 정보가 저장되었습니다.",
     });
   } catch (error) {
-    console.error("DELETE INQUIRY API ERROR:", error);
+    console.error("UPDATE ADMIN FIELDS API ERROR:", error);
 
     return NextResponse.json(
       {
         ok: false,
-        message: "문의 휴지통 이동 API 처리 중 오류가 발생했습니다.",
+        message: "관리자 정보 저장 API 처리 중 오류가 발생했습니다.",
       },
       { status: 500 }
     );

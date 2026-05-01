@@ -1,108 +1,85 @@
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+function getGoogleSheetWebhookUrl() {
+  return (
+    process.env.GOOGLE_SHEET_WEBHOOK_URL ||
+    process.env.GOOGLE_SCRIPT_URL ||
+    process.env.GOOGLE_APPS_SCRIPT_URL ||
+    process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL ||
+    process.env.APPS_SCRIPT_URL ||
+    process.env.INQUIRY_SCRIPT_URL ||
+    ""
+  );
+}
 
-export async function GET(): Promise<Response> {
+export async function GET() {
   try {
-    const webhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+    const webhookUrl = getGoogleSheetWebhookUrl();
 
     if (!webhookUrl) {
-      return NextResponse.json({
-        ok: false,
-        items: [],
-        message: "GOOGLE_SHEET_WEBHOOK_URL 환경변수가 없습니다.",
-      });
+      return NextResponse.json(
+        {
+          ok: false,
+          items: [],
+          message:
+            "GOOGLE_SHEET_WEBHOOK_URL 환경변수가 없습니다. Vercel 환경변수 또는 .env.local을 확인하세요.",
+        },
+        { status: 500 }
+      );
     }
 
-    const response = await fetch(webhookUrl, {
+    const res = await fetch(`${webhookUrl}?t=${Date.now()}`, {
       method: "GET",
       cache: "no-store",
     });
 
-    const text = await response.text();
-    const data = JSON.parse(text);
+    const text = await res.text();
+
+    let data: {
+      ok?: boolean;
+      items?: unknown[];
+      message?: string;
+      [key: string]: unknown;
+    };
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return NextResponse.json(
+        {
+          ok: false,
+          items: [],
+          message: "Google Apps Script 응답을 JSON으로 해석하지 못했습니다.",
+          raw: text,
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!res.ok || data.ok === false) {
+      return NextResponse.json(
+        {
+          ok: false,
+          items: [],
+          message: data.message || "Google Sheet 조회 실패",
+          raw: data,
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       ok: true,
       items: Array.isArray(data.items) ? data.items : [],
-      raw: data,
     });
   } catch (error) {
-    return NextResponse.json({
-      ok: false,
-      items: [],
-      message: "Google Sheet 조회 실패",
-      detail: error instanceof Error ? error.message : String(error),
-    });
-  }
-}
+    console.error("INQUIRY GET API ERROR:", error);
 
-export async function POST(request: Request): Promise<Response> {
-  try {
-    const webhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL;
-    const token = process.env.GOOGLE_SHEET_SECRET_TOKEN || "npolap-2026";
-
-    if (!webhookUrl) {
-      return NextResponse.json(
-        {
-          ok: false,
-          message: "GOOGLE_SHEET_WEBHOOK_URL 환경변수가 없습니다.",
-        },
-        { status: 500 }
-      );
-    }
-
-    const body = await request.json();
-
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8",
-      },
-      body: JSON.stringify({
-        token,
-        organization: body.organization ?? "",
-        name: body.name ?? "",
-        phone: body.phone ?? "",
-        email: body.email ?? "",
-        message: body.message ?? "",
-        sourcePage: body.sourcePage ?? "",
-        serviceType: body.serviceType ?? "",
-      }),
-    });
-
-    const text = await response.text();
-
-    let result: any;
-    try {
-      result = JSON.parse(text);
-    } catch {
-      result = { ok: false, message: "Apps Script 응답이 JSON이 아닙니다.", raw: text };
-    }
-
-    if (!response.ok || result.ok === false) {
-      return NextResponse.json(
-        {
-          ok: false,
-          message: result.message || result.error || "Google Sheet 저장 실패",
-          detail: result,
-        },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      ok: true,
-      message: "문의가 정상 접수되었습니다.",
-      result,
-    });
-  } catch (error) {
     return NextResponse.json(
       {
         ok: false,
-        message: "문의 접수 중 서버 오류",
-        detail: error instanceof Error ? error.message : String(error),
+        items: [],
+        message: "Google Sheet 조회 실패",
       },
       { status: 500 }
     );
