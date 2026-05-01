@@ -1,5 +1,5 @@
 "use client";
-
+import { siteMenuItems } from "@/lib/site-menu";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -317,18 +317,38 @@ export default function SocialEnterprisePage() {
   return (
     <div className="min-h-screen bg-[#F6F3EE] text-slate-900">
       <SiteHeader
-        mode="sub"
-        logoText="NPOLAP"
-        logoHref="/"
-        inquiryHref="#contact"
-        menuItems={[
-          { label: "공익법인설립", href: "/public-interest-foundation", isLink: true },
-          { label: "사회적기업설립", href: "/social-enterprise", isLink: true },
-          { label: "브랜딩서비스", href: "/branding", isLink: true },
-          { label: "헤리티지오피스", href: "/heritage-office", isLink: true },
-          { label: "에코피온", href: "/heritage-office", isLink: true },
-        ]}
-      />
+  mode="sub"
+  logoText="SOCIAL ENTERPRISE"
+  logoHref="/heritage-office"
+  inquiryHref="#contact"
+  menuItems={[
+    {
+      label: "공익법인설립",
+      href: "/public-interest-foundation",
+      isLink: true,
+    },
+    {
+      label: "사회적기업설립",
+      href: "/social-enterprise",
+      isLink: true,
+    },
+    {
+      label: "브랜딩서비스",
+      href: "/branding",
+      isLink: true,
+    },
+    {
+      label: "헤리티지오피스",
+      href: "/heritage-office",
+      isLink: true,
+    },
+    {
+      label: "에코피온",
+      href: "/consultant-profile",
+      isLink: true,
+    },
+  ]}
+/>
 
       <main>
         <section

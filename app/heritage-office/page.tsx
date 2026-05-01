@@ -1,5 +1,6 @@
 "use client";
 
+import { siteMenuItems } from "@/lib/site-menu";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import SectionTitle from "@/components/SectionTitle";
@@ -139,12 +140,14 @@ export default function HeritageOfficePage() {
 
   const legacyFilmRef = useRef<HTMLElement | null>(null);
 
-  const mailtoHref = useMemo(() => {
-    const subject = `[헤리티지오피스 문의] ${
-      form.organization || "기관명 미입력"
-    }`;
+  const emailTo = "npolap@ilukorea.org";
 
-    const body = [
+  const emailSubject = useMemo(() => {
+    return `[헤리티지오피스 문의] ${form.organization || "기관명 미입력"}`;
+  }, [form.organization]);
+
+  const emailBody = useMemo(() => {
+    return [
       "안녕하세요. 헤리티지오피스 관련 문의를 드립니다.",
       "",
       `기관명: ${form.organization}`,
@@ -155,11 +158,21 @@ export default function HeritageOfficePage() {
       "문의 내용:",
       form.message || "(내용 미입력)",
     ].join("\n");
-
-    return `mailto:npolap@ilukorea.org?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
   }, [form]);
+
+  const mailtoHref = useMemo(() => {
+    return `mailto:${emailTo}?subject=${encodeURIComponent(
+      emailSubject
+    )}&body=${encodeURIComponent(emailBody)}`;
+  }, [emailSubject, emailBody]);
+
+  const gmailComposeHref = useMemo(() => {
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+      emailTo
+    )}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(
+      emailBody
+    )}`;
+  }, [emailSubject, emailBody]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -232,6 +245,24 @@ export default function HeritageOfficePage() {
       top: targetPosition,
       behavior: "smooth",
     });
+  }
+
+  function handleEmailInquiryClick(): void {
+    const isMobile =
+      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        window.navigator.userAgent
+      );
+
+    if (isMobile) {
+      window.location.href = mailtoHref;
+      return;
+    }
+
+    const opened = window.open(gmailComposeHref, "_blank", "noopener,noreferrer");
+
+    if (!opened) {
+      window.location.href = gmailComposeHref;
+    }
   }
 
   async function handleInquirySubmit(
@@ -802,12 +833,13 @@ export default function HeritageOfficePage() {
                     {isSubmitting ? "접수 중..." : "문의 접수하기"}
                   </button>
 
-                  <a
-                    href={mailtoHref}
+                  <button
+                    type="button"
+                    onClick={handleEmailInquiryClick}
                     className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-[#0B1F35] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50"
                   >
                     이메일로 문의하기
-                  </a>
+                  </button>
                 </div>
               </form>
             </div>

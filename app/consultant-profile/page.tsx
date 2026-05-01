@@ -1,3 +1,4 @@
+import { siteMenuItems } from "@/lib/site-menu";
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";

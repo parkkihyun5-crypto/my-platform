@@ -1,5 +1,5 @@
 "use client";
-
+import { siteMenuItems } from "@/lib/site-menu";
 import { FormEvent, useMemo, useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -295,19 +295,38 @@ export default function PublicInterestFoundationPage() {
   return (
     <div className="min-h-screen bg-[#f6f3ee] text-slate-900">
       <SiteHeader
-        mode="sub"
-        logoText="NPOLAP"
-        logoHref="/public-interest-foundation"
-        inquiryHref="#contact"
-        menuItems={[
-          { label: "공익법인설립", href: "/public-interest-foundation", isLink: true },
-          { label: "사회적기업설립", href: "/social-enterprise", isLink: true },
-          { label: "브랜딩서비스", href: "/branding", isLink: true },
-          { label: "헤리티지오피스", href: "/heritage-office", isLink: true },
-          { label: "에코피온", href: "/heritage-office", isLink: true },
-        ]}
-       
-      />
+  mode="sub"
+  logoText="PUBLIC INTEREST FOUNDATION"
+  logoHref="/heritage-office"
+  inquiryHref="#contact"
+  menuItems={[
+    {
+      label: "공익법인설립",
+      href: "/public-interest-foundation",
+      isLink: true,
+    },
+    {
+      label: "사회적기업설립",
+      href: "/social-enterprise",
+      isLink: true,
+    },
+    {
+      label: "브랜딩서비스",
+      href: "/branding",
+      isLink: true,
+    },
+    {
+      label: "헤리티지오피스",
+      href: "/heritage-office",
+      isLink: true,
+    },
+    {
+      label: "에코피온",
+      href: "/consultant-profile",
+      isLink: true,
+    },
+  ]}
+/>
 
       <main>
         <section className="relative h-[100vh] w-full overflow-hidden pt-24 md:pt-28">

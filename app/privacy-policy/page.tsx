@@ -1,5 +1,5 @@
 "use client";
-
+import { siteMenuItems } from "@/lib/site-menu";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
