@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 type InquiryItem = {
@@ -31,6 +32,7 @@ export default function AdminPage() {
   const [selectedItem, setSelectedItem] = useState<InquiryItem | null>(null);
   const [lastUpdated, setLastUpdated] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function loadInquiries(showLoading = false) {
     try {
@@ -90,6 +92,53 @@ export default function AdminPage() {
       }
     } catch {
       alert("상태 변경 중 오류가 발생했습니다.");
+    }
+  }
+
+  async function deleteInquiry(row: string) {
+    const target = items.find((item) => item.id === row);
+
+    const label = target
+      ? `${target.organization || "-"} / ${target.name || "-"}`
+      : "선택한 문의";
+
+    const ok = window.confirm(
+      `[삭제 확인]\n\n${label}\n\n이 문의를 삭제하시겠습니까?\n삭제 후에는 복구할 수 없습니다.`
+    );
+
+    if (!ok) return;
+
+    try {
+      setDeletingId(row);
+
+      const res = await fetch("/api/delete-inquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+        body: JSON.stringify({ row }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        alert(data.message || "문의 삭제에 실패했습니다.");
+        return;
+      }
+
+      setItems((prev) => prev.filter((item) => item.id !== row));
+
+      if (selectedItem?.id === row) {
+        setSelectedItem(null);
+      }
+
+      await loadInquiries(false);
+    } catch (error) {
+      console.error(error);
+      alert("문의 삭제 중 오류가 발생했습니다.");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -155,9 +204,11 @@ export default function AdminPage() {
             <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C9A96B]">
               Admin CRM
             </div>
+
             <h1 className="mt-3 text-3xl font-bold text-[#0B1F35] md:text-4xl">
               문의 관리 대시보드
             </h1>
+
             <p className="mt-3 text-sm text-slate-500">
               Google Sheet 문의 데이터를 5초마다 자동 갱신합니다.
               {lastUpdated ? ` 마지막 갱신: ${lastUpdated}` : ""}
@@ -212,6 +263,7 @@ export default function AdminPage() {
                   <th className="px-4 py-2 font-semibold">상태</th>
                   <th className="px-4 py-2 font-semibold">상태변경</th>
                   <th className="px-4 py-2 font-semibold">상세</th>
+                  <th className="px-4 py-2 font-semibold">삭제</th>
                 </tr>
               </thead>
 
@@ -219,7 +271,7 @@ export default function AdminPage() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={10}
                       className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] px-4 py-10 text-center text-sm text-slate-500"
                     >
                       불러오는 중입니다.
@@ -228,7 +280,7 @@ export default function AdminPage() {
                 ) : filteredItems.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={10}
                       className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] px-4 py-10 text-center text-sm text-slate-500"
                     >
                       표시할 문의가 없습니다.
@@ -249,7 +301,9 @@ export default function AdminPage() {
                       <TableCell>
                         <select
                           value={item.status || "new"}
-                          onChange={(e) => void updateStatus(item.id, e.target.value)}
+                          onChange={(e) =>
+                            void updateStatus(item.id, e.target.value)
+                          }
                           className="rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
                         >
                           {statusOptions.map((status) => (
@@ -259,13 +313,23 @@ export default function AdminPage() {
                           ))}
                         </select>
                       </TableCell>
-                      <TableCell last>
+                      <TableCell>
                         <button
                           type="button"
                           onClick={() => setSelectedItem(item)}
                           className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                         >
                           상세보기
+                        </button>
+                      </TableCell>
+                      <TableCell last>
+                        <button
+                          type="button"
+                          disabled={deletingId === item.id}
+                          onClick={() => void deleteInquiry(item.id)}
+                          className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {deletingId === item.id ? "삭제 중..." : "삭제"}
                         </button>
                       </TableCell>
                     </tr>
@@ -285,6 +349,7 @@ export default function AdminPage() {
                 <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C9A96B]">
                   Inquiry Detail
                 </div>
+
                 <h2 className="mt-3 text-3xl font-bold text-[#0B1F35]">
                   {selectedItem.organization || "-"}
                 </h2>
@@ -307,18 +372,28 @@ export default function AdminPage() {
               <DetailCard title="서비스유형" value={selectedItem.serviceType} />
               <DetailCard
                 title="상태"
-                value={statusLabel[selectedItem.status] || selectedItem.status || "신규"}
+                value={
+                  statusLabel[selectedItem.status] ||
+                  selectedItem.status ||
+                  "신규"
+                }
               />
 
               <div className="rounded-[24px] border border-slate-200 bg-white p-5 md:col-span-2">
-                <div className="text-sm font-semibold text-slate-500">문의 내용</div>
+                <div className="text-sm font-semibold text-slate-500">
+                  문의 내용
+                </div>
+
                 <div className="mt-3 whitespace-pre-wrap break-words text-sm leading-8 text-slate-700 md:text-base">
                   {selectedItem.message || "-"}
                 </div>
               </div>
 
               <div className="rounded-[24px] border border-slate-200 bg-white p-5 md:col-span-2">
-                <div className="text-sm font-semibold text-slate-500">상태 변경</div>
+                <div className="text-sm font-semibold text-slate-500">
+                  상태 변경
+                </div>
+
                 <div className="mt-4 flex flex-wrap gap-2">
                   {statusOptions.map((status) => (
                     <button
@@ -335,6 +410,26 @@ export default function AdminPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="rounded-[24px] border border-rose-200 bg-rose-50 p-5 md:col-span-2">
+                <div className="text-sm font-semibold text-rose-700">
+                  문의 삭제
+                </div>
+
+                <p className="mt-2 text-sm leading-7 text-rose-700/80">
+                  이 문의를 삭제하면 문의 목록에서 제거됩니다. 삭제 후 복구가
+                  필요하면 Google Sheet 백업 또는 버전 기록을 확인해야 합니다.
+                </p>
+
+                <button
+                  type="button"
+                  disabled={deletingId === selectedItem.id}
+                  onClick={() => void deleteInquiry(selectedItem.id)}
+                  className="mt-4 rounded-full border border-rose-300 bg-white px-5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {deletingId === selectedItem.id ? "삭제 중..." : "이 문의 삭제"}
+                </button>
               </div>
             </div>
           </div>
@@ -364,7 +459,9 @@ function SummaryCard({
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
       <div className="text-sm font-semibold text-slate-500">{title}</div>
-      <div className={`mt-3 text-3xl font-bold ${colorMap[tone]}`}>{value}</div>
+      <div className={`mt-3 text-3xl font-bold ${colorMap[tone]}`}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -375,7 +472,7 @@ function TableCell({
   last,
   strong,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   first?: boolean;
   last?: boolean;
   strong?: boolean;
@@ -406,7 +503,9 @@ function StatusBadge({ status }: { status: string }) {
       : "border-amber-200 bg-amber-50 text-amber-700";
 
   return (
-    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
+    <span
+      className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}
+    >
       {label}
     </span>
   );
