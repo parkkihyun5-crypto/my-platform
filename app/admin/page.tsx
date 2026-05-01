@@ -40,6 +40,64 @@ const priorityLabel: Record<string, string> = {
 
 const managerOptions = ["", "박기현", "관리자", "상담담당", "브랜딩담당"];
 
+function openCenteredPopup(url: string, windowName: string) {
+  const popupWidth = 860;
+  const popupHeight = 780;
+
+  const left = Math.max(
+    0,
+    window.screenX + (window.outerWidth - popupWidth) / 2
+  );
+
+  const top = Math.max(
+    0,
+    window.screenY + (window.outerHeight - popupHeight) / 2
+  );
+
+  const popup = window.open(
+    "about:blank",
+    windowName,
+    [
+      "popup=yes",
+      `width=${popupWidth}`,
+      `height=${popupHeight}`,
+      `left=${Math.round(left)}`,
+      `top=${Math.round(top)}`,
+      "resizable=yes",
+      "scrollbars=yes",
+    ].join(",")
+  );
+
+  if (!popup) {
+    return null;
+  }
+
+  popup.document.write(`
+    <html>
+      <head>
+        <title>Gmail 작성창 열기</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 32px;
+            color: #0B1F35;
+            line-height: 1.6;
+          }
+        </style>
+      </head>
+      <body>
+        <h2>Gmail 작성창을 여는 중입니다.</h2>
+        <p>잠시만 기다려 주세요.</p>
+      </body>
+    </html>
+  `);
+
+  popup.location.href = url;
+  popup.focus();
+
+  return popup;
+}
+
 export default function AdminPage() {
   const [items, setItems] = useState<InquiryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -259,36 +317,9 @@ export default function AdminPage() {
       email
     )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-    const popupWidth = 820;
-    const popupHeight = 760;
+    const popup = openCenteredPopup(gmailUrl, "npolapCustomerEmailWindow");
 
-    const left = Math.max(
-      0,
-      window.screenX + (window.outerWidth - popupWidth) / 2
-    );
-
-    const top = Math.max(
-      0,
-      window.screenY + (window.outerHeight - popupHeight) / 2
-    );
-
-    const popup = window.open(
-      gmailUrl,
-      "npolapCustomerEmailWindow",
-      [
-        "popup=yes",
-        `width=${popupWidth}`,
-        `height=${popupHeight}`,
-        `left=${Math.round(left)}`,
-        `top=${Math.round(top)}`,
-        "resizable=yes",
-        "scrollbars=yes",
-      ].join(",")
-    );
-
-    if (popup) {
-      popup.focus();
-    } else {
+    if (!popup) {
       alert("팝업이 차단되었습니다. 브라우저 팝업 차단을 해제해 주세요.");
     }
   }
@@ -341,47 +372,22 @@ export default function AdminPage() {
       email
     )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-    const popupWidth = 860;
-    const popupHeight = 780;
-
-    const left = Math.max(
-      0,
-      window.screenX + (window.outerWidth - popupWidth) / 2
-    );
-
-    const top = Math.max(
-      0,
-      window.screenY + (window.outerHeight - popupHeight) / 2
-    );
-
-    const popup = window.open(
-      gmailUrl,
-      "npolapProposalEmailWindow",
-      [
-        "popup=yes",
-        `width=${popupWidth}`,
-        `height=${popupHeight}`,
-        `left=${Math.round(left)}`,
-        `top=${Math.round(top)}`,
-        "resizable=yes",
-        "scrollbars=yes",
-      ].join(",")
-    );
+    const popup = openCenteredPopup(gmailUrl, "npolapProposalEmailWindow");
 
     if (!popup) {
       alert("팝업이 차단되었습니다. 브라우저 팝업 차단을 해제해 주세요.");
       return;
     }
 
-    popup.focus();
+    window.setTimeout(async () => {
+      const changeStatus = window.confirm(
+        "견적 메일 작성창을 열었습니다.\n이 문의 상태를 '견적발송'으로 변경하시겠습니까?"
+      );
 
-    const changeStatus = window.confirm(
-      "견적 메일 작성창을 열었습니다.\n이 문의 상태를 '견적발송'으로 변경하시겠습니까?"
-    );
-
-    if (changeStatus) {
-      await updateStatus(item.id, "proposal");
-    }
+      if (changeStatus) {
+        await updateStatus(item.id, "proposal");
+      }
+    }, 500);
   }
 
   async function handleLogout() {
