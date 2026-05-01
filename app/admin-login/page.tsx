@@ -1,9 +1,10 @@
 ﻿"use client";
 
+import { Suspense, useState } from "react";
+import type { FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
 
-export default function AdminLoginPage() {
+function AdminLoginContent() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/admin";
 
@@ -98,5 +99,31 @@ export default function AdminLoginPage() {
         </form>
       </section>
     </main>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-[#F6F3EE] px-6 py-10 text-slate-900">
+          <section className="w-full max-w-[460px] rounded-[32px] border border-slate-200 bg-white p-8 text-center shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+            <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C9A96B]">
+              Admin Access
+            </div>
+
+            <h1 className="mt-4 text-3xl font-bold text-[#0B1F35]">
+              관리자 로그인
+            </h1>
+
+            <p className="mt-4 text-sm text-slate-500">
+              로그인 화면을 불러오는 중입니다.
+            </p>
+          </section>
+        </main>
+      }
+    >
+      <AdminLoginContent />
+    </Suspense>
   );
 }

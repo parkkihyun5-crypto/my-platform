@@ -7,7 +7,6 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/");
-  const isAdminLoginPage = pathname === "/admin-login";
 
   if (!isAdminPage) {
     return NextResponse.next();
@@ -22,10 +21,6 @@ export function middleware(request: NextRequest) {
     loginUrl.searchParams.set("next", pathname);
 
     return NextResponse.redirect(loginUrl);
-  }
-
-  if (isAdminLoginPage) {
-    return NextResponse.next();
   }
 
   return NextResponse.next();
