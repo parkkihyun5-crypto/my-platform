@@ -30,23 +30,6 @@ type FaqItem = {
   answer: string;
 };
 
-const topMenuItems = [
-  { label: "에코피온", href: "#definition" },
-  { label: "설립대상", href: "#target" },
-  { label: "서비스구성", href: "#service" },
-  { label: "로드맵", href: "#process" },
-  { label: "에코피온 리더", href: "#advisor" },
-  { label: "상담신청", href: "#contact" },
-];
-
-const footerItems = [
-  "공익법인설립",
-  "사회적기업설립",
-  "브랜딩서비스",
-  "헤리티지오피스",
-  "에코피온",
-];
-
 const valueCards: CardItem[] = [
   {
     title: "자산의 유산화",
@@ -67,22 +50,22 @@ const valueCards: CardItem[] = [
 
 const targetCards: CardItem[] = [
   {
-    title: "재단을 만들고 싶지만 구조가 막막한 자산가",
+    title: "재단을 만들고 싶지만 구조가 막막한 경우",
     description:
       "설립 목적, 출연재산, 주무관청, 정관, 이사회, 공익법인 지정 가능성까지 함께 검토해야 합니다.",
   },
   {
-    title: "박물관·미술관을 만들고 싶은 컬렉터",
+    title: "박물관·미술관을 만들고 싶은 경우",
     description:
       "소장품의 의미, 전시·교육 사업, 운영비, 후원 구조, 브랜드 방향, 문화재단 연계 가능성을 통합적으로 설계해야 합니다.",
   },
   {
-    title: "가문 승계와 공익사업을 함께 고민하는 기업가",
+    title: "가문 승계와 공익사업을 함께 고민하는 경우",
     description:
       "가족 헌장, 가문 철학, 다음 세대 교육, 패밀리오피스, 공익재단 구조를 하나의 질서로 정리해야 합니다.",
   },
   {
-    title: "기존 비영리법인을 고도화하려는 단체",
+    title: "기존 비영리법인을 고도화하려는 경우",
     description:
       "정관, 목적사업, 후원 구조, 브랜드, 홈페이지, CRM 운영체계를 재정비하여 공신력을 높일 수 있습니다.",
   },
@@ -199,14 +182,21 @@ const faqItems: FaqItem[] = [
   },
 ];
 
-const bottomLandingMenu = [
+const bottomPageMenu = [
   { label: "에코피온 정의", href: "#definition" },
   { label: "설립대상", href: "#target" },
   { label: "서비스구성", href: "#service" },
   { label: "실행로드맵", href: "#process" },
-  { label: "에코피온 리더", href: "#advisor" },
   { label: "FAQ", href: "#faq" },
   { label: "상담신청", href: "#contact" },
+];
+
+const siteMapItems = [
+  "공익법인설립",
+  "사회적기업설립",
+  "브랜딩서비스",
+  "헤리티지오피스",
+  "에코피온",
 ];
 
 export default function EcoPionPage() {
@@ -290,9 +280,15 @@ export default function EcoPionPage() {
       <SiteHeader
         mode="sub"
         logoText="NPOLAP"
-        logoHref="/eco-pion"
+        logoHref="/heritage-office"
         inquiryHref="#contact"
-        menuItems={topMenuItems}
+        menuItems={[
+          { label: "공익법인설립", href: "/public-interest-foundation", isLink: true },
+          { label: "사회적기업설립", href: "/social-enterprise", isLink: true },
+          { label: "브랜딩서비스", href: "/branding", isLink: true },
+          { label: "헤리티지오피스", href: "/heritage-office", isLink: true },
+          { label: "에코피온", href: "/eco-pion", isLink: true },
+        ]}
       />
 
       <div
@@ -307,55 +303,56 @@ export default function EcoPionPage() {
 
       <main>
         <section className="relative h-[100vh] w-full overflow-hidden pt-24 md:pt-28">
-          <div className="absolute inset-0">
-            <img
-              src="/images/hero-main.jpg"
-              alt="eco-pion hero"
-              className="h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-[#061525]/65" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_35%,rgba(229,201,150,0.22),transparent_32%)]" />
-          </div>
+  <div className="absolute inset-0">
+    <img
+      src="/images/hero-eco-pion.jpg"
+      alt="에코피온 히어로 배경"
+      className="h-full w-full object-cover"
+    />
+    <div className="absolute inset-0 bg-[#061525]/65" />
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_35%,rgba(229,201,150,0.22),transparent_32%)]" />
+  </div>
 
-          <div className="relative z-10 mx-auto flex h-full w-full max-w-[1600px] items-center px-5 md:px-10 lg:px-12">
-            <div className="max-w-6xl text-white">
-              <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#EAD9BC] md:text-base">
-                ECO-PION · HERITAGE ASSET DESIGN
-              </div>
+  <div className="relative z-10 mx-auto flex h-full w-full max-w-[1600px] items-center px-5 md:px-10 lg:px-12">
+    <div className="max-w-6xl text-white">
+      <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#EAD9BC] md:text-base">
+        ECO-PION · HERITAGE ASSET DESIGN
+      </div>
 
-              <h1 className="mt-6 text-4xl font-bold leading-[1.1] md:text-6xl xl:text-[84px]">
-                자산은 남길 수 있습니다
-                <br />
-                그러나 유산은
-                <br />
-                설계해야 합니다
-              </h1>
+      <h1 className="mt-6 text-4xl font-bold leading-[1.1] md:text-6xl xl:text-[84px]">
+        자산은 남길 수 있습니다
+        <br />
+        그러나 유산은
+        <br />
+        설계해야 합니다
+      </h1>
 
-              <p className="mt-7 max-w-4xl text-base leading-8 text-slate-200 md:text-xl md:leading-9">
-                에코피온은 자산가의 철학과 자산, 공익적 비전, 문화적 가치를
-                <br />
-                비영리법인·재단·박물관·미술관·공익사업 구조로 연결하는
-                <br />
-                AI시대의 헤리티지 자산 설계 직업군입니다.
-              </p>
+      <p className="mt-7 max-w-4xl text-base leading-8 text-slate-200 md:text-xl md:leading-9">
+        에코피온은 자산가의 철학과 자산, 공익적 비전, 문화적 가치를
+        <br />
+        비영리법인·재단·박물관·미술관·공익사업 구조로 연결하는
+        <br />
+        AI시대의 헤리티지 자산 설계 직업군입니다.
+      </p>
 
-              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <a
-                  href="#contact"
-                  className="inline-flex items-center justify-center rounded-full bg-[#E5C996] px-7 py-4 text-sm font-bold text-[#0B1F35] shadow-[0_18px_45px_rgba(229,201,150,0.24)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_24px_60px_rgba(229,201,150,0.34)] md:text-base"
-                >
-                  내 자산의 공익 유산화 상담 신청하기
-                </a>
-                <a
-                  href="#definition"
-                  className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-[1px] hover:bg-white/15 md:text-base"
-                >
-                  에코피온이란?
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
+      <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+        <a
+          href="#contact"
+          className="inline-flex items-center justify-center rounded-full bg-[#E5C996] px-7 py-4 text-sm font-bold text-[#0B1F35] shadow-[0_18px_45px_rgba(229,201,150,0.24)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_24px_60px_rgba(229,201,150,0.34)] md:text-base"
+        >
+          내 자산의 공익 유산화 상담 신청하기
+        </a>
+
+        <a
+          href="#definition"
+          className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-[1px] hover:bg-white/15 md:text-base"
+        >
+          에코피온이란?
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
 
         <section id="definition" className="bg-white py-20 md:py-28">
           <div className="mx-auto max-w-[1300px] px-6 md:px-10 lg:px-12">
@@ -559,92 +556,6 @@ export default function EcoPionPage() {
           </div>
         </section>
 
-        <section id="advisor" className="bg-[#081A2F] py-20 text-white md:py-28">
-          <div className="mx-auto max-w-[1300px] px-6 md:px-10 lg:px-12">
-            <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-              <div className="overflow-hidden rounded-[34px] border border-white/10 bg-white/5 shadow-[0_24px_60px_rgba(0,0,0,0.22)]">
-                <div className="relative min-h-[420px] bg-[#0B1F35]">
-                  <img
-                    src="/images/hero-main.jpg"
-                    alt="에코피온 리더"
-                    className="absolute inset-0 h-full w-full object-cover opacity-55"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#081A2F] via-[#081A2F]/40 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                    <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#E5C996]">
-                      Representative Advisor
-                    </div>
-                    <h2 className="mt-3 text-3xl font-bold md:text-4xl">
-                      에코피온 리더
-                    </h2>
-                    <p className="mt-3 text-sm leading-7 text-slate-200">
-                      International Leaders Union · NPOLAP
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#E5C996]">
-                  Heritage Asset Designer
-                </div>
-                <h2 className="mt-4 text-3xl font-bold leading-[1.35] md:text-5xl">
-                  자산과 사람,
-                  <br />
-                  제도와 문화를 연결하는
-                  <br />
-                  구조 설계자
-                </h2>
-
-                <div className="mt-7 space-y-5 text-sm leading-8 text-slate-200 md:text-base md:leading-8">
-                  <p>
-                    박기현 에코피온 리더는 국제지도자연합과 NPOLAP의 공익 구조 설계 프로젝트를
-                    기반으로, 자산가의 철학과 공익적 비전을 비영리법인, 재단,
-                    박물관, 미술관, 문화유산 플랫폼으로 연결하는 헤리티지 자산 설계
-                    업무를 수행합니다.
-                  </p>
-                  <p>
-                    그는 단순한 설립 절차보다 먼저 “이 자산은 무엇을 위해 존재하는가”,
-                    “이 성취는 다음 세대에게 어떤 질서가 될 것인가”,
-                    “이 가문은 사회와 어떤 방식으로 연결될 것인가”라는 질문을
-                    중심에 둡니다.
-                  </p>
-                  <p>
-                    에코피온 페이지의 리더소개는 상담자의 신뢰를 높이는 하부
-                    메뉴이자, NPOLAP이 지향하는 공익법인·헤리티지오피스·브랜딩·문화유산
-                    설계의 철학적 중심을 설명하는 섹션입니다.
-                  </p>
-                </div>
-
-                <div className="mt-8 grid gap-3 md:grid-cols-2">
-                  {[
-                    "비영리법인·재단 구조 설계",
-                    "가문 철학·가족 헌장 기획",
-                    "박물관·미술관 공익화 전략",
-                    "공익 브랜드·디지털 아카이브 설계",
-                  ].map((item) => (
-                    <div
-                      key={item}
-                      className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-semibold text-white"
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-8">
-                  <a
-                    href="#contact"
-                    className="inline-flex items-center justify-center rounded-full bg-[#E5C996] px-7 py-4 text-sm font-bold text-[#0B1F35] shadow-[0_18px_45px_rgba(229,201,150,0.22)] transition-all duration-300 hover:-translate-y-[1px] md:text-base"
-                  >
-                    에코피온 리더에게 구조 상담 신청하기
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <section id="faq" className="bg-white py-20 md:py-28">
           <div className="mx-auto max-w-[1100px] px-6 md:px-10 lg:px-12">
             <SectionTitle
@@ -796,10 +707,10 @@ export default function EcoPionPage() {
           <div className="mx-auto max-w-[1300px] px-6 md:px-10 lg:px-12">
             <div className="rounded-[30px] border border-white/10 bg-white/[0.04] p-6 md:p-8">
               <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#E5C996]">
-                Eco-pion Landing Menu
+                Eco-pion Page Menu
               </div>
               <div className="mt-5 flex flex-wrap gap-3">
-                {bottomLandingMenu.map((item) => (
+                {bottomPageMenu.map((item) => (
                   <a
                     key={item.label}
                     href={item.href}
@@ -814,7 +725,7 @@ export default function EcoPionPage() {
         </section>
       </main>
 
-      <SiteFooter leftText="NPOLAP" rightItems={footerItems} />
+      <SiteFooter leftText="NPOLAP" rightItems={siteMapItems} />
     </div>
   );
 }

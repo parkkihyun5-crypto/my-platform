@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type MenuItem = {
   label: string;
@@ -9,33 +10,40 @@ type MenuItem = {
   isLink?: boolean;
 };
 
-type SiteHeaderProps = {
-  mode?: "main" | "sub";
-  logoText?: string;
-  logoHref?: string;
-  inquiryHref?: string;
-  menuItems?: MenuItem[];
+type SocialLink = {
+  label: string;
+  href: string;
 };
 
-const defaultMenuItems: MenuItem[] = [
+type SiteHeaderProps = {
+  mode?: "home" | "sub";
+  logoText?: string;
+  logoHref?: string;
+  menuItems?: MenuItem[];
+  drawerItems?: MenuItem[];
+  socialLinks?: SocialLink[];
+  inquiryHref?: string;
+  phoneHref?: string;
+  kakaoHref?: string;
+};
+
+const mainMenuItems: MenuItem[] = [
+  { label: "공익법인설립", href: "/public-interest-foundation", isLink: true },
+  { label: "사회적기업설립", href: "/social-enterprise", isLink: true },
+  { label: "브랜딩서비스", href: "/branding", isLink: true },
+  { label: "헤리티지오피스", href: "/heritage-office", isLink: true },
+];
+
+const ecoMenuItem: MenuItem = {
+  label: "에코피온",
+  href: "/eco-pion",
+  isLink: true,
+};
+
+const ecoSubMenuItems: MenuItem[] = [
   {
-    label: "공익법인설립",
-    href: "/public-interest-foundation",
-    isLink: true,
-  },
-  {
-    label: "사회적기업설립",
-    href: "/social-enterprise",
-    isLink: true,
-  },
-  {
-    label: "브랜딩서비스",
-    href: "/branding",
-    isLink: true,
-  },
-  {
-    label: "헤리티지오피스",
-    href: "/heritage-office",
+    label: "에코피온 리더",
+    href: "/consultant-profile",
     isLink: true,
   },
   {
@@ -45,193 +53,439 @@ const defaultMenuItems: MenuItem[] = [
   },
 ];
 
-function isHashLink(href: string): boolean {
-  return href.startsWith("#");
+function normalizeHref(label: string, href: string): string {
+  if (label === "에코피온 리더") return "/consultant-profile";
+  if (label === "에코피온리더") return "/consultant-profile";
+  if (label === "에코피온") return "/eco-pion";
+  return href;
 }
 
-function isExternalLink(href: string): boolean {
-  return href.startsWith("http://") || href.startsWith("https://");
-}
-
-function HeaderMenuLink({
+function MenuLink({
   item,
-  onNavigate,
   className,
+  onClick,
+  children,
 }: {
   item: MenuItem;
-  onNavigate?: () => void;
   className?: string;
+  onClick?: () => void;
+  children?: React.ReactNode;
 }) {
-  const handleHashClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!isHashLink(item.href)) return;
+  const href = normalizeHref(item.label, item.href);
 
-    event.preventDefault();
-
-    const targetId = item.href.replace("#", "");
-    const target = document.getElementById(targetId);
-
-    if (target) {
-      const headerOffset = 92;
-      const targetPosition =
-        target.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-
-      window.scrollTo({
-        top: targetPosition,
-        behavior: "smooth",
-      });
-    }
-
-    onNavigate?.();
-  };
-
-  if (isExternalLink(item.href)) {
+  if (href.startsWith("/") || item.isLink) {
     return (
-      <a
-        href={item.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={onNavigate}
-        className={className}
-      >
-        {item.label}
-      </a>
-    );
-  }
-
-  if (isHashLink(item.href)) {
-    return (
-      <a href={item.href} onClick={handleHashClick} className={className}>
-        {item.label}
-      </a>
+      <Link href={href} className={className} onClick={onClick}>
+        {children ?? item.label}
+      </Link>
     );
   }
 
   return (
-    <Link href={item.href} onClick={onNavigate} className={className}>
-      {item.label}
-    </Link>
+    <a href={href} className={className} onClick={onClick}>
+      {children ?? item.label}
+    </a>
   );
+}
+
+function normalizeMenuItems(items: MenuItem[]): MenuItem[] {
+  const source = items.length > 0 ? items : mainMenuItems;
+
+  return source
+    .filter(
+      (item) =>
+        item.label !== "에코피온" &&
+        item.label !== "에코피온 리더" &&
+        item.label !== "에코피온리더"
+    )
+    .map((item) => ({
+      ...item,
+      href: normalizeHref(item.label, item.href),
+    }));
 }
 
 export default function SiteHeader({
   mode = "sub",
-  logoText = "NPOLAP",
-  logoHref = "/heritage-office",
+  logoText,
+  menuItems = [],
+  drawerItems = [],
+  socialLinks = [],
   inquiryHref = "#contact",
-  menuItems = defaultMenuItems,
+  phoneHref = "tel:02-785-7874",
+  kakaoHref = "http://pf.kakao.com/_mIJMX",
 }: SiteHeaderProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+  const [scrolled, setScrolled] = useState<boolean>(false);
 
-  const headerClass =
-    mode === "main"
-      ? "fixed left-0 top-0 z-50 w-full border-b border-white/10 bg-[#081A2F]/80 text-white backdrop-blur-xl"
-      : "fixed left-0 top-0 z-50 w-full border-b border-white/10 bg-[#081A2F]/90 text-white backdrop-blur-xl";
+  const desktopMainMenuItems = useMemo(() => {
+    return normalizeMenuItems(menuItems);
+  }, [menuItems]);
 
-  const desktopLinkClass =
-    "relative inline-flex items-center text-sm font-semibold text-white/85 transition-colors duration-300 hover:text-[#E5C996]";
+  const mobileMenuItems = useMemo(() => {
+    const source = drawerItems.length > 0 ? drawerItems : desktopMainMenuItems;
+    const normalized = normalizeMenuItems(source);
 
-  const mobileLinkClass =
-    "block rounded-2xl px-4 py-3 text-base font-semibold text-white/90 transition-colors duration-300 hover:bg-white/10 hover:text-[#E5C996]";
+    return [
+      ...normalized,
+      {
+        ...ecoMenuItem,
+        label: "에코피온 메인",
+      },
+      ...ecoSubMenuItems,
+    ];
+  }, [drawerItems, desktopMainMenuItems]);
 
-  const inquiryClass =
-    "inline-flex items-center justify-center rounded-full border border-[#E5C996]/40 bg-[#E5C996]/10 px-5 py-2.5 text-sm font-bold text-[#F3DFB6] transition-all duration-300 hover:-translate-y-[1px] hover:bg-[#E5C996]/20";
+  useEffect(() => {
+    let ticking = false;
 
-  const mobileInquiryClass =
-    "mt-3 inline-flex w-full items-center justify-center rounded-full border border-[#E5C996]/40 bg-[#E5C996]/10 px-5 py-3 text-base font-bold text-[#F3DFB6] transition-all duration-300 hover:bg-[#E5C996]/20";
+    function updateHeaderState() {
+      const isMobile = window.innerWidth < 768;
+      const nextScrolled = window.scrollY > (isMobile ? 42 : 10);
 
-  const closeMobileMenu = () => {
-    setIsOpen(false);
-  };
+      setScrolled((prev) => (prev === nextScrolled ? prev : nextScrolled));
+      ticking = false;
+    }
+
+    function handleScroll() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(updateHeaderState);
+    }
+
+    function handleResize() {
+      if (window.innerWidth >= 1280) {
+        setDrawerOpen(false);
+      }
+
+      updateHeaderState();
+    }
+
+    updateHeaderState();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!drawerOpen) {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+      return;
+    }
+
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setDrawerOpen(false);
+      }
+    }
+
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [drawerOpen]);
+
+  const currentLogoSrc = scrolled ? "/images/logo-dark.png" : "/images/logo-white.png";
+  const mobileLogoSrc = "/images/logo-white.png";
+
+  const headerShellClass = `fixed inset-x-0 top-0 z-50 transition-all duration-700 ${
+    scrolled
+      ? "border-b border-slate-200/75 bg-white/88 shadow-[0_18px_48px_rgba(15,23,42,0.08)] backdrop-blur-2xl"
+      : "bg-[#081A2F]/22 backdrop-blur-[2px]"
+  }`;
+
+  const headerInnerClass = `mx-auto max-w-[1600px] px-5 md:px-10 lg:px-12 transition-all duration-700 ${
+    scrolled ? "py-3 md:py-4" : "py-4 md:py-5"
+  }`;
+
+  const desktopNavClass = "hidden items-center justify-center gap-10 xl:flex";
+
+  const desktopMenuClass = `group relative inline-flex items-center rounded-full px-0 py-2 text-sm font-semibold tracking-[-0.01em] transition-all duration-300 md:text-[15px] ${
+    scrolled
+      ? "text-[#0B1F35]/82 hover:text-[#0B1F35]"
+      : "text-white/94 hover:text-white"
+  }`;
+
+  const desktopMenuUnderlineClass =
+    "pointer-events-none absolute -bottom-[5px] left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#E5C996] transition-all duration-300 ease-out group-hover:w-full";
+
+  const ecoTopLinkClass = `relative inline-flex items-center rounded-full px-0 py-2 text-sm font-semibold tracking-[-0.01em] transition-all duration-300 md:text-[15px] ${
+    scrolled
+      ? "text-[#0B1F35]/82 hover:text-[#0B1F35]"
+      : "text-white/94 hover:text-white"
+  }`;
+
+  const ecoSubLinkClass = `block whitespace-nowrap py-1.5 text-sm font-semibold tracking-[-0.02em] transition-all duration-300 ${
+    scrolled
+      ? "text-[#0B1F35]/76 hover:text-[#0B1F35]"
+      : "text-white/90 hover:text-[#E5C996]"
+  }`;
+
+  const actionButtonClass = `hidden items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-300 md:inline-flex ${
+    scrolled
+      ? "border border-[#E5C996]/35 bg-[#E5C996] text-[#0B1F35] shadow-[0_10px_30px_rgba(229,201,150,0.18)] hover:-translate-y-[1px] hover:bg-[#E5C996] hover:shadow-[0_18px_45px_rgba(229,201,150,0.28)] active:translate-y-0"
+      : "border border-white/18 bg-white/10 text-white backdrop-blur-md hover:-translate-y-[1px] hover:border-[#E5C996]/30 hover:bg-white/14 hover:text-[#FFF3D7]"
+  }`;
+
+  const menuButtonClass = `inline-flex items-center justify-center rounded-full transition-all duration-300 xl:hidden ${
+    mode === "home" ? "h-10 w-10 md:h-11 md:w-11" : "h-10 w-10"
+  } ${
+    scrolled
+      ? "border border-slate-300/85 bg-white text-[#0B1F35] shadow-sm hover:-translate-y-[1px] hover:bg-slate-50"
+      : "border border-white/18 bg-white/8 text-white backdrop-blur-md hover:-translate-y-[1px] hover:bg-white/14"
+  }`;
+
+  const drawerOverlayClass = `fixed inset-0 z-[60] bg-[#020617]/55 transition-all duration-500 ${
+    drawerOpen
+      ? "pointer-events-auto opacity-100 backdrop-blur-[3px]"
+      : "pointer-events-none opacity-0"
+  }`;
+
+  const drawerPanelClass = `fixed right-0 top-0 z-[70] flex h-screen w-[88%] max-w-[400px] flex-col border-l border-white/10 bg-[#0B1F35]/95 p-6 text-white shadow-[0_25px_80px_rgba(2,6,23,0.45)] backdrop-blur-2xl transition-all duration-500 ease-out ${
+    drawerOpen ? "translate-x-0" : "translate-x-full"
+  }`;
 
   return (
-    <header className={headerClass}>
-      <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between px-5 md:px-10 lg:px-12">
-        <Link
-          href={logoHref}
-          onClick={closeMobileMenu}
-          className="inline-flex items-center gap-3"
-        >
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#E5C996]/40 bg-white/5 text-sm font-black text-[#E5C996]">
-            N
-          </span>
+    <>
+      <style jsx global>{`
+        .eco-dropdown-wrap {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+        }
 
-          <span className="text-base font-black tracking-[-0.03em] text-white md:text-lg">
-            {logoText}
-          </span>
-        </Link>
+        .eco-dropdown-menu {
+          display: none;
+          position: absolute;
+          top: calc(100% + 8px);
+          left: 0;
+          min-width: 150px;
+          transform: translateY(0);
+          padding: 4px 0 0 0;
+          background: transparent;
+          border: none;
+          box-shadow: none;
+          z-index: 100;
+          animation: ecoDropdownTextFade 180ms ease-out forwards;
+        }
 
-        <nav className="hidden items-center gap-7 lg:flex">
-          {menuItems.map((item) => (
-            <HeaderMenuLink
-              key={`${item.label}-${item.href}`}
-              item={item}
-              className={desktopLinkClass}
-            />
-          ))}
-        </nav>
+        .eco-dropdown-wrap::after {
+          content: "";
+          position: absolute;
+          left: -8px;
+          right: -8px;
+          top: 100%;
+          height: 18px;
+        }
 
-        <div className="hidden items-center gap-3 lg:flex">
-          <HeaderMenuLink
-            item={{
-              label: "문의하기",
-              href: inquiryHref,
-              isLink: !isHashLink(inquiryHref),
-            }}
-            className={inquiryClass}
-          />
-        </div>
+        .eco-dropdown-wrap:hover .eco-dropdown-menu {
+          display: block;
+        }
 
-        <button
-          type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition hover:bg-white/10 lg:hidden"
-          aria-label="메뉴 열기"
-          aria-expanded={isOpen}
-        >
-          <span className="relative h-4 w-5">
-            <span
-              className={`absolute left-0 top-0 h-[2px] w-5 bg-white transition-all duration-300 ${
-                isOpen ? "translate-y-[7px] rotate-45" : ""
-              }`}
-            />
-            <span
-              className={`absolute left-0 top-[7px] h-[2px] w-5 bg-white transition-all duration-300 ${
-                isOpen ? "opacity-0" : "opacity-100"
-              }`}
-            />
-            <span
-              className={`absolute left-0 top-[14px] h-[2px] w-5 bg-white transition-all duration-300 ${
-                isOpen ? "-translate-y-[7px] -rotate-45" : ""
-              }`}
-            />
-          </span>
-        </button>
-      </div>
+        @keyframes ecoDropdownTextFade {
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
 
-      {isOpen ? (
-        <div className="border-t border-white/10 bg-[#081A2F]/98 px-5 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl lg:hidden">
-          <nav className="mx-auto max-w-[1600px] space-y-1">
-            {menuItems.map((item) => (
-              <HeaderMenuLink
-                key={`mobile-${item.label}-${item.href}`}
-                item={item}
-                onNavigate={closeMobileMenu}
-                className={mobileLinkClass}
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+
+      <header className={headerShellClass}>
+        <div className={headerInnerClass}>
+          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-8">
+            <Link
+              href="/heritage-office"
+              className="relative flex shrink-0 items-center transition hover:opacity-90"
+              aria-label={logoText || "홈으로 이동"}
+            >
+              <Image
+                src={currentLogoSrc}
+                alt={logoText || "Site Logo"}
+                width={160}
+                height={44}
+                priority
+                className={`w-auto transition-all duration-700 ${
+                  scrolled ? "h-[26px] md:h-[30px]" : "h-[28px] md:h-[32px]"
+                }`}
               />
-            ))}
+            </Link>
 
-            <HeaderMenuLink
-              item={{
-                label: "문의하기",
-                href: inquiryHref,
-                isLink: !isHashLink(inquiryHref),
-              }}
-              onNavigate={closeMobileMenu}
-              className={mobileInquiryClass}
-            />
-          </nav>
+            <nav className={desktopNavClass}>
+              {desktopMainMenuItems.map((item) => (
+                <MenuLink
+                  key={`desktop-${item.label}-${item.href}`}
+                  item={item}
+                  className={desktopMenuClass}
+                >
+                  <>
+                    <span>{item.label}</span>
+                    <span className={desktopMenuUnderlineClass} />
+                  </>
+                </MenuLink>
+              ))}
+
+              <div className="eco-dropdown-wrap">
+                <MenuLink item={ecoMenuItem} className={ecoTopLinkClass}>
+                  <span>{ecoMenuItem.label}</span>
+                </MenuLink>
+
+                <div className="eco-dropdown-menu">
+                  {ecoSubMenuItems.map((item, index) => (
+                    <MenuLink
+                      key={`eco-sub-${index}-${item.label}-${item.href}`}
+                      item={item}
+                      className={ecoSubLinkClass}
+                    >
+                      {item.label}
+                    </MenuLink>
+                  ))}
+                </div>
+              </div>
+            </nav>
+
+            <div className="flex shrink-0 items-center justify-end gap-2 md:gap-3">
+              <a href={inquiryHref} className={actionButtonClass}>
+                문의하기
+              </a>
+
+              <button
+                type="button"
+                aria-label="메뉴 열기"
+                aria-expanded={drawerOpen}
+                onClick={() => setDrawerOpen(true)}
+                className={menuButtonClass}
+              >
+                <span className="relative flex h-5 w-5 items-center justify-center">
+                  <span
+                    className={`absolute block h-[1.5px] w-5 rounded-full transition-all duration-300 ${
+                      drawerOpen ? "translate-y-0 rotate-45" : "-translate-y-[5px]"
+                    } ${scrolled ? "bg-[#0B1F35]" : "bg-white"}`}
+                  />
+                  <span
+                    className={`absolute block h-[1.5px] w-5 rounded-full transition-all duration-300 ${
+                      drawerOpen ? "opacity-0" : "opacity-100"
+                    } ${scrolled ? "bg-[#0B1F35]" : "bg-white"}`}
+                  />
+                  <span
+                    className={`absolute block h-[1.5px] w-5 rounded-full transition-all duration-300 ${
+                      drawerOpen ? "translate-y-0 -rotate-45" : "translate-y-[5px]"
+                    } ${scrolled ? "bg-[#0B1F35]" : "bg-white"}`}
+                  />
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
-      ) : null}
-    </header>
+      </header>
+
+      <div className={drawerOverlayClass} onClick={() => setDrawerOpen(false)} />
+
+      <aside className={drawerPanelClass}>
+        <div className="flex items-center justify-between">
+          <Link
+            href="/heritage-office"
+            className="flex items-center transition hover:opacity-90"
+            onClick={() => setDrawerOpen(false)}
+            aria-label={logoText || "홈으로 이동"}
+          >
+            <Image
+              src={mobileLogoSrc}
+              alt={logoText || "Site Logo"}
+              width={160}
+              height={44}
+              className="h-[28px] w-auto"
+            />
+          </Link>
+
+          <button
+            type="button"
+            aria-label="메뉴 닫기"
+            onClick={() => setDrawerOpen(false)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition duration-300 hover:bg-white/12"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="mt-10 flex flex-col gap-3">
+          {mobileMenuItems.map((item, index) => (
+            <MenuLink
+              key={`drawer-${index}-${item.label}-${item.href}`}
+              item={item}
+              onClick={() => setDrawerOpen(false)}
+              className={`group rounded-[22px] border border-white/8 bg-white/[0.03] px-4 py-4 text-lg font-semibold tracking-[-0.01em] text-white/92 transition-all duration-300 hover:border-white/15 hover:bg-white/[0.07] hover:pl-5 hover:text-white ${
+                ecoSubMenuItems.some((sub) => sub.label === item.label && sub.href === item.href)
+                  ? "ml-4 text-base text-[#E5C996]"
+                  : ""
+              }`}
+            >
+              {item.label === "에코피온 메인" ? "에코피온" : item.label}
+            </MenuLink>
+          ))}
+        </div>
+
+        <div className="mt-8 grid gap-3">
+          <a
+            href={inquiryHref}
+            onClick={() => setDrawerOpen(false)}
+            className="rounded-[22px] border border-[#E5C996]/30 bg-[#E5C996] px-4 py-4 text-center text-base font-bold text-[#0B1F35] transition-all duration-300 hover:bg-[#F1D9A5]"
+          >
+            문의하기
+          </a>
+
+          <a
+            href={phoneHref}
+            className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4 text-center text-base font-semibold text-white/90 transition-all duration-300 hover:bg-white/[0.08]"
+          >
+            전화상담
+          </a>
+
+          <a
+            href={kakaoHref}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4 text-center text-base font-semibold text-white/90 transition-all duration-300 hover:bg-white/[0.08]"
+          >
+            카카오 상담
+          </a>
+        </div>
+
+        {socialLinks.length > 0 ? (
+          <div className="mt-auto pt-10">
+            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-[#E5C996]">
+              Social
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {socialLinks.map((item) => (
+                <a
+                  key={`social-${item.label}-${item.href}`}
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-white/80 transition hover:bg-white/[0.08] hover:text-white"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </aside>
+    </>
   );
 }
