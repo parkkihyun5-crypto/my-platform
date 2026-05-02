@@ -3,21 +3,21 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://npolap.cloud"),
-  title: "공익법인 종합컨설팅 플랫폼",
+  title: "NPOLAP | 공익유산플랫폼",
   description:
-    "헤리티지 자산 설계 플랫폼 + 공익 구조 설계 + 브랜딩 + 상표 + 컨설팅 통합 시스템",
+    "공익법인설립, 자산보존, 가문전략, 공익유산, 국제협력의 새로운 플랫폼",
   openGraph: {
-    title: "공익법인 종합컨설팅 플랫폼",
+    title: "NPOLAP | 공익유산플랫폼",
     description:
-      "헤리티지 자산 설계 플랫폼 + 공익 구조 설계 + 브랜딩 + 상표 + 컨설팅 통합 시스템",
+      "공익법인설립, 자산보존, 가문전략, 공익유산, 국제협력의 새로운 플랫폼",
     url: "https://npolap.cloud",
-    siteName: "NPOLAP",
+    siteName: "NPOLAP 공익유산플랫폼",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "공익법인 종합컨설팅 플랫폼",
+        alt: "NPOLAP 공익유산플랫폼",
       },
     ],
     locale: "ko_KR",
@@ -25,9 +25,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "공익법인 종합컨설팅 플랫폼",
+    title: "NPOLAP | 공익유산플랫폼",
     description:
-      "헤리티지 자산 설계 플랫폼 + 공익 구조 설계 + 브랜딩 + 상표 + 컨설팅 통합 시스템",
+      "공익법인설립, 자산보존, 가문전략, 공익유산, 국제협력의 새로운 플랫폼",
     images: ["/og-image.jpg"],
   },
 };
