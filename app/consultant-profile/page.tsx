@@ -6,11 +6,11 @@ import SiteFooter from "@/components/SiteFooter";
 export const metadata: Metadata = {
   title: "NPOLAP | 에코피온 소개",
   description:
-    "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 대표 에코피온 박기현 프로필 페이지입니다.",
+    "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계자 박기현 에코피온 페이지입니다.",
   openGraph: {
-    title: "대표 에코피온 소개 | NPOLAP",
+    title: "NPOLAP | 에코피온 소개",
     description:
-      "Eco-pion은 지속가능한 인류문명의 구조를 설계하는 직업입니다. Eco-pion은 고귀한 삶을 지키고 가꾸는 지속가능한 문명설계자입니다.",
+      "Eco-pion은 고귀한 삶을 지키고 가꾸는 지속가능한 문명설계자입니다.",
     url: "https://npolap.cloud/consultant-profile",
     siteName: "NPOLAP",
     images: [
