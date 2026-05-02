@@ -5,11 +5,6 @@ type SiteFooterProps = {
   rightItems: string[];
 };
 
-function getDisplayLabel(label: string): string {
-  if (label === "대표 컨설턴트") return "에코피언";
-  return label;
-}
-
 function getFooterHref(item: string): string {
   switch (item) {
     case "공익법인설립":
@@ -20,9 +15,10 @@ function getFooterHref(item: string): string {
       return "/branding";
     case "헤리티지오피스":
       return "/heritage-office";
-    case "대표 컨설턴트":
-    case "에코피언":
-      return "/consultant-profile";
+    case "에코피온":
+      return "/eco-pion";
+    case "에코피온 리더":
+      return "/eco-pion#advisor";
     default:
       return "#";
   }
@@ -136,7 +132,7 @@ export default function SiteFooter({
                   href={getFooterHref(item)}
                   className="text-base text-slate-300 transition-all duration-300 hover:translate-x-[2px] hover:text-white focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E5C996]/40"
                 >
-                  {getDisplayLabel(item)}
+                  {item}
                 </Link>
               ))}
 

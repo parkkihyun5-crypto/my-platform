@@ -40,7 +40,7 @@ const defaultMenuItems: MenuItem[] = [
   },
   {
     label: "에코피온",
-    href: "/consultant-profile",
+    href: "/eco-pion",
     isLink: true,
   },
 ];
@@ -122,11 +122,6 @@ export default function SiteHeader({
 }: SiteHeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const normalizedMenuItems = menuItems.map((item) => ({
-    ...item,
-    label: item.label === "에코피온" ? "에코피온" : item.label,
-  }));
-
   const headerClass =
     mode === "main"
       ? "fixed left-0 top-0 z-50 w-full border-b border-white/10 bg-[#081A2F]/80 text-white backdrop-blur-xl"
@@ -166,7 +161,7 @@ export default function SiteHeader({
         </Link>
 
         <nav className="hidden items-center gap-7 lg:flex">
-          {normalizedMenuItems.map((item) => (
+          {menuItems.map((item) => (
             <HeaderMenuLink
               key={`${item.label}-${item.href}`}
               item={item}
@@ -216,7 +211,7 @@ export default function SiteHeader({
       {isOpen ? (
         <div className="border-t border-white/10 bg-[#081A2F]/98 px-5 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl lg:hidden">
           <nav className="mx-auto max-w-[1600px] space-y-1">
-            {normalizedMenuItems.map((item) => (
+            {menuItems.map((item) => (
               <HeaderMenuLink
                 key={`mobile-${item.label}-${item.href}`}
                 item={item}
