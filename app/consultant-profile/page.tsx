@@ -6,11 +6,12 @@ import SiteFooter from "@/components/SiteFooter";
 export const metadata: Metadata = {
   title: "대표 에코피온 소개 | NPOLAP",
   description:
-    "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 대표 에코피온 박기현 프로필 페이지입니다.",
+    "창업, 금융, 투자, 국제협력, 공공외교를 
+    연결하는 구조 설계형 리드 에코피온 소개 페이지입니다.",
   openGraph: {
     title: "대표 에코피온 소개 | NPOLAP",
     description:
-      "벤처 창업의 현장을 경험하고, 디지털 혁신과 세계의 흐름을 읽으며, AI시대의 지속가능한 국제사회의 미래를 고민하는 실천형 칼럼니스트.",
+      "Eco-pion은 지속가능한 인류문명의 구조를 설계하는 직업입니다. Eco-pion은 고귀한 삶을 지키고 가꾸는 지속가능한 문명설계자입니다.",
     url: "https://npolap.cloud/consultant-profile",
     siteName: "NPOLAP",
     images: [
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
         url: "/images/consultant-profile.png",
         width: 1200,
         height: 630,
-        alt: "대표 에코피온 박기현 프로필",
+        alt: "대표 에코피온 박기현",
       },
     ],
     locale: "ko_KR",
@@ -28,7 +29,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "대표 에코피온 소개 | NPOLAP",
     description:
-      "창업, 금융, 투자, 국제협력, 공공외교를 연결하는 구조 설계형 대표 에코피온 프로필.",
+      "창업, 금융, 투자, 국제협력, 공공외교를 
+      연결하는 구조 설계형 대표 에코피온 프로필.",
     images: ["/images/consultant-profile.png"],
   },
 };
