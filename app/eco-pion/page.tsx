@@ -230,6 +230,31 @@ export default function EcoPionPage() {
     )}&body=${encodeURIComponent(body)}`;
   }, [form]);
 
+  const gmailComposeHref = useMemo(() => {
+    const subject = `[에코피온 상담 문의] ${form.organization || "기관명 미입력"}`;
+    const body = [
+      "안녕하세요. 에코피온 컨설팅 관련 상담을 신청합니다.",
+      "",
+      `기관명: ${form.organization}`,
+      `성명: ${form.name}`,
+      `연락처: ${form.phone}`,
+      `이메일: ${form.email}`,
+      "",
+      "문의 내용:",
+      form.message || "(내용 미입력)",
+    ].join("\n");
+
+    const params = new URLSearchParams({
+      view: "cm",
+      fs: "1",
+      to: "npolap@ilukorea.org",
+      su: subject,
+      body,
+    });
+
+    return `https://mail.google.com/mail/?${params.toString()}`;
+  }, [form]);
+
   function updateForm<K extends keyof InquiryFormState>(
     key: K,
     value: InquiryFormState[K]
@@ -240,17 +265,97 @@ export default function EcoPionPage() {
     }));
   }
 
-  async function handleInquirySubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
+  function handleEmailInquiryClick(): void {
+    const isMobile =
+      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        window.navigator.userAgent
+      );
+
+    if (isMobile) {
+      window.location.href = mailtoHref;
+      return;
+    }
+
+    const popupWidth = 760;
+    const popupHeight = 760;
+
+    const left = Math.max(
+      0,
+      window.screenX + (window.outerWidth - popupWidth) / 2
+    );
+
+    const top = Math.max(
+      0,
+      window.screenY + (window.outerHeight - popupHeight) / 2
+    );
+
+    const popup = window.open(
+      gmailComposeHref,
+      "npolapEcoPionInquiryWindow",
+      [
+        "popup=yes",
+        `width=${popupWidth}`,
+        `height=${popupHeight}`,
+        `left=${Math.round(left)}`,
+        `top=${Math.round(top)}`,
+        "resizable=yes",
+        "scrollbars=yes",
+      ].join(",")
+    );
+
+    if (popup) {
+      popup.focus();
+      return;
+    }
+
+    window.location.href = mailtoHref;
+  }
+
+  async function handleInquirySubmit(
+    e: FormEvent<HTMLFormElement>
+  ): Promise<void> {
     e.preventDefault();
 
     if (isSubmitting) return;
 
+    if (!form.name.trim() || !form.phone.trim() || !form.email.trim() || !form.message.trim()) {
+      alert("성명, 연락처, 이메일, 문의 내용을 모두 입력해 주세요.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
-      const response = await submitInquiry(form, "eco-pion", "에코피온");
+      const response = await submitInquiry(
+        form,
+        "eco-pion",
+        "에코피온 컨설팅"
+      );
 
-      if (!response.ok) {
+      let result: {
+        ok?: boolean;
+        message?: string;
+        detail?: string;
+        emailSent?: boolean;
+      } | null = null;
+
+      try {
+        result = (await response.json()) as {
+          ok?: boolean;
+          message?: string;
+          detail?: string;
+          emailSent?: boolean;
+        };
+      } catch {
+        result = null;
+      }
+
+      if (!response.ok || result?.ok === false) {
+        alert(
+          result?.detail
+            ? `${result.message ?? "문의 저장 중 오류가 발생했습니다."}\n\n${result.detail}`
+            : result?.message ?? "문의 저장 중 오류가 발생했습니다. 이메일 문의로 연결합니다."
+        );
         window.location.href = mailtoHref;
         return;
       }
@@ -265,7 +370,21 @@ export default function EcoPionPage() {
 
       setShowSuccess(true);
       window.setTimeout(() => setShowSuccess(false), 3200);
-    } catch {
+
+      if (result?.emailSent === false) {
+        alert(
+          "상담 신청은 정상적으로 저장되었습니다. 다만 이메일 알림 발송은 실패했을 수 있습니다. 관리자 보드에서 확인 가능합니다."
+        );
+        return;
+      }
+
+      alert("에코피온 컨설팅 상담 신청이 정상적으로 접수되었습니다.");
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? `문의 전송 중 오류가 발생했습니다.\n\n${error.message}\n\n이메일 문의로 연결합니다.`
+          : "문의 전송 중 오류가 발생했습니다. 이메일 문의로 연결합니다."
+      );
       window.location.href = mailtoHref;
     } finally {
       setIsSubmitting(false);
@@ -303,56 +422,56 @@ export default function EcoPionPage() {
 
       <main>
         <section className="relative h-[100vh] w-full overflow-hidden pt-24 md:pt-28">
-  <div className="absolute inset-0">
-    <img
-      src="/images/hero-eco-pion.jpg"
-      alt="에코피온 히어로 배경"
-      className="h-full w-full object-cover"
-    />
-    <div className="absolute inset-0 bg-[#061525]/65" />
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_35%,rgba(229,201,150,0.22),transparent_32%)]" />
-  </div>
+          <div className="absolute inset-0">
+            <img
+              src="/images/hero-eco-pion.jpg"
+              alt="에코피온 히어로 배경"
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-[#061525]/65" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_35%,rgba(229,201,150,0.22),transparent_32%)]" />
+          </div>
 
-  <div className="relative z-10 mx-auto flex h-full w-full max-w-[1600px] items-center px-5 md:px-10 lg:px-12">
-    <div className="max-w-6xl text-white">
-      <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#EAD9BC] md:text-base">
-        ECO-PION · HERITAGE ASSET DESIGN
-      </div>
+          <div className="relative z-10 mx-auto flex h-full w-full max-w-[1600px] items-center px-5 md:px-10 lg:px-12">
+            <div className="max-w-6xl text-white">
+              <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#EAD9BC] md:text-base">
+                ECO-PION · HERITAGE ASSET DESIGN
+              </div>
 
-      <h1 className="mt-6 text-4xl font-bold leading-[1.1] md:text-6xl xl:text-[84px]">
-        자산은 남길 수 있습니다
-        <br />
-        그러나 유산은
-        <br />
-        설계해야 합니다
-      </h1>
+              <h1 className="mt-6 text-4xl font-bold leading-[1.1] md:text-6xl xl:text-[84px]">
+                자산은 남길 수 있습니다
+                <br />
+                그러나 유산은
+                <br />
+                설계해야 합니다
+              </h1>
 
-      <p className="mt-7 max-w-4xl text-base leading-8 text-slate-200 md:text-xl md:leading-9">
-        에코피온은 자산가의 철학과 자산, 공익적 비전, 문화적 가치를
-        <br />
-        비영리법인·재단·박물관·미술관·공익사업 구조로 연결하는
-        <br />
-        AI시대의 헤리티지 자산 설계 직업군입니다.
-      </p>
+              <p className="mt-7 max-w-4xl text-base leading-8 text-slate-200 md:text-xl md:leading-9">
+                에코피온은 자산가의 철학과 자산, 공익적 비전, 문화적 가치를
+                <br />
+                비영리법인·재단·박물관·미술관·공익사업 구조로 연결하는
+                <br />
+                AI시대의 헤리티지 자산 설계 직업군입니다.
+              </p>
 
-      <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-        <a
-          href="#contact"
-          className="inline-flex items-center justify-center rounded-full bg-[#E5C996] px-7 py-4 text-sm font-bold text-[#0B1F35] shadow-[0_18px_45px_rgba(229,201,150,0.24)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_24px_60px_rgba(229,201,150,0.34)] md:text-base"
-        >
-          내 자산의 공익 유산화 상담 신청하기
-        </a>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                <a
+                  href="#contact"
+                  className="inline-flex items-center justify-center rounded-full bg-[#E5C996] px-7 py-4 text-sm font-bold text-[#0B1F35] shadow-[0_18px_45px_rgba(229,201,150,0.24)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_24px_60px_rgba(229,201,150,0.34)] md:text-base"
+                >
+                  내 자산의 공익 유산화 상담 신청하기
+                </a>
 
-        <a
-          href="#definition"
-          className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-[1px] hover:bg-white/15 md:text-base"
-        >
-          에코피온이란?
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
+                <a
+                  href="#definition"
+                  className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-[1px] hover:bg-white/15 md:text-base"
+                >
+                  에코피온이란?
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section id="definition" className="bg-white py-20 md:py-28">
           <div className="mx-auto max-w-[1300px] px-6 md:px-10 lg:px-12">
@@ -629,7 +748,7 @@ export default function EcoPionPage() {
               <div className="rounded-[34px] border border-slate-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] md:p-10">
                 <SectionTitle
                   badge="Inquiry"
-                  title="에코피온 컨설팅 상담 신청"
+                  title="컨설팅 상담 신청"
                   desc="아래 내용을 남겨주시면 재단·박물관·미술관·공익법인 설립 가능성을 검토하여 상담 순서에 따라 연락드립니다."
                 />
 
@@ -690,12 +809,13 @@ export default function EcoPionPage() {
                         : "내 자산의 공익 유산화 상담 신청하기"}
                     </button>
 
-                    <a
-                      href={mailtoHref}
+                    <button
+                      type="button"
+                      onClick={handleEmailInquiryClick}
                       className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-7 py-4 text-sm font-bold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50 md:text-base"
                     >
                       이메일로 직접 문의하기
-                    </a>
+                    </button>
                   </div>
                 </form>
               </div>
