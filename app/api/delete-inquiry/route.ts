@@ -18,7 +18,7 @@ async function parseGoogleScriptResponse(response: Response) {
   } catch {
     return {
       ok: false,
-      message: "Google Apps Script 응답을 JSON으로 해석할 수 없습니다.",
+      message: "Google Apps Script ?묐떟??JSON?쇰줈 ?댁꽍?????놁뒿?덈떎.",
       detail: text,
     };
   }
@@ -32,7 +32,7 @@ export async function POST(request: Request): Promise<Response> {
       return NextResponse.json(
         {
           ok: false,
-          message: "Google Sheet Webhook URL이 설정되어 있지 않습니다.",
+          message: "Google Sheet Webhook URL???ㅼ젙?섏뼱 ?덉? ?딆뒿?덈떎.",
         },
         { status: 500 }
       );
@@ -49,7 +49,7 @@ export async function POST(request: Request): Promise<Response> {
       return NextResponse.json(
         {
           ok: false,
-          message: "휴지통으로 이동할 문의 행 번호가 없습니다.",
+          message: "?댁??듭쑝濡??대룞??臾몄쓽 ??踰덊샇媛 ?놁뒿?덈떎.",
         },
         { status: 400 }
       );
@@ -73,7 +73,7 @@ export async function POST(request: Request): Promise<Response> {
       return NextResponse.json(
         {
           ok: false,
-          message: data?.message || "문의 휴지통 이동에 실패했습니다.",
+          message: data?.message || "臾몄쓽 ?댁????대룞???ㅽ뙣?덉뒿?덈떎.",
           detail: data?.detail || data,
         },
         { status: 500 }
@@ -83,7 +83,7 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json(
       {
         ok: true,
-        message: data.message || "문의가 휴지통으로 이동되었습니다.",
+        message: data.message || "臾몄쓽媛 ?댁??듭쑝濡??대룞?섏뿀?듬땲??",
         trashId: data.trashId || "",
       },
       {
@@ -100,7 +100,7 @@ export async function POST(request: Request): Promise<Response> {
         message:
           error instanceof Error
             ? error.message
-            : "문의 휴지통 이동 중 오류가 발생했습니다.",
+            : "臾몄쓽 ?댁????대룞 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.",
       },
       { status: 500 }
     );

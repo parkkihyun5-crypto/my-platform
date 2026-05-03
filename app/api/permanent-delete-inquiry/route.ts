@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ async function parseGoogleScriptResponse(response: Response) {
   } catch {
     return {
       ok: false,
-      message: "Google Apps Script 응답을 JSON으로 해석할 수 없습니다.",
+      message: "Google Apps Script ?묐떟??JSON?쇰줈 ?댁꽍?????놁뒿?덈떎.",
       detail: text,
     };
   }
@@ -32,7 +32,7 @@ export async function POST(request: Request): Promise<Response> {
       return NextResponse.json(
         {
           ok: false,
-          message: "Google Sheet Webhook URL이 설정되어 있지 않습니다.",
+          message: "Google Sheet Webhook URL???ㅼ젙?섏뼱 ?덉? ?딆뒿?덈떎.",
         },
         { status: 500 }
       );
@@ -51,7 +51,7 @@ export async function POST(request: Request): Promise<Response> {
       return NextResponse.json(
         {
           ok: false,
-          message: "영구 삭제할 휴지통 문의 ID가 없습니다.",
+          message: "?곴뎄 ??젣???댁???臾몄쓽 ID媛 ?놁뒿?덈떎.",
         },
         { status: 400 }
       );
@@ -76,7 +76,7 @@ export async function POST(request: Request): Promise<Response> {
       return NextResponse.json(
         {
           ok: false,
-          message: data?.message || "문의 영구 삭제에 실패했습니다.",
+          message: data?.message || "臾몄쓽 ?곴뎄 ??젣???ㅽ뙣?덉뒿?덈떎.",
           detail: data?.detail || data,
         },
         { status: 500 }
@@ -86,7 +86,7 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json(
       {
         ok: true,
-        message: data.message || "문의가 영구 삭제되었습니다.",
+        message: data.message || "臾몄쓽媛 ?곴뎄 ??젣?섏뿀?듬땲??",
       },
       {
         status: 200,
@@ -102,7 +102,7 @@ export async function POST(request: Request): Promise<Response> {
         message:
           error instanceof Error
             ? error.message
-            : "문의 영구 삭제 중 오류가 발생했습니다.",
+            : "臾몄쓽 ?곴뎄 ??젣 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.",
       },
       { status: 500 }
     );

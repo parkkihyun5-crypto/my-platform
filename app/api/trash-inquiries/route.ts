@@ -1,6 +1,15 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+
+type GoogleTrashResponse = {
+  ok?: boolean;
+  source?: string;
+  sheetName?: string;
+  items?: unknown[];
+  message?: string;
+  detail?: unknown;
+};
 
 function getWebhookUrl(): string {
   return (
@@ -35,17 +44,10 @@ export async function GET(): Promise<Response> {
 
     const text = await googleResponse.text();
 
-    let data: {
-      ok?: boolean;
-      source?: string;
-      sheetName?: string;
-      items?: unknown[];
-      message?: string;
-      detail?: string;
-    };
+    let data: GoogleTrashResponse;
 
     try {
-      data = text ? JSON.parse(text) : {};
+      data = text ? (JSON.parse(text) as GoogleTrashResponse) : {};
     } catch {
       return NextResponse.json(
         {
@@ -72,8 +74,7 @@ export async function GET(): Promise<Response> {
       return NextResponse.json(
         {
           ok: false,
-          message:
-            "휴지통 API가 휴지통 시트가 아닌 다른 시트를 반환했습니다.",
+          message: "휴지통 API가 휴지통 시트가 아닌 다른 시트를 반환했습니다.",
           detail: data,
         },
         { status: 500 }
