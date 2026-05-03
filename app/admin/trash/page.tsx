@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 type TrashInquiryItem = {
   id: string;
+  trashId?: string;
   trashRow: string;
   deletedAt: string;
   originalRow: string;
@@ -55,6 +56,16 @@ function displayStatus(status: string): string {
 
 function displayPriority(priority: string): string {
   return priorityLabel[priority] || priority || "미지정";
+}
+
+function getTrashIdentity(item: TrashInquiryItem): {
+  trashId: string;
+  trashRow: string;
+} {
+  return {
+    trashId: item.trashId || item.id || "",
+    trashRow: item.trashRow || "",
+  };
 }
 
 export default function AdminTrashPage() {
@@ -109,10 +120,19 @@ export default function AdminTrashPage() {
 
   async function restoreInquiry(item: TrashInquiryItem) {
     const confirmed = window.confirm(
-      `[복원 확인]\n\n${item.organization || item.name || "선택한 문의"}\n\n이 문의를 원본 문의목록으로 복원하시겠습니까?`
+      `[복원 확인]\n\n${
+        item.organization || item.name || "선택한 문의"
+      }\n\n이 문의를 원본 문의목록으로 복원하시겠습니까?`
     );
 
     if (!confirmed) return;
+
+    const { trashId, trashRow } = getTrashIdentity(item);
+
+    if (!trashId && !trashRow) {
+      alert("복원할 휴지통 문의 ID를 찾을 수 없습니다.");
+      return;
+    }
 
     try {
       setWorkingId(item.id);
@@ -123,7 +143,8 @@ export default function AdminTrashPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          trashRow: item.trashRow || item.id,
+          trashId,
+          trashRow,
         }),
       });
 
@@ -142,7 +163,7 @@ export default function AdminTrashPage() {
         return;
       }
 
-      setItems((prev) => prev.filter((entry) => entry.id !== item.id));
+      await loadTrash(true);
       alert(data.message || "문의가 복원되었습니다.");
     } catch (error) {
       alert(
@@ -157,10 +178,19 @@ export default function AdminTrashPage() {
 
   async function permanentDeleteInquiry(item: TrashInquiryItem) {
     const confirmed = window.confirm(
-      `[영구 삭제 확인]\n\n${item.organization || item.name || "선택한 문의"}\n\n이 문의를 휴지통에서도 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
+      `[영구 삭제 확인]\n\n${
+        item.organization || item.name || "선택한 문의"
+      }\n\n이 문의를 휴지통에서도 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
     );
 
     if (!confirmed) return;
+
+    const { trashId, trashRow } = getTrashIdentity(item);
+
+    if (!trashId && !trashRow) {
+      alert("영구 삭제할 휴지통 문의 ID를 찾을 수 없습니다.");
+      return;
+    }
 
     try {
       setWorkingId(item.id);
@@ -171,7 +201,8 @@ export default function AdminTrashPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          trashRow: item.trashRow || item.id,
+          trashId,
+          trashRow,
         }),
       });
 
@@ -190,7 +221,7 @@ export default function AdminTrashPage() {
         return;
       }
 
-      setItems((prev) => prev.filter((entry) => entry.id !== item.id));
+      await loadTrash(true);
       alert(data.message || "문의가 영구 삭제되었습니다.");
     } catch (error) {
       alert(
@@ -214,6 +245,8 @@ export default function AdminTrashPage() {
 
     return items.filter((item) =>
       [
+        item.trashId,
+        item.trashRow,
         item.organization,
         item.name,
         item.phone,
@@ -246,7 +279,8 @@ export default function AdminTrashPage() {
             </h1>
 
             <p className="mt-4 text-sm leading-7 text-slate-600 md:text-base">
-              Google Sheet 휴지통 시트에 보관된 문의를 확인하고, 복원 또는 영구 삭제할 수 있습니다.
+              Google Sheet 휴지통 시트에 보관된 문의를 확인하고, 복원 또는
+              영구 삭제할 수 있습니다.
             </p>
           </div>
 
@@ -299,9 +333,7 @@ export default function AdminTrashPage() {
 
         <section className="mt-8 rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <h2 className="text-lg font-bold text-[#0B1F35]">
-              휴지통 목록
-            </h2>
+            <h2 className="text-lg font-bold text-[#0B1F35]">휴지통 목록</h2>
 
             <input
               value={keyword}
@@ -356,7 +388,7 @@ export default function AdminTrashPage() {
                   </tr>
                 ) : (
                   filteredItems.map((item) => (
-                    <tr key={item.id} className="text-sm text-slate-700">
+                    <tr key={item.trashId || item.id} className="text-sm text-slate-700">
                       <td className="rounded-l-2xl border-y border-l border-slate-200 bg-[#FCFBF8] px-4 py-4">
                         {formatDate(item.deletedAt)}
                       </td>
