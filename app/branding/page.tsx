@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -258,9 +258,12 @@ export default function BrandingPage() {
     setQuoteMessage("");
   }, [quoteMessage]);
 
-  const mailtoHref = useMemo(() => {
-    const subject = `[브랜딩서비스 문의] ${form.organization || "기관명 미입력"}`;
-    const body = [
+  const emailSubject = useMemo(() => {
+    return `[브랜딩서비스 문의] ${form.organization || "기관명 미입력"}`;
+  }, [form.organization]);
+
+  const emailBody = useMemo(() => {
+    return [
       "안녕하세요. 브랜딩서비스 관련 문의를 드립니다.",
       "",
       `기관명: ${form.organization}`,
@@ -271,11 +274,21 @@ export default function BrandingPage() {
       "문의 내용:",
       form.message || "(내용 미입력)",
     ].join("\n");
-
-    return `mailto:npolap@ilukorea.org?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
   }, [form]);
+
+  const mailtoHref = useMemo(() => {
+    return `mailto:npolap@ilukorea.org?subject=${encodeURIComponent(
+      emailSubject
+    )}&body=${encodeURIComponent(emailBody)}`;
+  }, [emailSubject, emailBody]);
+
+  const gmailComposeHref = useMemo(() => {
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+      "npolap@ilukorea.org"
+    )}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(
+      emailBody
+    )}`;
+  }, [emailSubject, emailBody]);
 
   function toggleBrandingPackage(id: string): void {
     setSelectedBrandingIds((prev: string[]) =>
@@ -287,20 +300,46 @@ export default function BrandingPage() {
     setSelectedOptions((prev: string[]) =>
       prev.includes(id) ? prev.filter((item: string) => item !== id) : [...prev, id]
     );
-  }
-
-  async function handleEmailInquiry(): Promise<void> {
+  }  function handleEmailInquiry(): void {
     try {
-      window.location.href = mailtoHref;
-      await navigator.clipboard.writeText("npolap@ilukorea.org");
-      alert(
-        "이메일 앱이 열리지 않으면 npolap@ilukorea.org 주소로 직접 보내 주세요. 이메일 주소는 복사되었습니다."
-      );
+      void navigator.clipboard?.writeText("npolap@ilukorea.org");
     } catch {
-      alert("이메일 앱 연결이 없으면 npolap@ilukorea.org 로 직접 보내 주세요.");
+      // Ignore clipboard permission errors.
     }
-  }
 
+    const isMobile =
+      typeof window !== "undefined" &&
+      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        window.navigator.userAgent
+      );
+
+    if (isMobile) {
+      window.location.href = mailtoHref;
+      alert("\uC774\uBA54\uC77C \uC791\uC131 \uD654\uBA74\uC73C\uB85C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4. \uBA54\uC77C \uC571\uC5D0\uC11C \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
+      return;
+    }
+
+    const gmailWindow = window.open(
+      gmailComposeHref,
+      "brandingGmailCompose",
+      "width=760,height=720,left=120,top=80"
+    );
+
+    if (gmailWindow) {
+      try {
+        gmailWindow.opener = null;
+        gmailWindow.focus();
+      } catch {
+        // Ignore browser security restrictions.
+      }
+
+      alert("\uC774\uBA54\uC77C \uC791\uC131\uCC3D\uC774 \uC5F4\uB838\uC2B5\uB2C8\uB2E4. \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
+      return;
+    }
+
+    window.location.href = mailtoHref;
+    alert("\uC774\uBA54\uC77C \uC791\uC131 \uD654\uBA74\uC73C\uB85C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4. \uBA54\uC77C \uC571\uC5D0\uC11C \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
+  }
   async function handleInquirySubmit(
     e: React.FormEvent<HTMLFormElement>
   ): Promise<void> {
@@ -360,7 +399,7 @@ ${result.detail}`
 이메일 문의로 연결합니다.`;
 
         alert(errorMessage);
-        window.location.href = mailtoHref;
+        handleEmailInquiry();
         return;
       }
 
@@ -391,7 +430,7 @@ ${error.message}
           : "문의 전송 중 오류가 발생했습니다. 이메일 문의로 연결합니다."
       );
 
-      window.location.href = mailtoHref;
+      handleEmailInquiry();
     } finally {
       setIsSubmitting(false);
     }
@@ -403,7 +442,7 @@ ${error.message}
   mode="sub"
   logoText="BRANDING SERVICE"
   logoHref="/heritage-office"
-  inquiryHref="#contact"
+  inquiryHref="#branding-inquiry"
   menuItems={[
     {
       label: "공익법인설립",
@@ -982,7 +1021,7 @@ ${error.message}
                 <button
                   type="button"
                   onClick={() => {
-                    void handleEmailInquiry();
+                    handleEmailInquiry();
                   }}
                   className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50 md:px-7 md:py-4 md:text-base"
                 >

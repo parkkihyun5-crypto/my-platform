@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { siteMenuItems } from "@/lib/site-menu";
 import SiteHeader from "@/components/SiteHeader";
@@ -248,60 +248,43 @@ export default function HeritageOfficePage() {
     });
   }
 
-  function handleEmailInquiryClick(
-  event: MouseEvent<HTMLButtonElement>
-): void {
-  event.preventDefault();
-  event.stopPropagation();
+  async function handleEmailInquiryClick(
+    event: MouseEvent<HTMLButtonElement>
+  ): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
 
-  const isMobile =
-    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      window.navigator.userAgent
+    const isMobile =
+      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        window.navigator.userAgent
+      );
+
+    if (isMobile) {
+      window.location.href = mailtoHref;
+      alert("\uC774\uBA54\uC77C \uC791\uC131 \uD654\uBA74\uC73C\uB85C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4. \uBA54\uC77C \uC571\uC5D0\uC11C \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
+      return;
+    }
+
+    const gmailWindow = window.open(
+      gmailComposeHref,
+      "heritageOfficeGmailCompose",
+      "width=760,height=720,left=120,top=80"
     );
 
-  if (isMobile) {
+    if (gmailWindow) {
+      try {
+        gmailWindow.opener = null;
+      } catch {
+        // Ignore browser security restrictions.
+      }
+
+      alert("\uC774\uBA54\uC77C \uC791\uC131\uCC3D\uC774 \uC5F4\uB838\uC2B5\uB2C8\uB2E4. \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
+      return;
+    }
+
     window.location.href = mailtoHref;
-    return;
+    alert("\uC774\uBA54\uC77C \uC791\uC131 \uD654\uBA74\uC73C\uB85C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4. \uBA54\uC77C \uC571\uC5D0\uC11C \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
   }
-
-  const popupWidth = 760;
-  const popupHeight = 760;
-
-  const left = Math.max(
-    0,
-    window.screenX + (window.outerWidth - popupWidth) / 2
-  );
-
-  const top = Math.max(
-    0,
-    window.screenY + (window.outerHeight - popupHeight) / 2
-  );
-
-  const popup = window.open(
-    gmailComposeHref,
-    "npolapGmailInquiryWindow",
-    [
-      "popup=yes",
-      `width=${popupWidth}`,
-      `height=${popupHeight}`,
-      `left=${Math.round(left)}`,
-      `top=${Math.round(top)}`,
-      "resizable=yes",
-      "scrollbars=yes",
-      "noopener=yes",
-      "noreferrer=yes",
-    ].join(",")
-  );
-
-  if (popup) {
-    popup.focus();
-    return;
-  }
-
-  window.alert(
-    "팝업이 차단되어 Gmail 작성창을 열 수 없습니다. 브라우저의 팝업 차단을 해제한 뒤 다시 시도해 주세요."
-  );
-}
 
   async function handleInquirySubmit(
     e: FormEvent<HTMLFormElement>

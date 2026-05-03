@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { FormEvent, useMemo, useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -268,20 +268,29 @@ export default function PublicInterestFoundationPage() {
 
     if (isMobile) {
       window.location.href = mailtoHref;
+      alert("\uC774\uBA54\uC77C \uC791\uC131 \uD654\uBA74\uC73C\uB85C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4. \uBA54\uC77C \uC571\uC5D0\uC11C \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
       return;
     }
 
-    const opened = window.open(gmailComposeHref, "_blank", "noopener,noreferrer");
+    const gmailWindow = window.open(
+      gmailComposeHref,
+      "publicInterestGmailCompose",
+      "width=760,height=720,left=120,top=80"
+    );
 
-    if (!opened) {
-      window.location.href = mailtoHref;
+    if (gmailWindow) {
+      try {
+        gmailWindow.opener = null;
+      } catch {
+        // Ignore browser security restrictions.
+      }
+
+      alert("\uC774\uBA54\uC77C \uC791\uC131\uCC3D\uC774 \uC5F4\uB838\uC2B5\uB2C8\uB2E4. \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
+      return;
     }
 
-    try {
-      void navigator.clipboard.writeText("npolap@ilukorea.org");
-    } catch {
-      // 클립보드 권한이 없으면 무시합니다.
-    }
+    window.location.href = mailtoHref;
+    alert("\uC774\uBA54\uC77C \uC791\uC131 \uD654\uBA74\uC73C\uB85C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4. \uBA54\uC77C \uC571\uC5D0\uC11C \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
   }
 
   async function handleInquirySubmit(
