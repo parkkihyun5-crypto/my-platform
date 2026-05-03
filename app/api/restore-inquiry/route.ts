@@ -10,6 +10,20 @@ function getWebhookUrl(): string {
   );
 }
 
+async function parseGoogleScriptResponse(response: Response) {
+  const text = await response.text();
+
+  try {
+    return text ? JSON.parse(text) : null;
+  } catch {
+    return {
+      ok: false,
+      message: "Google Apps Script 응답을 JSON으로 해석할 수 없습니다.",
+      detail: text,
+    };
+  }
+}
+
 export async function POST(request: Request): Promise<Response> {
   try {
     const webhookUrl = getWebhookUrl();
@@ -30,8 +44,8 @@ export async function POST(request: Request): Promise<Response> {
       id?: string;
     };
 
-    const trashId = body.trashId || body.id || "";
-    const trashRow = body.trashRow || "";
+    const trashId = String(body.trashId || body.id || "").trim();
+    const trashRow = String(body.trashRow || "").trim();
 
     if (!trashId && !trashRow) {
       return NextResponse.json(
@@ -43,7 +57,7 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const response = await fetch(webhookUrl, {
+    const googleResponse = await fetch(webhookUrl, {
       method: "POST",
       headers: {
         "Content-Type": "text/plain;charset=utf-8",
@@ -56,29 +70,31 @@ export async function POST(request: Request): Promise<Response> {
       cache: "no-store",
     });
 
-    const text = await response.text();
+    const data = await parseGoogleScriptResponse(googleResponse);
 
-    let data: unknown;
-
-    try {
-      data = text ? JSON.parse(text) : null;
-    } catch {
+    if (!googleResponse.ok || !data?.ok) {
       return NextResponse.json(
         {
           ok: false,
-          message: "복원 응답을 해석할 수 없습니다.",
-          detail: text,
+          message: data?.message || "문의 복원에 실패했습니다.",
+          detail: data?.detail || data,
         },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(data, {
-      status: response.ok ? 200 : response.status,
-      headers: {
-        "Cache-Control": "no-store",
+    return NextResponse.json(
+      {
+        ok: true,
+        message: data.message || "문의가 복원되었습니다.",
       },
-    });
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json(
       {

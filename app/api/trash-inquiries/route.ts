@@ -28,34 +28,72 @@ export async function GET(): Promise<Response> {
     url.searchParams.set("action", "listTrash");
     url.searchParams.set("t", String(Date.now()));
 
-    const response = await fetch(url.toString(), {
+    const googleResponse = await fetch(url.toString(), {
       method: "GET",
       cache: "no-store",
     });
 
-    const text = await response.text();
+    const text = await googleResponse.text();
 
-    let data: unknown = null;
+    let data: {
+      ok?: boolean;
+      source?: string;
+      sheetName?: string;
+      items?: unknown[];
+      message?: string;
+      detail?: string;
+    };
 
     try {
-      data = text ? JSON.parse(text) : null;
+      data = text ? JSON.parse(text) : {};
     } catch {
       return NextResponse.json(
         {
           ok: false,
-          message: "휴지통 응답을 해석할 수 없습니다.",
+          message: "휴지통 목록 응답을 해석할 수 없습니다.",
           detail: text,
         },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(data, {
-      status: response.ok ? 200 : response.status,
-      headers: {
-        "Cache-Control": "no-store",
+    if (!googleResponse.ok || data.ok === false) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: data.message || "휴지통 목록 조회에 실패했습니다.",
+          detail: data.detail || data,
+        },
+        { status: 500 }
+      );
+    }
+
+    if (data.source && data.source !== "trash") {
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            "휴지통 API가 휴지통 시트가 아닌 다른 시트를 반환했습니다.",
+          detail: data,
+        },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        ok: true,
+        source: data.source || "trash",
+        sheetName: data.sheetName || "휴지통",
+        items: data.items || [],
       },
-    });
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json(
       {
