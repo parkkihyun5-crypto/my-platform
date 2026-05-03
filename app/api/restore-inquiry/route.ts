@@ -25,17 +25,19 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const body = (await request.json()) as {
+      trashId?: string;
       trashRow?: string;
       id?: string;
     };
 
-    const trashRow = body.trashRow || body.id;
+    const trashId = body.trashId || body.id || "";
+    const trashRow = body.trashRow || "";
 
-    if (!trashRow) {
+    if (!trashId && !trashRow) {
       return NextResponse.json(
         {
           ok: false,
-          message: "복원할 휴지통 행 번호가 없습니다.",
+          message: "복원할 휴지통 문의 ID가 없습니다.",
         },
         { status: 400 }
       );
@@ -48,6 +50,7 @@ export async function POST(request: Request): Promise<Response> {
       },
       body: JSON.stringify({
         action: "restoreInquiry",
+        trashId,
         trashRow,
       }),
       cache: "no-store",
@@ -55,7 +58,7 @@ export async function POST(request: Request): Promise<Response> {
 
     const text = await response.text();
 
-    let data: unknown = null;
+    let data: unknown;
 
     try {
       data = text ? JSON.parse(text) : null;
