@@ -626,6 +626,12 @@ async function updateAdminFields(
             >
               엑셀 다운로드
             </button>
+          <a
+            href="/admin/trash"
+            className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+          >
+            휴지통 보기
+          </a>
 
             <button
               type="button"
@@ -1124,5 +1130,7 @@ function formatDate(value: string): string {
 
   return date.toLocaleString("ko-KR");
 }
+
+
 
 
