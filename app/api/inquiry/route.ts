@@ -11,14 +11,21 @@ type InquiryPayload = {
   message?: string;
   sourcePage?: string;
   serviceType?: string;
+  status?: string;
+  manager?: string;
+  priority?: string;
+  memo?: string;
+  id?: string;
   [key: string]: unknown;
 };
 
 type AppsScriptResponse = {
   ok?: boolean;
   items?: unknown[];
+  item?: unknown;
   message?: string;
   error?: string;
+  detail?: string;
   [key: string]: unknown;
 };
 
@@ -38,7 +45,7 @@ function normalize(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function createMissingWebhookResponse() {
+function createMissingWebhookResponse(): NextResponse {
   return NextResponse.json(
     {
       ok: false,
@@ -50,9 +57,7 @@ function createMissingWebhookResponse() {
   );
 }
 
-async function parseAppsScriptResponse(
-  response: Response
-): Promise<{
+async function parseAppsScriptResponse(response: Response): Promise<{
   ok: boolean;
   status: number;
   data: AppsScriptResponse | null;
@@ -103,13 +108,14 @@ async function forwardToAppsScript(
       method === "GET" ? `${webhookUrl}?t=${Date.now()}` : webhookUrl;
 
     const response = await fetch(requestUrl, {
-      method: method === "PATCH" ? "POST" : method,
+      method: method === "GET" ? "GET" : "POST",
       cache: "no-store",
       headers:
         method === "GET"
           ? undefined
           : {
-              "Content-Type": "application/json",
+              "Content-Type": "application/json; charset=utf-8",
+              Accept: "application/json",
             },
       body:
         method === "GET"
@@ -130,6 +136,7 @@ async function forwardToAppsScript(
           message:
             parsed.data?.message ||
             parsed.data?.error ||
+            parsed.data?.detail ||
             "Google Apps Script 처리 중 오류가 발생했습니다.",
           status: parsed.status,
           raw: parsed.data ?? parsed.rawText,
@@ -233,7 +240,17 @@ export async function POST(request: Request): Promise<Response> {
 
 export async function PATCH(request: Request): Promise<Response> {
   try {
-    const body = (await request.json()) as Record<string, unknown>;
+    const body = (await request.json()) as InquiryPayload;
+
+    if (!body.id) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "수정할 문의 ID가 없습니다.",
+        },
+        { status: 400 }
+      );
+    }
 
     return forwardToAppsScript("PATCH", body);
   } catch (error) {
