@@ -176,16 +176,40 @@ export default function AdminPage() {
     }
   }
 
-    function openProposalEmailFromList(item: InquiryItem): void {
+        function openProposalEmailFromList(
+    item: InquiryItem,
+    preparedWindow?: Window | null
+  ): void {
     if (!item.email?.trim()) {
-      alert("?대찓??二쇱냼媛 ?녿뒗 臾몄쓽?낅땲??");
+      if (preparedWindow && !preparedWindow.closed) {
+        preparedWindow.close();
+      }
+
+      alert("\uC774\uBA54\uC77C \uC8FC\uC18C\uAC00 \uC5C6\uB294 \uBB38\uC758\uC785\uB2C8\uB2E4.");
       return;
     }
 
     const proposalUrl = createProposalEmailUrl(item);
 
     if (!proposalUrl || proposalUrl === "#") {
-      alert("寃ъ쟻 硫붿씪 ?묒꽦李쎌쓣 留뚮뱾 ???놁뒿?덈떎.");
+      if (preparedWindow && !preparedWindow.closed) {
+        preparedWindow.close();
+      }
+
+      alert("\uACAC\uC801 \uBA54\uC77C \uC791\uC131\uCC3D\uC744 \uB9CC\uB4E4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.");
+      return;
+    }
+
+    if (preparedWindow && !preparedWindow.closed) {
+      preparedWindow.location.href = proposalUrl;
+
+      try {
+        preparedWindow.focus();
+      } catch {
+        // Ignore browser focus restrictions.
+      }
+
+      alert("\uACAC\uC801 \uBA54\uC77C \uC791\uC131\uCC3D\uC744 \uC5F4\uC5C8\uC2B5\uB2C8\uB2E4. \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
       return;
     }
 
@@ -200,21 +224,44 @@ export default function AdminPage() {
         proposalWindow.opener = null;
         proposalWindow.focus();
       } catch {
-        // 釉뚮씪?곗? 蹂댁븞 ?뺤콉???곕씪 focus ?먮뒗 opener ?ㅼ젙??李⑤떒?????덉뒿?덈떎.
+        // Ignore browser security restrictions.
       }
 
-      alert("寃ъ쟻 硫붿씪 ?묒꽦李쎌쓣 ?댁뿀?듬땲?? ?댁슜???뺤씤????蹂대궡湲곕? ?뚮윭二쇱꽭??");
+      alert("\uACAC\uC801 \uBA54\uC77C \uC791\uC131\uCC3D\uC744 \uC5F4\uC5C8\uC2B5\uB2C8\uB2E4. \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
       return;
     }
 
     window.location.href = proposalUrl;
-    alert("寃ъ쟻 硫붿씪 ?묒꽦 ?붾㈃?쇰줈 ?곌껐?덉뒿?덈떎. ?댁슜???뺤씤????蹂대궡湲곕? ?뚮윭二쇱꽭??");
+    alert("\uACAC\uC801 \uBA54\uC77C \uC791\uC131 \uD654\uBA74\uC73C\uB85C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4. \uBA54\uC77C \uC571\uC5D0\uC11C \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
   }
 
   async function updateStatus(row: string, status: string) {
     const currentItem =
       items.find((item) => item.id === row) ??
       (selectedItem?.id === row ? selectedItem : null);
+
+    let preparedProposalWindow: Window | null = null;
+
+    if (status === "proposal" && currentItem?.email?.trim()) {
+      preparedProposalWindow = window.open(
+        "about:blank",
+        "proposalGmailCompose",
+        "width=820,height=760,left=120,top=80"
+      );
+
+      if (preparedProposalWindow) {
+        try {
+          preparedProposalWindow.document.write(
+            "<!doctype html><html><head><title>\uACAC\uC801 \uBA54\uC77C \uC900\uBE44 \uC911</title></head><body style='font-family:sans-serif;padding:24px;line-height:1.7;'><h3>\uACAC\uC801 \uBA54\uC77C \uC791\uC131\uCC3D\uC744 \uC900\uBE44\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4.</h3><p>\uC7A0\uC2DC\uB9CC \uAE30\uB2E4\uB824 \uC8FC\uC138\uC694.</p></body></html>"
+          );
+          preparedProposalWindow.document.close();
+          preparedProposalWindow.opener = null;
+          preparedProposalWindow.focus();
+        } catch {
+          // Ignore browser restrictions.
+        }
+      }
+    }
 
     try {
       setSavingFieldId(row);
@@ -230,7 +277,11 @@ export default function AdminPage() {
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
-        alert(data.message || "?곹깭 蹂寃쎌뿉 ?ㅽ뙣?덉뒿?덈떎.");
+        if (preparedProposalWindow && !preparedProposalWindow.closed) {
+          preparedProposalWindow.close();
+        }
+
+        alert(data.message || "\uC0C1\uD0DC \uBCC0\uACBD\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4.");
         return;
       }
 
@@ -253,10 +304,14 @@ export default function AdminPage() {
       }
 
       if (status === "proposal" && updatedItem) {
-        openProposalEmailFromList(updatedItem);
+        openProposalEmailFromList(updatedItem, preparedProposalWindow);
       }
     } catch {
-      alert("?곹깭 蹂寃?以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.");
+      if (preparedProposalWindow && !preparedProposalWindow.closed) {
+        preparedProposalWindow.close();
+      }
+
+      alert("\uC0C1\uD0DC \uBCC0\uACBD \uC911 \uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4.");
     } finally {
       setSavingFieldId(null);
     }
@@ -1069,3 +1124,5 @@ function formatDate(value: string): string {
 
   return date.toLocaleString("ko-KR");
 }
+
+
