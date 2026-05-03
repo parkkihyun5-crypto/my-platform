@@ -1,6 +1,5 @@
 "use client";
 
-import { siteMenuItems } from "@/lib/site-menu";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import SectionTitle from "@/components/SectionTitle";
@@ -303,88 +302,100 @@ export default function BrandingPage() {
   }
 
   async function handleInquirySubmit(
-  e: React.FormEvent<HTMLFormElement>
-): Promise<void> {
-  e.preventDefault();
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> {
+    e.preventDefault();
 
-  if (isSubmitting) return;
+    if (isSubmitting) return;
 
-  if (
-    !form.name.trim() ||
-    !form.phone.trim() ||
-    !form.email.trim() ||
-    !form.message.trim()
-  ) {
-    alert("성명, 연락처, 이메일, 문의 내용을 모두 입력해 주세요.");
-    return;
-  }
+    if (
+      !form.name.trim() ||
+      !form.phone.trim() ||
+      !form.email.trim() ||
+      !form.message.trim()
+    ) {
+      alert("성명, 연락처, 이메일, 문의 내용을 모두 입력해 주세요.");
+      return;
+    }
 
-  try {
-    setIsSubmitting(true);
+    try {
+      setIsSubmitting(true);
 
-    const response = await submitInquiry(form, "branding", "브랜딩서비스");
+      const response = await submitInquiry(form, "branding", "브랜딩서비스");
+      const rawText = await response.text();
 
-    const rawText = await response.text();
+      let result: {
+        ok?: boolean;
+        message?: string;
+        detail?: string;
+        emailSent?: boolean;
+      } | null = null;
 
-    let result: {
-      ok?: boolean;
-      message?: string;
-      detail?: string;
-      emailSent?: boolean;
-    } | null = null;
-
-    if (rawText.trim()) {
-      try {
-        result = JSON.parse(rawText) as {
-          ok?: boolean;
-          message?: string;
-          detail?: string;
-          emailSent?: boolean;
-        };
-      } catch {
-        result = null;
+      if (rawText.trim()) {
+        try {
+          result = JSON.parse(rawText) as {
+            ok?: boolean;
+            message?: string;
+            detail?: string;
+            emailSent?: boolean;
+          };
+        } catch {
+          result = null;
+        }
       }
-    }
 
-    if (!response.ok || result?.ok === false) {
-      const errorMessage = result?.detail
-        ? `${result.message ?? "문의 저장 실패"}\n\n${result.detail}`
-        : result?.message ??
-          "문의 저장 중 오류가 발생했습니다. 이메일 문의로 연결합니다.";
+      if (!response.ok || result?.ok === false) {
+        const errorMessage = result?.detail
+          ? `${result.message ?? "문의 저장 실패"}
 
-      alert(errorMessage);
-      window.location.href = mailtoHref;
-      return;
-    }
+${result.detail}`
+          : result?.message ??
+            `문의 저장 중 오류가 발생했습니다.
 
-    setForm({
-      organization: "",
-      name: "",
-      phone: "",
-      email: "",
-      message: "",
-    });
+상태코드: ${response.status}
+응답내용: ${
+              rawText || "(빈 응답)"
+            }
 
-    if (result?.emailSent === false) {
+이메일 문의로 연결합니다.`;
+
+        alert(errorMessage);
+        window.location.href = mailtoHref;
+        return;
+      }
+
+      setForm({
+        organization: "",
+        name: "",
+        phone: "",
+        email: "",
+        message: "",
+      });
+
+      if (result?.emailSent === false) {
+        alert(
+          "문의는 정상적으로 저장되었습니다. 다만 이메일 알림 발송은 실패했습니다. 관리자 보드에서는 확인 가능합니다."
+        );
+        return;
+      }
+
+      alert("문의가 정상적으로 접수되었습니다.");
+    } catch (error) {
       alert(
-        "문의는 정상적으로 저장되었습니다. 다만 이메일 알림 발송은 실패했습니다. 관리자 보드에서는 확인 가능합니다."
+        error instanceof Error
+          ? `문의 전송 중 오류가 발생했습니다.
+
+${error.message}
+
+이메일 문의로 연결합니다.`
+          : "문의 전송 중 오류가 발생했습니다. 이메일 문의로 연결합니다."
       );
-      return;
+
+      window.location.href = mailtoHref;
+    } finally {
+      setIsSubmitting(false);
     }
-
-    alert("문의가 정상적으로 접수되었습니다.");
-  } catch (error) {
-    alert(
-      error instanceof Error
-        ? `문의 전송 중 오류가 발생했습니다.\n\n${error.message}\n\n이메일 문의로 연결합니다.`
-        : "문의 전송 중 오류가 발생했습니다. 이메일 문의로 연결합니다."
-    );
-
-    window.location.href = mailtoHref;
-  } finally {
-    setIsSubmitting(false);
   }
-}
 
   return (
     <div className="min-h-screen bg-[#f6f3ee] text-slate-900">
