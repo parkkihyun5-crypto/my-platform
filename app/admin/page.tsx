@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -176,7 +176,46 @@ export default function AdminPage() {
     }
   }
 
+    function openProposalEmailFromList(item: InquiryItem): void {
+    if (!item.email?.trim()) {
+      alert("?대찓??二쇱냼媛 ?녿뒗 臾몄쓽?낅땲??");
+      return;
+    }
+
+    const proposalUrl = createProposalEmailUrl(item);
+
+    if (!proposalUrl || proposalUrl === "#") {
+      alert("寃ъ쟻 硫붿씪 ?묒꽦李쎌쓣 留뚮뱾 ???놁뒿?덈떎.");
+      return;
+    }
+
+    const proposalWindow = window.open(
+      proposalUrl,
+      "proposalGmailCompose",
+      "width=820,height=760,left=120,top=80"
+    );
+
+    if (proposalWindow) {
+      try {
+        proposalWindow.opener = null;
+        proposalWindow.focus();
+      } catch {
+        // 釉뚮씪?곗? 蹂댁븞 ?뺤콉???곕씪 focus ?먮뒗 opener ?ㅼ젙??李⑤떒?????덉뒿?덈떎.
+      }
+
+      alert("寃ъ쟻 硫붿씪 ?묒꽦李쎌쓣 ?댁뿀?듬땲?? ?댁슜???뺤씤????蹂대궡湲곕? ?뚮윭二쇱꽭??");
+      return;
+    }
+
+    window.location.href = proposalUrl;
+    alert("寃ъ쟻 硫붿씪 ?묒꽦 ?붾㈃?쇰줈 ?곌껐?덉뒿?덈떎. ?댁슜???뺤씤????蹂대궡湲곕? ?뚮윭二쇱꽭??");
+  }
+
   async function updateStatus(row: string, status: string) {
+    const currentItem =
+      items.find((item) => item.id === row) ??
+      (selectedItem?.id === row ? selectedItem : null);
+
     try {
       setSavingFieldId(row);
 
@@ -191,9 +230,16 @@ export default function AdminPage() {
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
-        alert(data.message || "상태 변경에 실패했습니다.");
+        alert(data.message || "?곹깭 蹂寃쎌뿉 ?ㅽ뙣?덉뒿?덈떎.");
         return;
       }
+
+      const updatedItem = currentItem
+        ? {
+            ...currentItem,
+            status,
+          }
+        : null;
 
       setItems((prev) =>
         prev.map((item) => (item.id === row ? { ...item, status } : item))
@@ -205,14 +251,17 @@ export default function AdminPage() {
           status,
         });
       }
+
+      if (status === "proposal" && updatedItem) {
+        openProposalEmailFromList(updatedItem);
+      }
     } catch {
-      alert("상태 변경 중 오류가 발생했습니다.");
+      alert("?곹깭 蹂寃?以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.");
     } finally {
       setSavingFieldId(null);
     }
   }
-
-  async function updateAdminFields(
+async function updateAdminFields(
     row: string,
     fields: {
       manager?: string;
