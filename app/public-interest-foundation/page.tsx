@@ -1,5 +1,4 @@
 "use client";
-import { siteMenuItems } from "@/lib/site-menu";
 import { FormEvent, useMemo, useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -216,17 +215,10 @@ export default function PublicInterestFoundationPage() {
     selectedPackageIds.includes(item.id)
   );
 
-  const selectedPackagesText =
-    selectedPackages.length > 0
-      ? selectedPackages.map((item) => item.name).join(", ")
-      : "선택없음";
-
   const selectedPackagesTotal = selectedPackages.reduce(
     (sum, item) => sum + item.price,
     0
   );
-
-  const estimatedTotal = selectedPackagesTotal;
 
   function togglePackage(id: string): void {
     setSelectedPackageIds((prev) =>
@@ -236,10 +228,13 @@ export default function PublicInterestFoundationPage() {
     );
   }
 
-  const mailtoHref = useMemo(() => {
-    const subject = `[NPOLAP 문의하기] ${form.organization || "기관명 미입력"}`;
-    const body = [
-      "안녕하세요. 문의를 드립니다.",
+  const emailSubject = useMemo(() => {
+    return `[공익법인설립 문의] ${form.organization || "기관명 미입력"}`;
+  }, [form.organization]);
+
+  const emailBody = useMemo(() => {
+    return [
+      "안녕하세요. 공익법인설립 관련 문의를 드립니다.",
       "",
       `기관명: ${form.organization}`,
       `성명: ${form.name}`,
@@ -249,11 +244,45 @@ export default function PublicInterestFoundationPage() {
       "문의 내용:",
       form.message || "(내용 미입력)",
     ].join("\n");
-
-    return `mailto:npolap@ilukorea.org?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
   }, [form]);
+
+  const mailtoHref = useMemo(() => {
+    return `mailto:npolap@ilukorea.org?subject=${encodeURIComponent(
+      emailSubject
+    )}&body=${encodeURIComponent(emailBody)}`;
+  }, [emailSubject, emailBody]);
+
+  const gmailComposeHref = useMemo(() => {
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+      "npolap@ilukorea.org"
+    )}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(
+      emailBody
+    )}`;
+  }, [emailSubject, emailBody]);
+
+  function handleEmailInquiry(): void {
+    const isMobile =
+      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        window.navigator.userAgent
+      );
+
+    if (isMobile) {
+      window.location.href = mailtoHref;
+      return;
+    }
+
+    const opened = window.open(gmailComposeHref, "_blank", "noopener,noreferrer");
+
+    if (!opened) {
+      window.location.href = mailtoHref;
+    }
+
+    try {
+      void navigator.clipboard.writeText("npolap@ilukorea.org");
+    } catch {
+      // 클립보드 권한이 없으면 무시합니다.
+    }
+  }
 
   async function handleInquirySubmit(
     e: FormEvent<HTMLFormElement>
@@ -261,6 +290,16 @@ export default function PublicInterestFoundationPage() {
     e.preventDefault();
 
     if (isSubmitting) return;
+
+    if (
+      !form.name.trim() ||
+      !form.phone.trim() ||
+      !form.email.trim() ||
+      !form.message.trim()
+    ) {
+      alert("성명, 연락처, 이메일, 문의 내용을 모두 입력해 주세요.");
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -271,8 +310,36 @@ export default function PublicInterestFoundationPage() {
         "공익법인설립"
       );
 
-      if (!response.ok) {
-        window.location.href = mailtoHref;
+      const rawText = await response.text();
+
+      let result: {
+        ok?: boolean;
+        message?: string;
+        detail?: string;
+      } | null = null;
+
+      if (rawText.trim()) {
+        try {
+          result = JSON.parse(rawText) as {
+            ok?: boolean;
+            message?: string;
+            detail?: string;
+          };
+        } catch {
+          result = null;
+        }
+      }
+
+      if (!response.ok || result?.ok === false) {
+        alert(
+          result?.detail
+            ? `${result.message ?? "문의 저장 실패"}\n\n${result.detail}`
+            : result?.message ??
+                `문의 저장 중 오류가 발생했습니다.\n\n상태코드: ${response.status}\n응답내용: ${
+                  rawText || "(빈 응답)"
+                }\n\n이메일 문의로 연결합니다.`
+        );
+        handleEmailInquiry();
         return;
       }
 
@@ -285,8 +352,13 @@ export default function PublicInterestFoundationPage() {
       });
 
       alert("문의가 정상적으로 접수되었습니다.");
-    } catch {
-      window.location.href = mailtoHref;
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? `문의 전송 중 오류가 발생했습니다.\n\n${error.message}\n\n이메일 문의로 연결합니다.`
+          : "문의 전송 중 오류가 발생했습니다. 이메일 문의로 연결합니다."
+      );
+      handleEmailInquiry();
     } finally {
       setIsSubmitting(false);
     }
@@ -710,12 +782,13 @@ export default function PublicInterestFoundationPage() {
                   {isSubmitting ? "접수 중..." : "문의하기"}
                 </button>
 
-                <a
-                  href={mailtoHref}
+                <button
+                  type="button"
+                  onClick={handleEmailInquiry}
                   className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50 md:px-7 md:py-4 md:text-base"
                 >
                   이메일로 문의하기
-                </a>
+                </button>
               </div>
             </form>
           </div>
