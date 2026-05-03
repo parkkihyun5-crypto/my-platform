@@ -4,7 +4,8 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import SectionTitle from "@/components/SectionTitle";
 import { submitInquiry } from "@/lib/inquiry-client";
-import { FormEvent, MouseEvent, useMemo, useState } from "react";
+import type { FormEvent, MouseEvent } from "react";
+import { useMemo, useState } from "react";
 
 type InquiryFormState = {
   organization: string;
@@ -213,41 +214,12 @@ export default function EcoPionPage() {
 
   const emailTo = "npolap@ilukorea.org";
 
-const emailSubject = useMemo(() => {
-  return `[에코피온 상담 문의] ${form.organization || "기관명 미입력"}`;
-}, [form.organization]);
+  const emailSubject = useMemo(() => {
+    return `[에코피온 상담 문의] ${form.organization || "기관명 미입력"}`;
+  }, [form.organization]);
 
-const emailBody = useMemo(() => {
-  return [
-    "안녕하세요. 에코피온 컨설팅 관련 상담을 신청합니다.",
-    "",
-    `기관명: ${form.organization}`,
-    `성명: ${form.name}`,
-    `연락처: ${form.phone}`,
-    `이메일: ${form.email}`,
-    "",
-    "문의 내용:",
-    form.message || "(내용 미입력)",
-  ].join("\n");
-}, [form]);
-
-const mailtoHref = useMemo(() => {
-  return `mailto:${emailTo}?subject=${encodeURIComponent(
-    emailSubject
-  )}&body=${encodeURIComponent(emailBody)}`;
-}, [emailSubject, emailBody]);
-
-const gmailComposeHref = useMemo(() => {
-  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
-    emailTo
-  )}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(
-    emailBody
-  )}`;
-}, [emailSubject, emailBody]);
-
-  const gmailComposeHref = useMemo(() => {
-    const subject = `[에코피온 상담 문의] ${form.organization || "기관명 미입력"}`;
-    const body = [
+  const emailBody = useMemo(() => {
+    return [
       "안녕하세요. 에코피온 컨설팅 관련 상담을 신청합니다.",
       "",
       `기관명: ${form.organization}`,
@@ -258,17 +230,21 @@ const gmailComposeHref = useMemo(() => {
       "문의 내용:",
       form.message || "(내용 미입력)",
     ].join("\n");
-
-    const params = new URLSearchParams({
-      view: "cm",
-      fs: "1",
-      to: "npolap@ilukorea.org",
-      su: subject,
-      body,
-    });
-
-    return `https://mail.google.com/mail/?${params.toString()}`;
   }, [form]);
+
+  const mailtoHref = useMemo(() => {
+    return `mailto:${emailTo}?subject=${encodeURIComponent(
+      emailSubject
+    )}&body=${encodeURIComponent(emailBody)}`;
+  }, [emailSubject, emailBody]);
+
+  const gmailComposeHref = useMemo(() => {
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+      emailTo
+    )}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(
+      emailBody
+    )}`;
+  }, [emailSubject, emailBody]);
 
   function updateForm<K extends keyof InquiryFormState>(
     key: K,
@@ -280,7 +256,7 @@ const gmailComposeHref = useMemo(() => {
     }));
   }
 
-  function handleEmailInquiryClick(): void {
+  function openEmailWindow(): void {
     const isMobile =
       /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
         window.navigator.userAgent
@@ -306,7 +282,7 @@ const gmailComposeHref = useMemo(() => {
 
     const popup = window.open(
       gmailComposeHref,
-      "npolapEcoPionInquiryWindow",
+      "npolapEcoPionGmailInquiryWindow",
       [
         "popup=yes",
         `width=${popupWidth}`,
@@ -326,158 +302,103 @@ const gmailComposeHref = useMemo(() => {
     window.location.href = mailtoHref;
   }
 
+  function handleEmailInquiryClick(
+    event: MouseEvent<HTMLButtonElement>
+  ): void {
+    event.preventDefault();
+    event.stopPropagation();
+    openEmailWindow();
+  }
+
   async function handleInquirySubmit(
-  e: FormEvent<HTMLFormElement>
-): Promise<void> {
-  e.preventDefault();
+    e: FormEvent<HTMLFormElement>
+  ): Promise<void> {
+    e.preventDefault();
 
-  if (isSubmitting) return;
+    if (isSubmitting) return;
 
-  if (
-    !form.name.trim() ||
-    !form.phone.trim() ||
-    !form.email.trim() ||
-    !form.message.trim()
-  ) {
-    alert("성명, 연락처, 이메일, 문의 내용을 모두 입력해 주세요.");
-    return;
-  }
-
-  const ecoPionTaggedForm: InquiryFormState = {
-    ...form,
-    message: [
-      "[에코피온 컨설팅 상담 신청]",
-      "",
-      `유입페이지: /eco-pion`,
-      `상담유형: 내 자산의 공익 유산화 상담`,
-      "",
-      form.message,
-    ].join("\n"),
-  };
-
-  try {
-    setIsSubmitting(true);
-
-    /*
-      1차 시도:
-      에코피온 전용 유입값으로 저장합니다.
-      향후 Supabase 또는 관리자 CRM에서 eco-pion 값을 허용하면 이 값으로 정상 저장됩니다.
-    */
-    const primaryResponse = await submitInquiry(
-      ecoPionTaggedForm,
-      "eco-pion",
-      "에코피온 컨설팅"
-    );
-
-    if (primaryResponse.ok) {
-      setForm({
-        organization: "",
-        name: "",
-        phone: "",
-        email: "",
-        message: "",
-      });
-
-      setShowSuccess(true);
-      window.setTimeout(() => setShowSuccess(false), 3200);
-      alert("에코피온 컨설팅 상담 신청이 정상적으로 접수되었습니다.");
+    if (
+      !form.name.trim() ||
+      !form.phone.trim() ||
+      !form.email.trim() ||
+      !form.message.trim()
+    ) {
+      alert("성명, 연락처, 이메일, 문의 내용을 모두 입력해 주세요.");
       return;
     }
 
-    /*
-      2차 안전 재시도:
-      현재 정상 작동이 확인된 heritage-office 저장값으로 다시 저장합니다.
-      관리자 화면에서는 헤리티지오피스 유입으로 보일 수 있지만,
-      문의 내용 맨 위에 [에코피온 컨설팅 상담 신청]이 자동 기록됩니다.
-    */
-    const fallbackResponse = await submitInquiry(
-      ecoPionTaggedForm,
-      "heritage-office",
-      "헤리티지오피스"
-    );
+    const ecoPionTaggedForm: InquiryFormState = {
+      ...form,
+      message: [
+        "[에코피온 컨설팅 상담 신청]",
+        "",
+        "유입페이지: /eco-pion",
+        "상담유형: 내 자산의 공익 유산화 상담",
+        "",
+        form.message,
+      ].join("\n"),
+    };
 
-    if (fallbackResponse.ok) {
-      setForm({
-        organization: "",
-        name: "",
-        phone: "",
-        email: "",
-        message: "",
-      });
+    try {
+      setIsSubmitting(true);
 
-      setShowSuccess(true);
-      window.setTimeout(() => setShowSuccess(false), 3200);
-      alert(
-        "에코피온 컨설팅 상담 신청이 정상적으로 접수되었습니다. 관리자 보드에서는 헤리티지오피스 유입으로 표시될 수 있으나, 문의 내용에 에코피온 상담으로 기록됩니다."
+      const primaryResponse = await submitInquiry(
+        ecoPionTaggedForm,
+        "eco-pion",
+        "에코피온 컨설팅"
       );
-      return;
+
+      if (primaryResponse.ok) {
+        setForm({
+          organization: "",
+          name: "",
+          phone: "",
+          email: "",
+          message: "",
+        });
+
+        setShowSuccess(true);
+        window.setTimeout(() => setShowSuccess(false), 3200);
+        alert("에코피온 컨설팅 상담 신청이 정상적으로 접수되었습니다.");
+        return;
+      }
+
+      const fallbackResponse = await submitInquiry(
+        ecoPionTaggedForm,
+        "heritage-office",
+        "헤리티지오피스"
+      );
+
+      if (fallbackResponse.ok) {
+        setForm({
+          organization: "",
+          name: "",
+          phone: "",
+          email: "",
+          message: "",
+        });
+
+        setShowSuccess(true);
+        window.setTimeout(() => setShowSuccess(false), 3200);
+        alert(
+          "에코피온 컨설팅 상담 신청이 정상적으로 접수되었습니다. 관리자 보드에서는 헤리티지오피스 유입으로 표시될 수 있으나, 문의 내용에 에코피온 상담으로 기록됩니다."
+        );
+        return;
+      }
+
+      alert("문의 저장 중 오류가 발생했습니다. 이메일 문의로 연결합니다.");
+      openEmailWindow();
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? `문의 전송 중 오류가 발생했습니다.\n\n${error.message}\n\n이메일 문의로 연결합니다.`
+          : "문의 전송 중 오류가 발생했습니다. 이메일 문의로 연결합니다."
+      );
+      openEmailWindow();
+    } finally {
+      setIsSubmitting(false);
     }
-
-    alert(
-      "문의 저장 중 오류가 발생했습니다. 이메일 문의로 연결합니다."
-    );
-    window.location.href = mailtoHref;
-  } catch (error) {
-    alert(
-      error instanceof Error
-        ? `문의 전송 중 오류가 발생했습니다.\n\n${error.message}\n\n이메일 문의로 연결합니다.`
-        : "문의 전송 중 오류가 발생했습니다. 이메일 문의로 연결합니다."
-    );
-    window.location.href = mailtoHref;
-  } finally {
-    setIsSubmitting(false);
   }
-}
-function handleEmailInquiryClick(
-  event: MouseEvent<HTMLButtonElement>
-): void {
-  event.preventDefault();
-  event.stopPropagation();
-
-  const isMobile =
-    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      window.navigator.userAgent
-    );
-
-  if (isMobile) {
-    window.location.href = mailtoHref;
-    return;
-  }
-
-  const popupWidth = 760;
-  const popupHeight = 760;
-
-  const left = Math.max(
-    0,
-    window.screenX + (window.outerWidth - popupWidth) / 2
-  );
-
-  const top = Math.max(
-    0,
-    window.screenY + (window.outerHeight - popupHeight) / 2
-  );
-
-  const popup = window.open(
-    gmailComposeHref,
-    "npolapEcoPionGmailInquiryWindow",
-    [
-      "popup=yes",
-      `width=${popupWidth}`,
-      `height=${popupHeight}`,
-      `left=${Math.round(left)}`,
-      `top=${Math.round(top)}`,
-      "resizable=yes",
-      "scrollbars=yes",
-    ].join(",")
-  );
-
-  if (popup) {
-    popup.focus();
-    return;
-  }
-
-  window.location.href = mailtoHref;
-}
 
   const cardClass =
     "rounded-[30px] border border-slate-200/90 bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] transition-all duration-500 ease-out hover:-translate-y-1 hover:border-slate-300/90 hover:shadow-[0_24px_60px_rgba(15,23,42,0.10)] md:p-8";
@@ -490,11 +411,31 @@ function handleEmailInquiryClick(
         logoHref="/heritage-office"
         inquiryHref="#contact"
         menuItems={[
-          { label: "공익법인설립", href: "/public-interest-foundation", isLink: true },
-          { label: "사회적기업설립", href: "/social-enterprise", isLink: true },
-          { label: "브랜딩서비스", href: "/branding", isLink: true },
-          { label: "헤리티지오피스", href: "/heritage-office", isLink: true },
-          { label: "에코피온", href: "/eco-pion", isLink: true },
+          {
+            label: "공익법인설립",
+            href: "/public-interest-foundation",
+            isLink: true,
+          },
+          {
+            label: "사회적기업설립",
+            href: "/social-enterprise",
+            isLink: true,
+          },
+          {
+            label: "브랜딩서비스",
+            href: "/branding",
+            isLink: true,
+          },
+          {
+            label: "헤리티지오피스",
+            href: "/heritage-office",
+            isLink: true,
+          },
+          {
+            label: "에코피온",
+            href: "/eco-pion",
+            isLink: true,
+          },
         ]}
       />
 
@@ -612,7 +553,9 @@ function handleEmailInquiryClick(
             <div className="mt-14 grid gap-6 md:grid-cols-2">
               {targetCards.map((item) => (
                 <div key={item.title} className={cardClass}>
-                  <h3 className="text-2xl font-bold text-[#0B1F35]">{item.title}</h3>
+                  <h3 className="text-2xl font-bold text-[#0B1F35]">
+                    {item.title}
+                  </h3>
                   <p className="mt-4 text-sm leading-7 text-slate-600 md:text-base md:leading-8">
                     {item.description}
                   </p>
@@ -728,7 +671,9 @@ function handleEmailInquiryClick(
             <div className="mt-14 grid gap-6 xl:grid-cols-4">
               {processItems.map((item) => (
                 <div key={item.step} className={cardClass}>
-                  <div className="text-4xl font-bold text-[#C9A96B]">{item.step}</div>
+                  <div className="text-4xl font-bold text-[#C9A96B]">
+                    {item.step}
+                  </div>
                   <h3 className="mt-5 text-2xl font-bold text-[#0B1F35]">
                     {item.title}
                   </h3>
@@ -753,7 +698,9 @@ function handleEmailInquiryClick(
             <div className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
               {trustCards.map((item) => (
                 <div key={item.title} className={cardClass}>
-                  <h3 className="text-2xl font-bold text-[#0B1F35]">{item.title}</h3>
+                  <h3 className="text-2xl font-bold text-[#0B1F35]">
+                    {item.title}
+                  </h3>
                   <p className="mt-4 text-sm leading-7 text-slate-600">
                     {item.description}
                   </p>
@@ -836,7 +783,7 @@ function handleEmailInquiryClick(
               <div className="rounded-[34px] border border-slate-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] md:p-10">
                 <SectionTitle
                   badge="Inquiry"
-                  title="컨설팅 상담 신청"
+                  title="에코피온 컨설팅 상담 신청"
                   desc="아래 내용을 남겨주시면 재단·박물관·미술관·공익법인 설립 가능성을 검토하여 상담 순서에 따라 연락드립니다."
                 />
 
@@ -844,7 +791,9 @@ function handleEmailInquiryClick(
                   <div className="grid gap-5 md:grid-cols-2">
                     <input
                       value={form.organization}
-                      onChange={(e) => updateForm("organization", e.target.value)}
+                      onChange={(e) =>
+                        updateForm("organization", e.target.value)
+                      }
                       placeholder="기관명 또는 가문명"
                       className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
                     />
@@ -887,24 +836,24 @@ function handleEmailInquiryClick(
                   </div>
 
                   <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-  <button
-    type="submit"
-    disabled={isSubmitting}
-    className="inline-flex items-center justify-center rounded-full bg-[#081A2F] px-7 py-4 text-sm font-bold text-white shadow-[0_18px_45px_rgba(11,31,53,0.18)] transition-all duration-300 hover:-translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60 md:text-base"
-  >
-    {isSubmitting
-      ? "접수 중입니다"
-      : "내 자산의 공익 유산화 상담 신청하기"}
-  </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="inline-flex items-center justify-center rounded-full bg-[#081A2F] px-7 py-4 text-sm font-bold text-white shadow-[0_18px_45px_rgba(11,31,53,0.18)] transition-all duration-300 hover:-translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60 md:text-base"
+                    >
+                      {isSubmitting
+                        ? "접수 중입니다"
+                        : "내 자산의 공익 유산화 상담 신청하기"}
+                    </button>
 
-  <button
-    type="button"
-    onClick={handleEmailInquiryClick}
-    className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-7 py-4 text-sm font-bold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50 md:text-base"
-  >
-    이메일로 직접 문의하기
-  </button>
-</div>
+                    <button
+                      type="button"
+                      onClick={handleEmailInquiryClick}
+                      className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-7 py-4 text-sm font-bold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50 md:text-base"
+                    >
+                      이메일로 직접 문의하기
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
