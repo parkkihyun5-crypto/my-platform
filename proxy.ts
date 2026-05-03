@@ -8,6 +8,9 @@ const ADMIN_API_PATHS = [
   "/api/update-admin-fields",
   "/api/delete-inquiry",
   "/api/contracts",
+  "/api/trash-inquiries",
+  "/api/restore-inquiry",
+  "/api/permanent-delete-inquiry",
 ];
 
 function isProtectedAdminPage(pathname: string): boolean {
@@ -17,7 +20,11 @@ function isProtectedAdminPage(pathname: string): boolean {
 function isProtectedAdminApi(request: NextRequest): boolean {
   const { pathname } = request.nextUrl;
 
-  if (ADMIN_API_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
+  if (
+    ADMIN_API_PATHS.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`)
+    )
+  ) {
     return true;
   }
 
@@ -88,5 +95,8 @@ export const config = {
     "/api/update-admin-fields/:path*",
     "/api/delete-inquiry/:path*",
     "/api/contracts/:path*",
+    "/api/trash-inquiries/:path*",
+    "/api/restore-inquiry/:path*",
+    "/api/permanent-delete-inquiry/:path*",
   ],
 };
