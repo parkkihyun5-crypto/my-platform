@@ -236,6 +236,14 @@ export default function AdminTrashPage() {
 
   useEffect(() => {
     void loadTrash(true);
+
+    const intervalId = window.setInterval(() => {
+      void loadTrash(false);
+    }, 10000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   const filteredItems = useMemo(() => {
