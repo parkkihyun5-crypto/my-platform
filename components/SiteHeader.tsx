@@ -341,6 +341,7 @@ export default function SiteHeader({
           position: absolute;
           top: 100%;
           left: 50%;
+          right: auto;
           min-width: 190px;
           transform: translateX(-50%);
           padding: 10px 14px;
@@ -358,6 +359,7 @@ export default function SiteHeader({
           position: absolute;
           top: 100%;
           left: 50%;
+          right: auto;
           min-width: 190px;
           transform: translateX(-50%);
           padding: 10px 14px;
@@ -378,12 +380,12 @@ export default function SiteHeader({
         @keyframes ecoDropdownTextFade {
           from {
             opacity: 0;
-            transform: translateY(6px);
+            transform: translateX(-50%) translateY(6px);
           }
 
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(-50%) translateY(0);
           }
         }
       `}</style>
