@@ -482,7 +482,7 @@ export default function HeritageOfficePage() {
           </div>
         </section>
 
-        <section className="relative bg-white py-20 md:py-28">
+        <section id="heritage-philosophy" className="relative scroll-mt-28 bg-white py-20 md:py-28">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#f6f3ee] to-transparent" />
 
           <div className="mx-auto max-w-[1100px] px-6 md:px-10 lg:px-12">
@@ -532,7 +532,7 @@ export default function HeritageOfficePage() {
           </div>
         </section>
 
-        <section ref={legacyFilmRef} className="bg-[#f6f3ee] py-20 md:py-28">
+        <section id="heritage-family" ref={legacyFilmRef} className="scroll-mt-28 bg-[#f6f3ee] py-20 md:py-28">
           <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="LEGACY FILM"
@@ -611,7 +611,7 @@ export default function HeritageOfficePage() {
           </div>
         </section>
 
-        <section className="py-20 md:py-28">
+        <section id="heritage-structure" className="scroll-mt-28 py-20 md:py-28">
           <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="CORE STRUCTURE"
@@ -653,7 +653,7 @@ export default function HeritageOfficePage() {
           </div>
         </section>
 
-        <section className="py-20 md:py-28">
+        <section id="heritage-scope" className="scroll-mt-28 py-20 md:py-28">
           <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="SCOPE"
@@ -675,7 +675,7 @@ export default function HeritageOfficePage() {
           </div>
         </section>
 
-        <section className="bg-white py-20 md:py-28">
+        <section id="heritage-roadmap" className="scroll-mt-28 bg-white py-20 md:py-28">
           <div className="mx-auto max-w-[1300px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="ROADMAP"

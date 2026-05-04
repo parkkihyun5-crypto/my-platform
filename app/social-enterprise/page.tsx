@@ -384,13 +384,13 @@ export default function SocialEnterprisePage() {
 
               <div className="mt-8 flex flex-wrap gap-4">
                 <a
-                  href="#benefits"
+                  href="#social-benefits"
                   className="rounded-2xl border border-white/20 bg-white/5 px-6 py-3 font-bold text-white transition duration-300 hover:scale-105 hover:bg-white/10"
                 >
                   혜택 보기
                 </a>
                 <a
-                  href="#requirements"
+                  href="#social-requirements"
                   className="rounded-2xl border border-white/20 bg-white/5 px-6 py-3 font-bold text-white transition duration-300 hover:scale-105 hover:bg-white/10"
                 >
                   인증 요건 보기
@@ -400,7 +400,7 @@ export default function SocialEnterprisePage() {
           </div>
         </section>
 
-        <section id="benefits" className="mx-auto max-w-7xl px-6 py-20 md:px-10 lg:px-12">
+        <section id="social-benefits" className="mx-auto max-w-7xl scroll-mt-28 px-6 py-20 md:px-10 lg:px-12">
           <SectionTitle
             badge="Benefits"
             title="사회적기업 의미와 혜택"
@@ -431,7 +431,7 @@ export default function SocialEnterprisePage() {
           </div>
         </section>
 
-        <section id="requirements" className="bg-white py-20">
+        <section id="social-requirements" className="scroll-mt-28 bg-white py-20">
           <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="Requirements"
@@ -516,7 +516,7 @@ export default function SocialEnterprisePage() {
           </div>
         </section>
 
-        <section className="bg-white py-20">
+        <section id="social-operation" className="scroll-mt-28 bg-white py-20">
           <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="Operation Conditions"
@@ -666,7 +666,7 @@ export default function SocialEnterprisePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-6 py-20 md:px-10 lg:px-12">
+        <section id="social-process" className="mx-auto max-w-7xl scroll-mt-28 px-6 py-20 md:px-10 lg:px-12">
           <SectionTitle
             badge="Certification Process"
             title="사회적기업 인증 절차와 신청서류"
@@ -712,7 +712,7 @@ export default function SocialEnterprisePage() {
           </div>
         </section>
 
-        <section id="cost" className="bg-white py-20">
+        <section id="social-cost" className="scroll-mt-28 bg-white py-20">
           <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="Cost Guide"

@@ -184,12 +184,12 @@ const faqItems: FaqItem[] = [
 ];
 
 const bottomPageMenu = [
-  { label: "에코피온 정의", href: "#definition" },
-  { label: "설립대상", href: "#target" },
-  { label: "서비스구성", href: "#service" },
+  { label: "에코피온 정의", href: "#ecopion-intro" },
+  { label: "설립대상", href: "#ecopion-target" },
+  { label: "서비스구성", href: "#ecopion-consulting" },
   { label: "실행로드맵", href: "#process" },
   { label: "FAQ", href: "#faq" },
-  { label: "상담신청", href: "#contact" },
+  { label: "상담신청", href: "#ecopion-contact" },
 ];
 
 const siteMapItems = [
@@ -409,7 +409,7 @@ export default function EcoPionPage() {
         mode="sub"
         logoText="NPOLAP"
         logoHref="/heritage-office"
-        inquiryHref="#contact"
+        inquiryHref="#ecopion-contact"
         menuItems={[
           {
             label: "공익법인설립",
@@ -485,14 +485,14 @@ export default function EcoPionPage() {
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                 <a
-                  href="#contact"
+                  href="#ecopion-contact"
                   className="inline-flex items-center justify-center rounded-full bg-[#E5C996] px-7 py-4 text-sm font-bold text-[#0B1F35] shadow-[0_18px_45px_rgba(229,201,150,0.24)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_24px_60px_rgba(229,201,150,0.34)] md:text-base"
                 >
                   내 자산의 공익 유산화 상담 신청하기
                 </a>
 
                 <a
-                  href="#definition"
+                  href="#ecopion-intro"
                   className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-[1px] hover:bg-white/15 md:text-base"
                 >
                   에코피온이란?
@@ -502,7 +502,7 @@ export default function EcoPionPage() {
           </div>
         </section>
 
-        <section id="definition" className="bg-white py-20 md:py-28">
+        <section id="ecopion-intro" className="scroll-mt-28 bg-white py-20 md:py-28">
           <div className="mx-auto max-w-[1300px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="Definition"
@@ -541,7 +541,7 @@ export default function EcoPionPage() {
           </div>
         </section>
 
-        <section id="target" className="py-20 md:py-28">
+        <section id="ecopion-target" className="scroll-mt-28 py-20 md:py-28">
           <div className="mx-auto max-w-[1300px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="Target"
@@ -565,7 +565,7 @@ export default function EcoPionPage() {
           </div>
         </section>
 
-        <section className="bg-white py-20 md:py-28">
+        <section id="ecopion-transition" className="scroll-mt-28 bg-white py-20 md:py-28">
           <div className="mx-auto max-w-[1300px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="Before & After"
@@ -632,7 +632,7 @@ export default function EcoPionPage() {
           </div>
         </section>
 
-        <section id="service" className="py-20 md:py-28">
+        <section id="ecopion-consulting" className="scroll-mt-28 py-20 md:py-28">
           <div className="mx-auto max-w-[1400px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="Service"
@@ -742,7 +742,7 @@ export default function EcoPionPage() {
           </div>
         </section>
 
-        <section id="contact" className="py-20 md:py-28">
+        <section id="ecopion-contact" className="scroll-mt-28 py-20 md:py-28">
           <div className="mx-auto max-w-[1300px] px-6 md:px-10 lg:px-12">
             <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
               <div className="rounded-[34px] bg-[#081A2F] p-6 text-white shadow-[0_24px_60px_rgba(15,23,42,0.18)] md:p-10">

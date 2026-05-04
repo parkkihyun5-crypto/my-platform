@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 type MenuItem = {
@@ -11,6 +12,11 @@ type MenuItem = {
 };
 
 type SocialLink = {
+  label: string;
+  href: string;
+};
+
+type SubMenuItem = {
   label: string;
   href: string;
 };
@@ -52,6 +58,51 @@ const ecoSubMenuItems: MenuItem[] = [
     isLink: true,
   },
 ];
+
+const pageSubMenuItems: Record<string, SubMenuItem[]> = {
+  "/public-interest-foundation": [
+    { label: "설립 개요", href: "/public-interest-foundation#foundation-overview" },
+    { label: "유형 비교", href: "/public-interest-foundation#foundation-types" },
+    { label: "추천 구조", href: "/public-interest-foundation#foundation-structure" },
+    { label: "컨설팅 비용", href: "/public-interest-foundation#foundation-cost" },
+    { label: "문의하기", href: "/public-interest-foundation#foundation-contact" },
+  ],
+  "/social-enterprise": [
+    { label: "혜택", href: "/social-enterprise#social-benefits" },
+    { label: "인증요건", href: "/social-enterprise#social-requirements" },
+    { label: "운영요건", href: "/social-enterprise#social-operation" },
+    { label: "절차·서류", href: "/social-enterprise#social-process" },
+    { label: "비용안내", href: "/social-enterprise#social-cost" },
+  ],
+  "/branding": [
+    { label: "브랜딩 원칙", href: "/branding#branding-principles" },
+    { label: "서비스 구성", href: "/branding#branding-services" },
+    { label: "패키지 견적", href: "/branding#branding-packages" },
+    { label: "옵션 선택", href: "/branding#branding-options" },
+    { label: "상표등록", href: "/branding#branding-trademark" },
+  ],
+  "/heritage-office": [
+    { label: "헤리티지 철학", href: "/heritage-office#heritage-philosophy" },
+    { label: "명문가문", href: "/heritage-office#heritage-family" },
+    { label: "설계 구조", href: "/heritage-office#heritage-structure" },
+    { label: "설계 범위", href: "/heritage-office#heritage-scope" },
+    { label: "실행 로드맵", href: "/heritage-office#heritage-roadmap" },
+  ],
+  "/eco-pion": [
+    { label: "에코피온이란", href: "/eco-pion#ecopion-intro" },
+    { label: "필요한 대상", href: "/eco-pion#ecopion-target" },
+    { label: "전환 구조", href: "/eco-pion#ecopion-transition" },
+    { label: "컨설팅 범위", href: "/eco-pion#ecopion-consulting" },
+    { label: "상담 신청", href: "/eco-pion#ecopion-contact" },
+  ],
+  "/consultant-profile": [
+    { label: "리더 소개", href: "/consultant-profile#leader-intro" },
+    { label: "핵심 철학", href: "/consultant-profile#leader-philosophy" },
+    { label: "활동 연혁", href: "/consultant-profile#leader-history" },
+    { label: "전문 영역", href: "/consultant-profile#leader-expertise" },
+    { label: "문의하기", href: "/consultant-profile#leader-contact" },
+  ],
+};
 
 function normalizeHref(label: string, href: string): string {
   if (label === "에코피온 리더") return "/consultant-profile";
@@ -116,6 +167,7 @@ export default function SiteHeader({
 }: SiteHeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState<boolean>(false);
+  const pathname = usePathname();
 
   const desktopMainMenuItems = useMemo(() => {
     return normalizeMenuItems(menuItems);
@@ -134,6 +186,11 @@ export default function SiteHeader({
       ...ecoSubMenuItems,
     ];
   }, [drawerItems, desktopMainMenuItems]);
+
+  const ecoDesktopSubMenuItems =
+    pathname === "/consultant-profile"
+      ? pageSubMenuItems["/consultant-profile"]
+      : pageSubMenuItems["/eco-pion"];
 
   useEffect(() => {
     let ticking = false;
@@ -212,8 +269,8 @@ export default function SiteHeader({
 
   const desktopMenuClass = `group relative inline-flex items-center rounded-full px-0 py-2 text-sm font-semibold tracking-[-0.01em] transition-all duration-300 md:text-[15px] ${
     scrolled
-      ? "text-[#0B1F35]/82 hover:text-[#0B1F35]"
-      : "text-white/94 hover:text-white"
+      ? "text-[#0B1F35]/82 hover:text-[#B89B5E]"
+      : "text-white/94 hover:text-[#E5C996]"
   }`;
 
   const desktopMenuUnderlineClass =
@@ -221,13 +278,13 @@ export default function SiteHeader({
 
   const ecoTopLinkClass = `relative inline-flex items-center rounded-full px-0 py-2 text-sm font-semibold tracking-[-0.01em] transition-all duration-300 md:text-[15px] ${
     scrolled
-      ? "text-[#0B1F35]/82 hover:text-[#0B1F35]"
-      : "text-white/94 hover:text-white"
+      ? "text-[#0B1F35]/82 hover:text-[#B89B5E]"
+      : "text-white/94 hover:text-[#E5C996]"
   }`;
 
   const ecoSubLinkClass = `block whitespace-nowrap py-1.5 text-sm font-semibold tracking-[-0.02em] transition-all duration-300 ${
     scrolled
-      ? "text-[#0B1F35]/76 hover:text-[#0B1F35]"
+      ? "text-[#0B1F35]/76 hover:text-[#B89B5E]"
       : "text-white/90 hover:text-[#E5C996]"
   }`;
 
@@ -258,20 +315,42 @@ export default function SiteHeader({
   return (
     <>
       <style jsx global>{`
+        html {
+          scroll-behavior: smooth;
+        }
+
         .eco-dropdown-wrap {
           position: relative;
           display: inline-flex;
           align-items: center;
         }
 
+        .nav-dropdown-wrap {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+        }
+
+        .nav-dropdown-wrap::after,
+        .eco-dropdown-wrap::after {
+          content: "";
+          position: absolute;
+          left: -14px;
+          right: -14px;
+          top: 100%;
+          height: 18px;
+        }
+
         .eco-dropdown-menu {
           display: none;
           position: absolute;
           top: calc(100% + 8px);
-          left: 0;
-          min-width: 150px;
-          transform: translateY(0);
-          padding: 4px 0 0 0;
+          left: 50%;
+          min-width: 190px;
+          transform: translateX(-50%);
+          padding: 10px 14px;
+          text-align: center;
+          white-space: nowrap;
           background: transparent;
           border: none;
           box-shadow: none;
@@ -279,15 +358,24 @@ export default function SiteHeader({
           animation: ecoDropdownTextFade 180ms ease-out forwards;
         }
 
-        .eco-dropdown-wrap::after {
-          content: "";
+        .nav-dropdown-menu {
+          display: none;
           position: absolute;
-          left: -8px;
-          right: -8px;
-          top: 100%;
-          height: 18px;
+          top: calc(100% + 8px);
+          left: 50%;
+          min-width: 190px;
+          transform: translateX(-50%);
+          padding: 10px 14px;
+          text-align: center;
+          white-space: nowrap;
+          background: transparent;
+          border: none;
+          box-shadow: none;
+          z-index: 100;
+          animation: ecoDropdownTextFade 180ms ease-out forwards;
         }
 
+        .nav-dropdown-wrap:hover .nav-dropdown-menu,
         .eco-dropdown-wrap:hover .eco-dropdown-menu {
           display: block;
         }
@@ -326,18 +414,37 @@ export default function SiteHeader({
             </Link>
 
             <nav className={desktopNavClass}>
-              {desktopMainMenuItems.map((item) => (
-                <MenuLink
-                  key={`desktop-${item.label}-${item.href}`}
-                  item={item}
-                  className={desktopMenuClass}
-                >
-                  <>
-                    <span>{item.label}</span>
-                    <span className={desktopMenuUnderlineClass} />
-                  </>
-                </MenuLink>
-              ))}
+              {desktopMainMenuItems.map((item) => {
+                const submenu = pageSubMenuItems[normalizeHref(item.label, item.href)] ?? [];
+
+                return (
+                  <div
+                    key={`desktop-${item.label}-${item.href}`}
+                    className="nav-dropdown-wrap"
+                  >
+                    <MenuLink item={item} className={desktopMenuClass}>
+                      <>
+                        <span>{item.label}</span>
+                        <span className={desktopMenuUnderlineClass} />
+                      </>
+                    </MenuLink>
+
+                    {submenu.length > 0 ? (
+                      <div className="nav-dropdown-menu">
+                        {submenu.slice(0, 5).map((subItem) => (
+                          <Link
+                            key={`desktop-sub-${subItem.href}`}
+                            href={subItem.href}
+                            className={ecoSubLinkClass}
+                          >
+                            {subItem.label}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
 
               <div className="eco-dropdown-wrap">
                 <MenuLink item={ecoMenuItem} className={ecoTopLinkClass}>
@@ -345,14 +452,14 @@ export default function SiteHeader({
                 </MenuLink>
 
                 <div className="eco-dropdown-menu">
-                  {ecoSubMenuItems.map((item, index) => (
-                    <MenuLink
-                      key={`eco-sub-${index}-${item.label}-${item.href}`}
-                      item={item}
+                  {ecoDesktopSubMenuItems.slice(0, 5).map((item) => (
+                    <Link
+                      key={`eco-sub-${item.href}`}
+                      href={item.href}
                       className={ecoSubLinkClass}
                     >
                       {item.label}
-                    </MenuLink>
+                    </Link>
                   ))}
                 </div>
               </div>

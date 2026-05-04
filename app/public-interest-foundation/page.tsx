@@ -299,7 +299,7 @@ export default function PublicInterestFoundationPage() {
         mode="sub"
         logoText="NPOLAP"
         logoHref="/public-interest-foundation"
-        inquiryHref="#contact"
+        inquiryHref="#foundation-contact"
         menuItems={[
           { label: "공익법인설립", href: "/public-interest-foundation", isLink: true },
           { label: "사회적기업설립", href: "/social-enterprise", isLink: true },
@@ -344,7 +344,7 @@ export default function PublicInterestFoundationPage() {
           </div>
         </section>
 
-        <section id="about" className="bg-white py-20 md:py-28">
+        <section id="foundation-overview" className="scroll-mt-28 bg-white py-20 md:py-28">
           <div className="mx-auto max-w-[1400px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="ABOUT NPOLAP"
@@ -385,7 +385,7 @@ export default function PublicInterestFoundationPage() {
           </div>
         </section>
 
-        <section id="services" className="bg-white py-20 md:py-28">
+        <section id="foundation-structure" className="scroll-mt-28 bg-white py-20 md:py-28">
           <div className="mx-auto max-w-[1400px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="SERVICES"
@@ -413,7 +413,7 @@ export default function PublicInterestFoundationPage() {
           </div>
         </section>
 
-        <section id="establishment" className="py-20 md:py-28">
+        <section id="foundation-types" className="scroll-mt-28 py-20 md:py-28">
           <div className="mx-auto max-w-[1400px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="ESTABLISHMENT"
@@ -462,7 +462,7 @@ export default function PublicInterestFoundationPage() {
               ))}
             </div>
 
-            <div className="mt-10 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+            <div id="foundation-cost" className="mt-10 grid scroll-mt-28 gap-8 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="rounded-[30px] border border-slate-200/90 bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] transition-all duration-500 ease-out hover:-translate-y-1 hover:border-slate-300/90 hover:shadow-[0_24px_60px_rgba(15,23,42,0.10)] focus-within:-translate-y-1 focus-within:border-[#0B1F35]/20 focus-within:shadow-[0_24px_60px_rgba(15,23,42,0.10)] md:p-8">
                 <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#C9A96B]">
                   SELECTED TYPE
@@ -636,7 +636,7 @@ export default function PublicInterestFoundationPage() {
           </div>
         </section>
 
-        <section id="contact" className="py-20 md:py-28">
+        <section id="foundation-contact" className="scroll-mt-28 py-20 md:py-28">
           <div className="mx-auto max-w-[1100px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="ONLINE CONSULTING"

@@ -94,7 +94,7 @@ export default function ConsultantProfilePage() {
         mode="sub"
         logoText="NPOLAP"
         logoHref="/heritage-office"
-        inquiryHref="/heritage-office#contact"
+        inquiryHref="#leader-contact"
         menuItems={[
           {
             label: "공익법인설립",
@@ -162,7 +162,7 @@ export default function ConsultantProfilePage() {
 
               <div className="mt-11 flex flex-col gap-3 sm:flex-row">
                 <a
-                  href="#speaker-profile"
+                  href="#leader-intro"
                   className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/[0.04] px-7 py-4 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-[2px] hover:border-[#E5C996]/35 hover:bg-white/[0.08] hover:text-[#F3DFB6] md:text-base"
                 >
                   소개 보기
@@ -172,7 +172,7 @@ export default function ConsultantProfilePage() {
                 </a>
 
                 <a
-                  href="/heritage-office#contact"
+                  href="#leader-contact"
                   className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/[0.04] px-7 py-4 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-[2px] hover:border-[#E5C996]/35 hover:bg-white/[0.08] hover:text-[#F3DFB6] md:text-base"
                 >
                   컨설팅 문의
@@ -183,8 +183,8 @@ export default function ConsultantProfilePage() {
         </section>
 
         <section
-          id="speaker-profile"
-          className="relative overflow-hidden bg-[#f6f3ee] py-16 md:py-20"
+          id="leader-intro"
+          className="relative overflow-hidden bg-[#f6f3ee] py-16 scroll-mt-28 md:py-20"
         >
           <div className="relative z-10 mx-auto max-w-[1500px] px-6 md:px-10 lg:px-12">
             <div className="mb-12 max-w-5xl">
@@ -241,7 +241,7 @@ export default function ConsultantProfilePage() {
                 </div>
               </div>
 
-              <div className="flex h-full min-h-0 flex-col gap-8 pt-1 md:pt-2 lg:pt-0">
+              <div id="leader-philosophy" className="flex h-full min-h-0 scroll-mt-28 flex-col gap-8 pt-1 md:pt-2 lg:pt-0">
                 <div className="shrink-0">
                   <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#C9A96B]">
                     Heritage Architect
@@ -367,7 +367,7 @@ export default function ConsultantProfilePage() {
           </div>
         </section>
 
-        <section className="bg-[#f6f3ee] py-20 md:py-28">
+        <section id="leader-history" className="scroll-mt-28 bg-[#f6f3ee] py-20 md:py-28">
           <div className="mx-auto max-w-[1500px] px-6 md:px-10 lg:px-12">
             <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr]">
               <div className="rounded-[40px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.06)] md:p-10">
@@ -439,7 +439,7 @@ export default function ConsultantProfilePage() {
           </div>
         </section>
 
-        <section className="bg-white py-20 md:py-28">
+        <section id="leader-expertise" className="scroll-mt-28 bg-white py-20 md:py-28">
           <div className="mx-auto max-w-[1450px] px-6 md:px-10 lg:px-12">
             <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
               <div>
@@ -480,8 +480,8 @@ export default function ConsultantProfilePage() {
         </section>
 
         <section
-          id="consulting-inquiry"
-          className="relative overflow-hidden bg-[#081A2F] py-24 text-white md:py-32"
+          id="leader-contact"
+          className="relative overflow-hidden bg-[#081A2F] py-24 scroll-mt-28 text-white md:py-32"
         >
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#E5C996]/40 to-transparent" />
 
@@ -506,7 +506,7 @@ export default function ConsultantProfilePage() {
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
-                href="/heritage-office#contact"
+                href="#leader-contact"
                 className="inline-flex w-full items-center justify-center rounded-full border border-white/20 bg-white/8 px-7 py-4 text-base font-bold text-white transition-all duration-300 hover:-translate-y-[2px] hover:bg-white/12 sm:w-auto"
               >
                 상담 신청하기
