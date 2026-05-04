@@ -275,7 +275,7 @@ export default function SiteHeader({
   const desktopMenuUnderlineClass =
     "pointer-events-none absolute -bottom-[5px] left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#E5C996] transition-all duration-300 ease-out group-hover:w-full";
 
-  const ecoTopLinkClass = `relative inline-flex items-center rounded-full px-0 py-2 text-sm font-semibold tracking-[-0.01em] transition-all duration-300 md:text-[15px] ${
+  const ecoTopLinkClass = `group relative inline-flex items-center rounded-full px-0 py-2 text-sm font-semibold tracking-[-0.01em] transition-all duration-300 md:text-[15px] ${
     scrolled
       ? "text-[#0B1F35]/82 hover:text-[#B89B5E] focus-visible:text-[#B89B5E]"
       : "text-white/94 hover:text-[#D6BD7F] focus-visible:text-[#D6BD7F]"
