@@ -11,6 +11,9 @@ type InquiryFormState = {
   name: string;
   phone: string;
   email: string;
+  consultingType: string;
+  currentStage: string;
+  consultingMethod: string;
   message: string;
 };
 
@@ -241,6 +244,9 @@ export default function SocialEnterprisePage() {
     name: "",
     phone: "",
     email: "",
+    consultingType: "사회적기업 설립",
+    currentStage: "",
+    consultingMethod: "",
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -286,9 +292,23 @@ export default function SocialEnterprisePage() {
 
     try {
       setIsSubmitting(true);
+      const inquiryForm = {
+        ...form,
+        organization: "개인 상담",
+        message: [
+          "[사회적기업 설립 상담 신청]",
+          "",
+          `상담 유형: ${form.consultingType}`,
+          `현재 단계: ${form.currentStage}`,
+          `희망 상담 방식: ${form.consultingMethod}`,
+          "",
+          "문의 내용:",
+          form.message,
+        ].join("\n"),
+      };
 
       const response = await submitInquiry(
-        form,
+        inquiryForm,
         "social-enterprise",
         "사회적기업설립"
       );
@@ -303,6 +323,9 @@ export default function SocialEnterprisePage() {
         name: "",
         phone: "",
         email: "",
+        consultingType: "사회적기업 설립",
+        currentStage: "",
+        consultingMethod: "",
         message: "",
       });
 
@@ -830,19 +853,12 @@ export default function SocialEnterprisePage() {
               <form onSubmit={handleSubmit} className="mt-6">
                 <div className="grid gap-5 md:grid-cols-2">
                   <input
-                    value={form.organization}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, organization: e.target.value }))
-                    }
-                    placeholder="기관명"
-                    className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
-                  />
-                  <input
                     value={form.name}
                     onChange={(e) =>
                       setForm((prev) => ({ ...prev, name: e.target.value }))
                     }
-                    placeholder="성명"
+                    placeholder="성함"
+                    required
                     className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
                   />
                   <input
@@ -851,6 +867,8 @@ export default function SocialEnterprisePage() {
                       setForm((prev) => ({ ...prev, phone: e.target.value }))
                     }
                     placeholder="연락처"
+                    type="tel"
+                    required
                     className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
                   />
                   <input
@@ -859,22 +877,56 @@ export default function SocialEnterprisePage() {
                       setForm((prev) => ({ ...prev, email: e.target.value }))
                     }
                     placeholder="이메일"
+                    type="email"
+                    required
                     className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
                   />
-
-                  <div className="md:col-span-2">
-                    <label className="mb-2 block text-sm font-semibold text-slate-700">
-                      첨부파일
-                    </label>
-                    <input
-                      type="file"
-                      multiple
-                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0B1F35]"
-                    />
-                    <p className="mt-2 text-xs text-slate-500">
-                      사업계획서, 정관 초안, 회의록, 재무자료 등을 첨부할 수 있습니다.
-                    </p>
-                  </div>
+                  <select
+                    value={form.consultingType}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, consultingType: e.target.value }))
+                    }
+                    required
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#0B1F35]"
+                  >
+                    <option value="">상담 유형 선택</option>
+                    <option value="공익법인 설립">공익법인 설립</option>
+                    <option value="헤리티지오피스">헤리티지오피스</option>
+                    <option value="브랜딩 서비스">브랜딩 서비스</option>
+                    <option value="사회적기업 설립">사회적기업 설립</option>
+                    <option value="에코피온상담">에코피온상담</option>
+                    <option value="기타 문의">기타 문의</option>
+                  </select>
+                  <select
+                    value={form.currentStage}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, currentStage: e.target.value }))
+                    }
+                    required
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#0B1F35]"
+                  >
+                    <option value="">현재 단계</option>
+                    <option value="아이디어 단계">아이디어 단계</option>
+                    <option value="설립 준비 중">설립 준비 중</option>
+                    <option value="운영 중">운영 중</option>
+                    <option value="브랜드 개선 필요">브랜드 개선 필요</option>
+                    <option value="전문가 검토 필요">전문가 검토 필요</option>
+                  </select>
+                  <select
+                    value={form.consultingMethod}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, consultingMethod: e.target.value }))
+                    }
+                    required
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#0B1F35]"
+                  >
+                    <option value="">희망 상담 방식</option>
+                    <option value="전화 상담">전화 상담</option>
+                    <option value="이메일 상담">이메일 상담</option>
+                    <option value="온라인 미팅">온라인 미팅</option>
+                    <option value="대면 상담">대면 상담</option>
+                    <option value="비공개 미팅">비공개 미팅</option>
+                  </select>
                 </div>
 
                 <textarea
@@ -883,9 +935,14 @@ export default function SocialEnterprisePage() {
                     setForm((prev) => ({ ...prev, message: e.target.value }))
                   }
                   rows={6}
-                  placeholder="현재 설립 단계, 인증 준비 수준, 궁금한 점을 입력해 주세요."
+                  placeholder="사회적기업 설립 또는 인증 준비 단계, 사업 내용, 사회적 목적, 궁금한 점을 간단히 적어주세요."
+                  required
                   className="mt-5 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#0B1F35]"
                 />
+                <label className="mt-5 flex items-start gap-3 rounded-2xl bg-[#F8F6F1] px-4 py-4 text-sm leading-7 text-slate-600">
+                  <input type="checkbox" required className="mt-1 h-4 w-4" />
+                  <span>개인정보 수집 및 상담 목적 활용에 동의합니다.</span>
+                </label>
 
                 <button
                   type="submit"
@@ -894,8 +951,11 @@ export default function SocialEnterprisePage() {
                     isSubmitting ? "cursor-not-allowed opacity-70" : ""
                   }`}
                 >
-                  {isSubmitting ? "접수 중..." : "상담 신청하기"}
+                  {isSubmitting ? "접수 중..." : "비공개 상담 신청하기"}
                 </button>
+                <p className="mt-4 text-sm leading-7 text-slate-500">
+                  남겨주신 내용은 외부에 공개되지 않으며, 검토 후 담당자가 순차적으로 연락드립니다.
+                </p>
               </form>
             </div>
           </div>

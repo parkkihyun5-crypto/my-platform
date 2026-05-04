@@ -37,6 +37,9 @@ type InquiryFormState = {
   name: string;
   phone: string;
   email: string;
+  consultingType: string;
+  currentStage: string;
+  consultingMethod: string;
   message: string;
 };
 
@@ -208,6 +211,9 @@ export default function BrandingPage() {
     name: "",
     phone: "",
     email: "",
+    consultingType: "브랜딩 서비스",
+    currentStage: "",
+    consultingMethod: "",
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -259,17 +265,19 @@ export default function BrandingPage() {
   }, [quoteMessage]);
 
   const emailSubject = useMemo(() => {
-    return `[브랜딩서비스 문의] ${form.organization || "기관명 미입력"}`;
-  }, [form.organization]);
+    return `[브랜딩서비스 문의] ${form.name || "성함 미입력"}`;
+  }, [form.name]);
 
   const emailBody = useMemo(() => {
     return [
       "안녕하세요. 브랜딩서비스 관련 문의를 드립니다.",
       "",
-      `기관명: ${form.organization}`,
       `성명: ${form.name}`,
       `연락처: ${form.phone}`,
       `이메일: ${form.email}`,
+      `상담 유형: ${form.consultingType}`,
+      `현재 단계: ${form.currentStage}`,
+      `희망 상담 방식: ${form.consultingMethod}`,
       "",
       "문의 내용:",
       form.message || "(내용 미입력)",
@@ -360,7 +368,22 @@ export default function BrandingPage() {
     try {
       setIsSubmitting(true);
 
-      const response = await submitInquiry(form, "branding", "브랜딩서비스");
+      const inquiryForm = {
+        ...form,
+        organization: "개인 상담",
+        message: [
+          "[브랜딩 서비스 상담 신청]",
+          "",
+          `상담 유형: ${form.consultingType}`,
+          `현재 단계: ${form.currentStage}`,
+          `희망 상담 방식: ${form.consultingMethod}`,
+          "",
+          "문의 내용:",
+          form.message,
+        ].join("\n"),
+      };
+
+      const response = await submitInquiry(inquiryForm, "branding", "브랜딩서비스");
       const rawText = await response.text();
 
       let result: {
@@ -408,6 +431,9 @@ ${result.detail}`
         name: "",
         phone: "",
         email: "",
+        consultingType: "브랜딩 서비스",
+        currentStage: "",
+        consultingMethod: "",
         message: "",
       });
 
@@ -977,35 +1003,79 @@ ${error.message}
             >
               <div className="grid gap-4 md:grid-cols-2">
                 <FormInput
-                  value={form.organization}
-                  onChange={(value) => setForm((prev) => ({ ...prev, organization: value }))}
-                  placeholder="기관명"
-                />
-                <FormInput
                   value={form.name}
                   onChange={(value) => setForm((prev) => ({ ...prev, name: value }))}
-                  placeholder="성명"
+                  placeholder="성함"
+                  required
                 />
                 <FormInput
                   value={form.phone}
                   onChange={(value) => setForm((prev) => ({ ...prev, phone: value }))}
                   placeholder="연락처"
+                  type="tel"
+                  required
                 />
                 <FormInput
                   value={form.email}
                   onChange={(value) => setForm((prev) => ({ ...prev, email: value }))}
                   placeholder="이메일"
                   type="email"
+                  required
                 />
+                <select
+                  value={form.consultingType}
+                  onChange={(e) => setForm((prev) => ({ ...prev, consultingType: e.target.value }))}
+                  required
+                  className="w-full rounded-[20px] border border-slate-300/90 bg-white px-5 py-4 text-sm text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.04)] outline-none transition-all duration-300 focus:border-[#0B1F35] focus:shadow-[0_16px_36px_rgba(11,31,53,0.08)] focus:ring-4 focus:ring-[#0B1F35]/8 md:text-base"
+                >
+                  <option value="">상담 유형 선택</option>
+                  <option value="공익법인 설립">공익법인 설립</option>
+                  <option value="헤리티지오피스">헤리티지오피스</option>
+                  <option value="브랜딩 서비스">브랜딩 서비스</option>
+                  <option value="사회적기업 설립">사회적기업 설립</option>
+                  <option value="에코피온상담">에코피온상담</option>
+                  <option value="기타 문의">기타 문의</option>
+                </select>
+                <select
+                  value={form.currentStage}
+                  onChange={(e) => setForm((prev) => ({ ...prev, currentStage: e.target.value }))}
+                  required
+                  className="w-full rounded-[20px] border border-slate-300/90 bg-white px-5 py-4 text-sm text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.04)] outline-none transition-all duration-300 focus:border-[#0B1F35] focus:shadow-[0_16px_36px_rgba(11,31,53,0.08)] focus:ring-4 focus:ring-[#0B1F35]/8 md:text-base"
+                >
+                  <option value="">현재 단계</option>
+                  <option value="아이디어 단계">아이디어 단계</option>
+                  <option value="설립 준비 중">설립 준비 중</option>
+                  <option value="운영 중">운영 중</option>
+                  <option value="브랜드 개선 필요">브랜드 개선 필요</option>
+                  <option value="전문가 검토 필요">전문가 검토 필요</option>
+                </select>
+                <select
+                  value={form.consultingMethod}
+                  onChange={(e) => setForm((prev) => ({ ...prev, consultingMethod: e.target.value }))}
+                  required
+                  className="w-full rounded-[20px] border border-slate-300/90 bg-white px-5 py-4 text-sm text-slate-900 shadow-[0_6px_18px_rgba(15,23,42,0.04)] outline-none transition-all duration-300 focus:border-[#0B1F35] focus:shadow-[0_16px_36px_rgba(11,31,53,0.08)] focus:ring-4 focus:ring-[#0B1F35]/8 md:text-base"
+                >
+                  <option value="">희망 상담 방식</option>
+                  <option value="전화 상담">전화 상담</option>
+                  <option value="이메일 상담">이메일 상담</option>
+                  <option value="온라인 미팅">온라인 미팅</option>
+                  <option value="대면 상담">대면 상담</option>
+                  <option value="비공개 미팅">비공개 미팅</option>
+                </select>
               </div>
 
               <FormTextarea
                 value={form.message}
                 onChange={(value) => setForm((prev) => ({ ...prev, message: value }))}
-                placeholder="상담을 원하는 내용을 입력해 주세요."
+                placeholder="브랜드 개선이 필요한 지점, 필요한 산출물, 현재 사용 중인 이름·로고·홈페이지 상태를 간단히 적어주세요."
                 className="mt-4"
                 rows={7}
+                required
               />
+              <label className="mt-5 flex items-start gap-3 rounded-2xl bg-[#F8F6F1] px-4 py-4 text-sm leading-7 text-slate-600">
+                <input type="checkbox" required className="mt-1 h-4 w-4" />
+                <span>개인정보 수집 및 상담 목적 활용에 동의합니다.</span>
+              </label>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <button
@@ -1015,7 +1085,7 @@ ${error.message}
                     isSubmitting ? "cursor-not-allowed opacity-70" : ""
                   }`}
                 >
-                  {isSubmitting ? "접수 중..." : "문의하기"}
+                  {isSubmitting ? "접수 중..." : "비공개 상담 신청하기"}
                 </button>
 
                 <button
@@ -1028,6 +1098,9 @@ ${error.message}
                   이메일로 문의하기
                 </button>
               </div>
+              <p className="mt-4 text-sm leading-7 text-slate-500">
+                남겨주신 내용은 외부에 공개되지 않으며, 검토 후 담당자가 순차적으로 연락드립니다.
+              </p>
             </form>
           </div>
         </section>
