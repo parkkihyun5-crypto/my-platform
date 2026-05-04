@@ -315,19 +315,21 @@ export default function SiteHeader({
         }
 
         .site-header-shell {
-          --header-submenu-bg: rgba(8, 26, 47, 0.72);
-          --header-submenu-border: rgba(229, 201, 150, 0.14);
-          --header-submenu-shadow: 0 16px 36px rgba(2, 6, 23, 0.22);
           --header-submenu-text: rgba(255, 255, 255, 0.88);
           --header-submenu-hover-bg: rgba(255, 255, 255, 0.06);
+          padding-bottom: 0;
         }
 
         .site-header-shell[data-scrolled="true"] {
-          --header-submenu-bg: rgba(255, 255, 255, 0.88);
-          --header-submenu-border: rgba(203, 213, 225, 0.75);
-          --header-submenu-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
           --header-submenu-text: rgba(11, 31, 53, 0.78);
           --header-submenu-hover-bg: rgba(184, 155, 94, 0.08);
+        }
+
+        @media (min-width: 1280px) {
+          .site-header-shell:hover,
+          .site-header-shell:focus-within {
+            padding-bottom: 248px;
+          }
         }
 
         .eco-dropdown-wrap {
@@ -358,7 +360,7 @@ export default function SiteHeader({
 
         .eco-dropdown-menu {
           position: absolute;
-          top: calc(100% + 8px);
+          top: calc(100% + 12px);
           left: 50%;
           right: auto;
           width: max-content;
@@ -368,11 +370,11 @@ export default function SiteHeader({
           padding: 12px 14px;
           text-align: center;
           white-space: nowrap;
-          background: var(--header-submenu-bg);
-          border: 1px solid var(--header-submenu-border);
-          border-radius: 0 0 12px 12px;
-          box-shadow: var(--header-submenu-shadow);
-          backdrop-filter: blur(10px);
+          background: transparent;
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
+          backdrop-filter: none;
           z-index: 100;
           opacity: 0;
           visibility: hidden;
@@ -385,7 +387,7 @@ export default function SiteHeader({
 
         .nav-dropdown-menu {
           position: absolute;
-          top: calc(100% + 8px);
+          top: calc(100% + 12px);
           left: 50%;
           right: auto;
           width: max-content;
@@ -395,11 +397,11 @@ export default function SiteHeader({
           padding: 12px 14px;
           text-align: center;
           white-space: nowrap;
-          background: var(--header-submenu-bg);
-          border: 1px solid var(--header-submenu-border);
-          border-radius: 0 0 12px 12px;
-          box-shadow: var(--header-submenu-shadow);
-          backdrop-filter: blur(10px);
+          background: transparent;
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
+          backdrop-filter: none;
           z-index: 100;
           opacity: 0;
           visibility: hidden;
