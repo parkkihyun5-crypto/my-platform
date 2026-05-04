@@ -96,7 +96,14 @@ const pageSubMenuItems: Record<string, SubMenuItem[]> = {
     { label: "컨설팅 범위", href: "/eco-pion/#ecopion-consulting" },
     { label: "비공개 상담 신청", href: "/eco-pion/#ecopion-contact" },
   ],
-  "/consultant-profile": [],
+  "/consultant-profile": [
+    { label: "에코피언리더", href: "/consultant-profile/" },
+    { label: "에코피온이란", href: "/eco-pion/#ecopion-intro" },
+    { label: "필요한 대상", href: "/eco-pion/#ecopion-target" },
+    { label: "전환 구조", href: "/eco-pion/#ecopion-transition" },
+    { label: "컨설팅 범위", href: "/eco-pion/#ecopion-consulting" },
+    { label: "비공개 상담 신청", href: "/eco-pion/#ecopion-contact" },
+  ],
 };
 
 function normalizeHref(label: string, href: string): string {
@@ -182,10 +189,7 @@ export default function SiteHeader({
     ];
   }, [drawerItems, desktopMainMenuItems]);
 
-  const ecoDesktopSubMenuItems =
-    pathname === "/consultant-profile"
-      ? []
-      : pageSubMenuItems["/eco-pion"];
+  const ecoDesktopSubMenuItems = pageSubMenuItems["/eco-pion"];
 
   useEffect(() => {
     let ticking = false;
@@ -328,7 +332,7 @@ export default function SiteHeader({
         @media (min-width: 1280px) {
           .site-header-shell:hover,
           .site-header-shell:focus-within {
-            padding-bottom: 248px;
+            padding-bottom: 204px;
           }
         }
 
@@ -367,7 +371,7 @@ export default function SiteHeader({
           min-width: 184px;
           max-width: min(280px, calc(100vw - 32px));
           transform: translateX(-50%) translateY(-8px);
-          padding: 12px 14px;
+          padding: 6px 14px;
           text-align: center;
           white-space: nowrap;
           background: transparent;
@@ -394,7 +398,7 @@ export default function SiteHeader({
           min-width: 184px;
           max-width: min(280px, calc(100vw - 32px));
           transform: translateX(-50%) translateY(-8px);
-          padding: 12px 14px;
+          padding: 6px 14px;
           text-align: center;
           white-space: nowrap;
           background: transparent;
@@ -428,7 +432,7 @@ export default function SiteHeader({
           width: 100%;
           align-items: center;
           justify-content: center;
-          padding: 7px 12px;
+          padding: 4px 12px;
           text-align: center;
           color: var(--header-submenu-text);
           border-radius: 8px;
