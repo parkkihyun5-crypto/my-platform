@@ -512,7 +512,10 @@ export default function SiteHeader({
 
               <div className="eco-dropdown-wrap">
                 <MenuLink item={ecoMenuItem} className={ecoTopLinkClass}>
-                  <span>{ecoMenuItem.label}</span>
+                  <>
+                    <span>{ecoMenuItem.label}</span>
+                    <span className={desktopMenuUnderlineClass} />
+                  </>
                 </MenuLink>
 
                 {ecoDesktopSubMenuItems.length > 0 ? (
