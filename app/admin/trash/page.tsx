@@ -21,7 +21,29 @@ type TrashInquiryItem = {
   manager: string;
   priority: string;
   memo: string;
+  nextActionDate?: string;
+  quoteAmount?: string;
+  dashboardHidden?: string;
+  scheduledDeleteAt?: string;
 };
+
+type DashboardDeletedTrashRecord = {
+  trashKey: string;
+  trashId: string;
+  trashRow: string;
+  deletedAt: string;
+  scheduledDeleteAt: string;
+  organization: string;
+  name: string;
+  email: string;
+  serviceType: string;
+  memo: string;
+  syncStatus: "pending" | "synced" | "failed";
+  syncMessage: string;
+};
+
+const DASHBOARD_TRASH_DELETE_RECORDS_KEY =
+  "npolap_admin_trash_delete_records_v1";
 
 const statusLabel: Record<string, string> = {
   new: "신규",
@@ -58,6 +80,10 @@ function displayPriority(priority: string): string {
   return priorityLabel[priority] || priority || "미지정";
 }
 
+function getTrashKey(item: TrashInquiryItem): string {
+  return item.trashId || item.id || item.trashRow || "";
+}
+
 function getTrashIdentity(item: TrashInquiryItem): {
   trashId: string;
   trashRow: string;
@@ -68,12 +94,94 @@ function getTrashIdentity(item: TrashInquiryItem): {
   };
 }
 
+function getScheduledDeleteDate(): string {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+  return date.toISOString();
+}
+
+function readDashboardDeletedRecords(): DashboardDeletedTrashRecord[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const raw = window.localStorage.getItem(DASHBOARD_TRASH_DELETE_RECORDS_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter((item) => item && typeof item.trashKey === "string");
+  } catch {
+    return [];
+  }
+}
+
+function writeDashboardDeletedRecords(
+  records: DashboardDeletedTrashRecord[]
+): void {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(
+    DASHBOARD_TRASH_DELETE_RECORDS_KEY,
+    JSON.stringify(records)
+  );
+}
+
+function upsertDashboardDeletedRecord(
+  record: DashboardDeletedTrashRecord
+): DashboardDeletedTrashRecord[] {
+  const records = readDashboardDeletedRecords();
+  const nextRecords = [
+    record,
+    ...records.filter((item) => item.trashKey !== record.trashKey),
+  ].slice(0, 300);
+
+  writeDashboardDeletedRecords(nextRecords);
+
+  return nextRecords;
+}
+
+function updateDashboardDeletedRecord(
+  trashKey: string,
+  patch: Partial<DashboardDeletedTrashRecord>
+): DashboardDeletedTrashRecord[] {
+  const records = readDashboardDeletedRecords();
+
+  const nextRecords = records.map((record) =>
+    record.trashKey === trashKey
+      ? {
+          ...record,
+          ...patch,
+        }
+      : record
+  );
+
+  writeDashboardDeletedRecords(nextRecords);
+
+  return nextRecords;
+}
+
+function removeDashboardDeletedRecord(
+  trashKey: string
+): DashboardDeletedTrashRecord[] {
+  const records = readDashboardDeletedRecords();
+  const nextRecords = records.filter((record) => record.trashKey !== trashKey);
+
+  writeDashboardDeletedRecords(nextRecords);
+
+  return nextRecords;
+}
+
 export default function AdminTrashPage() {
   const [items, setItems] = useState<TrashInquiryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [workingId, setWorkingId] = useState<string | null>(null);
+  const [dashboardDeletedRecords, setDashboardDeletedRecords] = useState<
+    DashboardDeletedTrashRecord[]
+  >([]);
 
   async function loadTrash(showLoading = false) {
     try {
@@ -83,6 +191,11 @@ export default function AdminTrashPage() {
 
       setErrorMessage("");
 
+      const localRecords = readDashboardDeletedRecords();
+      const hiddenKeys = new Set(localRecords.map((record) => record.trashKey));
+
+      setDashboardDeletedRecords(localRecords);
+
       const response = await fetch(`/api/trash-inquiries?t=${Date.now()}`, {
         method: "GET",
         cache: "no-store",
@@ -90,6 +203,8 @@ export default function AdminTrashPage() {
 
       const data = (await response.json()) as {
         ok?: boolean;
+        source?: string;
+        sheetName?: string;
         items?: TrashInquiryItem[];
         message?: string;
         detail?: string;
@@ -99,13 +214,20 @@ export default function AdminTrashPage() {
         setItems([]);
         setErrorMessage(
           data.detail
-            ? `${data.message || "휴지통 목록을 불러오지 못했습니다."}\n\n${data.detail}`
+            ? `${
+                data.message || "휴지통 목록을 불러오지 못했습니다."
+              }\n\n${data.detail}`
             : data.message || "휴지통 목록을 불러오지 못했습니다."
         );
         return;
       }
 
-      setItems(data.items || []);
+      const nextItems = (data.items || []).filter((item) => {
+        const trashKey = getTrashKey(item);
+        return !hiddenKeys.has(trashKey);
+      });
+
+      setItems(nextItems);
     } catch (error) {
       setItems([]);
       setErrorMessage(
@@ -116,6 +238,10 @@ export default function AdminTrashPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function refreshDashboardRecords() {
+    setDashboardDeletedRecords(readDashboardDeletedRecords());
   }
 
   async function restoreInquiry(item: TrashInquiryItem) {
@@ -157,7 +283,9 @@ export default function AdminTrashPage() {
       if (!response.ok || data.ok === false) {
         alert(
           data.detail
-            ? `${data.message || "문의 복원에 실패했습니다."}\n\n${data.detail}`
+            ? `${data.message || "문의 복원에 실패했습니다."}\n\n${
+                data.detail
+              }`
             : data.message || "문의 복원에 실패했습니다."
         );
         return;
@@ -176,74 +304,114 @@ export default function AdminTrashPage() {
     }
   }
 
-  async function permanentDeleteInquiry(item: TrashInquiryItem) {
+  function dashboardDeleteInquiry(item: TrashInquiryItem) {
     const confirmed = window.confirm(
-      `[영구 삭제 확인]\n\n${
+      `[대시보드 삭제 확인]\n\n${
         item.organization || item.name || "선택한 문의"
-      }\n\n이 문의를 휴지통에서도 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
+      }\n\n이 문의를 대시보드 휴지통 목록에서 삭제하시겠습니까?\n\nGoogle Sheet 휴지통에서는 즉시 삭제하지 않고, 7일 후 정리 대상이 됩니다.`
     );
 
     if (!confirmed) return;
 
     const { trashId, trashRow } = getTrashIdentity(item);
+    const trashKey = getTrashKey(item);
 
-    if (!trashId && !trashRow) {
-      alert("영구 삭제할 휴지통 문의 ID를 찾을 수 없습니다.");
+    if (!trashKey) {
+      alert("삭제할 휴지통 문의 ID를 찾을 수 없습니다.");
       return;
     }
 
-    try {
-      setWorkingId(item.id);
+    const record: DashboardDeletedTrashRecord = {
+      trashKey,
+      trashId,
+      trashRow,
+      deletedAt: new Date().toISOString(),
+      scheduledDeleteAt: getScheduledDeleteDate(),
+      organization: item.organization || "",
+      name: item.name || "",
+      email: item.email || "",
+      serviceType: item.serviceType || "",
+      memo: item.memo || "",
+      syncStatus: "pending",
+      syncMessage: "Google Sheet 삭제예약 동기화 대기 중",
+    };
 
-      const response = await fetch("/api/permanent-delete-inquiry", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          trashId,
-          trashRow,
-        }),
+    const nextRecords = upsertDashboardDeletedRecord(record);
+
+    setDashboardDeletedRecords(nextRecords);
+    setItems((prev) => prev.filter((entry) => getTrashKey(entry) !== trashKey));
+
+    alert(
+      "대시보드 휴지통 목록에서 삭제했습니다.\nGoogle Sheet 휴지통에는 삭제예약 기록이 백그라운드로 반영됩니다."
+    );
+
+    void fetch("/api/permanent-delete-inquiry", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        trashId,
+        trashRow,
+      }),
+    })
+      .then(async (response) => {
+        const data = (await response.json()) as {
+          ok?: boolean;
+          message?: string;
+          detail?: string;
+          scheduledDeleteAt?: string;
+        };
+
+        if (!response.ok || data.ok === false) {
+          const updated = updateDashboardDeletedRecord(trashKey, {
+            syncStatus: "failed",
+            syncMessage:
+              data.detail ||
+              data.message ||
+              "Google Sheet 삭제예약 동기화 실패",
+          });
+          setDashboardDeletedRecords(updated);
+          return;
+        }
+
+        const updated = updateDashboardDeletedRecord(trashKey, {
+          syncStatus: "synced",
+          syncMessage:
+            data.message ||
+            "Google Sheet 휴지통에 7일 후 삭제예약이 반영되었습니다.",
+          scheduledDeleteAt: data.scheduledDeleteAt || record.scheduledDeleteAt,
+        });
+        setDashboardDeletedRecords(updated);
+      })
+      .catch((error) => {
+        const updated = updateDashboardDeletedRecord(trashKey, {
+          syncStatus: "failed",
+          syncMessage:
+            error instanceof Error
+              ? error.message
+              : "Google Sheet 삭제예약 동기화 중 오류가 발생했습니다.",
+        });
+        setDashboardDeletedRecords(updated);
       });
+  }
 
-      const data = (await response.json()) as {
-        ok?: boolean;
-        message?: string;
-        detail?: string;
-      };
+  function removeDashboardRecord(record: DashboardDeletedTrashRecord) {
+    const confirmed = window.confirm(
+      `[대시보드 삭제기록 제거]\n\n${
+        record.organization || record.name || record.trashId || "선택한 기록"
+      }\n\n이 기록을 대시보드 삭제기록에서 제거하시겠습니까?\n\nGoogle Sheet 휴지통에 아직 남아 있는 경우, 목록을 다시 불러오면 다시 보일 수 있습니다.`
+    );
 
-      if (!response.ok || data.ok === false) {
-        alert(
-          data.detail
-            ? `${data.message || "영구 삭제에 실패했습니다."}\n\n${data.detail}`
-            : data.message || "영구 삭제에 실패했습니다."
-        );
-        return;
-      }
+    if (!confirmed) return;
 
-      await loadTrash(true);
-      alert(data.message || "문의가 영구 삭제되었습니다.");
-    } catch (error) {
-      alert(
-        error instanceof Error
-          ? error.message
-          : "문의 영구 삭제 중 오류가 발생했습니다."
-      );
-    } finally {
-      setWorkingId(null);
-    }
+    const nextRecords = removeDashboardDeletedRecord(record.trashKey);
+    setDashboardDeletedRecords(nextRecords);
   }
 
   useEffect(() => {
+    refreshDashboardRecords();
     void loadTrash(true);
-
-    const intervalId = window.setInterval(() => {
-      void loadTrash(false);
-    }, 10000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
   }, []);
 
   const filteredItems = useMemo(() => {
@@ -266,12 +434,37 @@ export default function AdminTrashPage() {
         item.manager,
         item.priority,
         item.memo,
+        item.nextActionDate,
+        item.quoteAmount,
       ]
         .join(" ")
         .toLowerCase()
         .includes(q)
     );
   }, [items, keyword]);
+
+  const filteredDashboardDeletedRecords = useMemo(() => {
+    const q = keyword.trim().toLowerCase();
+
+    if (!q) return dashboardDeletedRecords;
+
+    return dashboardDeletedRecords.filter((record) =>
+      [
+        record.trashId,
+        record.trashRow,
+        record.organization,
+        record.name,
+        record.email,
+        record.serviceType,
+        record.memo,
+        record.syncStatus,
+        record.syncMessage,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [dashboardDeletedRecords, keyword]);
 
   return (
     <main className="min-h-screen bg-[#F6F3EE] px-6 py-10 text-slate-900 md:px-10">
@@ -287,8 +480,9 @@ export default function AdminTrashPage() {
             </h1>
 
             <p className="mt-4 text-sm leading-7 text-slate-600 md:text-base">
-              Google Sheet 휴지통 시트에 보관된 문의를 확인하고, 복원 또는
-              영구 삭제할 수 있습니다.
+              휴지통 목록은 빠른 처리를 위해 대시보드 삭제기록과 함께
+              관리됩니다. 대시보드 삭제 시 화면에서는 즉시 사라지고, Google
+              Sheet에는 백그라운드로 삭제예약이 반영됩니다.
             </p>
           </div>
 
@@ -305,15 +499,15 @@ export default function AdminTrashPage() {
               onClick={() => void loadTrash(true)}
               className="inline-flex items-center justify-center rounded-full border border-[#0B1F35] bg-[#0B1F35] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#163556]"
             >
-              새로고침
+              Google Sheet 다시 불러오기
             </button>
           </div>
         </div>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-3">
+        <section className="mt-8 grid gap-4 md:grid-cols-4">
           <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
             <div className="text-sm font-semibold text-slate-500">
-              휴지통 문의
+              현재 휴지통 표시
             </div>
             <div className="mt-3 text-4xl font-bold text-[#0B1F35]">
               {items.length}
@@ -326,6 +520,15 @@ export default function AdminTrashPage() {
             </div>
             <div className="mt-3 text-4xl font-bold text-violet-700">
               {filteredItems.length}
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="text-sm font-semibold text-slate-500">
+              대시보드 삭제기록
+            </div>
+            <div className="mt-3 text-4xl font-bold text-rose-700">
+              {dashboardDeletedRecords.length}
             </div>
           </div>
 
@@ -371,7 +574,7 @@ export default function AdminTrashPage() {
                   <th className="px-4 py-2 font-semibold">상태</th>
                   <th className="px-4 py-2 font-semibold">우선순위</th>
                   <th className="px-4 py-2 font-semibold">복원</th>
-                  <th className="px-4 py-2 font-semibold">영구삭제</th>
+                  <th className="px-4 py-2 font-semibold">대시보드 삭제</th>
                 </tr>
               </thead>
 
@@ -391,12 +594,15 @@ export default function AdminTrashPage() {
                       colSpan={11}
                       className="rounded-2xl border border-slate-200 bg-[#FCFBF8] px-5 py-10 text-center text-sm font-semibold text-slate-500"
                     >
-                      휴지통에 보관된 문의가 없습니다.
+                      현재 표시할 휴지통 문의가 없습니다.
                     </td>
                   </tr>
                 ) : (
                   filteredItems.map((item) => (
-                    <tr key={item.trashId || item.id} className="text-sm text-slate-700">
+                    <tr
+                      key={item.trashId || item.id}
+                      className="text-sm text-slate-700"
+                    >
                       <td className="rounded-l-2xl border-y border-l border-slate-200 bg-[#FCFBF8] px-4 py-4">
                         {formatDate(item.deletedAt)}
                       </td>
@@ -437,11 +643,106 @@ export default function AdminTrashPage() {
                       <td className="rounded-r-2xl border-y border-r border-slate-200 bg-[#FCFBF8] px-4 py-4">
                         <button
                           type="button"
-                          disabled={workingId === item.id}
-                          onClick={() => void permanentDeleteInquiry(item)}
-                          className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          onClick={() => dashboardDeleteInquiry(item)}
+                          className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                         >
-                          {workingId === item.id ? "처리 중..." : "영구 삭제"}
+                          대시보드 삭제
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-[#0B1F35]">
+                대시보드 삭제기록
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                대시보드에서 삭제한 휴지통 항목은 이곳에 기록됩니다. Google
+                Sheet에는 백그라운드로 7일 후 삭제예약이 반영됩니다.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={refreshDashboardRecords}
+              className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              삭제기록 새로고침
+            </button>
+          </div>
+
+          <div className="mt-6 overflow-x-auto">
+            <table className="min-w-[1200px] border-separate border-spacing-y-3">
+              <thead>
+                <tr className="text-left text-sm text-slate-500">
+                  <th className="px-4 py-2 font-semibold">대시보드 삭제일</th>
+                  <th className="px-4 py-2 font-semibold">삭제예약일</th>
+                  <th className="px-4 py-2 font-semibold">기관명</th>
+                  <th className="px-4 py-2 font-semibold">담당자명</th>
+                  <th className="px-4 py-2 font-semibold">이메일</th>
+                  <th className="px-4 py-2 font-semibold">서비스유형</th>
+                  <th className="px-4 py-2 font-semibold">동기화 상태</th>
+                  <th className="px-4 py-2 font-semibold">기록 제거</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredDashboardDeletedRecords.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="rounded-2xl border border-slate-200 bg-[#FCFBF8] px-5 py-10 text-center text-sm font-semibold text-slate-500"
+                    >
+                      대시보드 삭제기록이 없습니다.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredDashboardDeletedRecords.map((record) => (
+                    <tr key={record.trashKey} className="text-sm text-slate-700">
+                      <td className="rounded-l-2xl border-y border-l border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                        {formatDate(record.deletedAt)}
+                      </td>
+                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                        {formatDate(record.scheduledDeleteAt)}
+                      </td>
+                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4 font-bold text-[#0B1F35]">
+                        {record.organization || "-"}
+                      </td>
+                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                        {record.name || "-"}
+                      </td>
+                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                        {record.email || "-"}
+                      </td>
+                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                        {record.serviceType || "-"}
+                      </td>
+                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                        <div className="font-semibold">
+                          {record.syncStatus === "pending"
+                            ? "동기화 대기"
+                            : record.syncStatus === "synced"
+                              ? "동기화 완료"
+                              : "동기화 실패"}
+                        </div>
+                        <div className="mt-1 max-w-[280px] text-xs leading-5 text-slate-500">
+                          {record.syncMessage}
+                        </div>
+                      </td>
+                      <td className="rounded-r-2xl border-y border-r border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                        <button
+                          type="button"
+                          onClick={() => removeDashboardRecord(record)}
+                          className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                        >
+                          기록 제거
                         </button>
                       </td>
                     </tr>

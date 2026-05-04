@@ -1,4 +1,5 @@
 ﻿"use client";
+
 import { FormEvent, useMemo, useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -6,6 +7,7 @@ import SectionTitle from "@/components/SectionTitle";
 import UnifiedCard from "@/components/UnifiedCard";
 import FormInput from "@/components/FormInput";
 import FormTextarea from "@/components/FormTextarea";
+import FoundationChecklistHeroButtons from "@/components/FoundationChecklistHeroButtons";
 import { submitInquiry } from "@/lib/inquiry-client";
 
 type EstablishmentType = {
@@ -99,7 +101,7 @@ const establishmentTypes: EstablishmentType[] = [
     procedure: "세무서 신고",
     difficulty: "매우 쉬움",
     period: "1~3일",
-    budget: "30~50만 대행료,정관 등 문서작성시50~100추가", 
+    budget: "30~50만 대행료,정관 등 문서작성시50~100추가",
     structure: "대표 중심",
     receipt: "불가",
     trust: "기초 단계",
@@ -215,10 +217,17 @@ export default function PublicInterestFoundationPage() {
     selectedPackageIds.includes(item.id)
   );
 
+  const selectedPackagesText =
+    selectedPackages.length > 0
+      ? selectedPackages.map((item) => item.name).join(", ")
+      : "선택없음";
+
   const selectedPackagesTotal = selectedPackages.reduce(
     (sum, item) => sum + item.price,
     0
   );
+
+  const estimatedTotal = selectedPackagesTotal;
 
   function togglePackage(id: string): void {
     setSelectedPackageIds((prev) =>
@@ -228,13 +237,10 @@ export default function PublicInterestFoundationPage() {
     );
   }
 
-  const emailSubject = useMemo(() => {
-    return `[공익법인설립 문의] ${form.organization || "기관명 미입력"}`;
-  }, [form.organization]);
-
-  const emailBody = useMemo(() => {
-    return [
-      "안녕하세요. 공익법인설립 관련 문의를 드립니다.",
+  const mailtoHref = useMemo(() => {
+    const subject = `[NPOLAP 문의하기] ${form.organization || "기관명 미입력"}`;
+    const body = [
+      "안녕하세요. 문의를 드립니다.",
       "",
       `기관명: ${form.organization}`,
       `성명: ${form.name}`,
@@ -244,54 +250,11 @@ export default function PublicInterestFoundationPage() {
       "문의 내용:",
       form.message || "(내용 미입력)",
     ].join("\n");
-  }, [form]);
 
-  const mailtoHref = useMemo(() => {
     return `mailto:npolap@ilukorea.org?subject=${encodeURIComponent(
-      emailSubject
-    )}&body=${encodeURIComponent(emailBody)}`;
-  }, [emailSubject, emailBody]);
-
-  const gmailComposeHref = useMemo(() => {
-    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
-      "npolap@ilukorea.org"
-    )}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(
-      emailBody
-    )}`;
-  }, [emailSubject, emailBody]);
-
-  function handleEmailInquiry(): void {
-    const isMobile =
-      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        window.navigator.userAgent
-      );
-
-    if (isMobile) {
-      window.location.href = mailtoHref;
-      alert("\uC774\uBA54\uC77C \uC791\uC131 \uD654\uBA74\uC73C\uB85C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4. \uBA54\uC77C \uC571\uC5D0\uC11C \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
-      return;
-    }
-
-    const gmailWindow = window.open(
-      gmailComposeHref,
-      "publicInterestGmailCompose",
-      "width=760,height=720,left=120,top=80"
-    );
-
-    if (gmailWindow) {
-      try {
-        gmailWindow.opener = null;
-      } catch {
-        // Ignore browser security restrictions.
-      }
-
-      alert("\uC774\uBA54\uC77C \uC791\uC131\uCC3D\uC774 \uC5F4\uB838\uC2B5\uB2C8\uB2E4. \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
-      return;
-    }
-
-    window.location.href = mailtoHref;
-    alert("\uC774\uBA54\uC77C \uC791\uC131 \uD654\uBA74\uC73C\uB85C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4. \uBA54\uC77C \uC571\uC5D0\uC11C \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
-  }
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+  }, [form]);
 
   async function handleInquirySubmit(
     e: FormEvent<HTMLFormElement>
@@ -299,16 +262,6 @@ export default function PublicInterestFoundationPage() {
     e.preventDefault();
 
     if (isSubmitting) return;
-
-    if (
-      !form.name.trim() ||
-      !form.phone.trim() ||
-      !form.email.trim() ||
-      !form.message.trim()
-    ) {
-      alert("성명, 연락처, 이메일, 문의 내용을 모두 입력해 주세요.");
-      return;
-    }
 
     try {
       setIsSubmitting(true);
@@ -319,36 +272,8 @@ export default function PublicInterestFoundationPage() {
         "공익법인설립"
       );
 
-      const rawText = await response.text();
-
-      let result: {
-        ok?: boolean;
-        message?: string;
-        detail?: string;
-      } | null = null;
-
-      if (rawText.trim()) {
-        try {
-          result = JSON.parse(rawText) as {
-            ok?: boolean;
-            message?: string;
-            detail?: string;
-          };
-        } catch {
-          result = null;
-        }
-      }
-
-      if (!response.ok || result?.ok === false) {
-        alert(
-          result?.detail
-            ? `${result.message ?? "문의 저장 실패"}\n\n${result.detail}`
-            : result?.message ??
-                `문의 저장 중 오류가 발생했습니다.\n\n상태코드: ${response.status}\n응답내용: ${
-                  rawText || "(빈 응답)"
-                }\n\n이메일 문의로 연결합니다.`
-        );
-        handleEmailInquiry();
+      if (!response.ok) {
+        window.location.href = mailtoHref;
         return;
       }
 
@@ -361,13 +286,8 @@ export default function PublicInterestFoundationPage() {
       });
 
       alert("문의가 정상적으로 접수되었습니다.");
-    } catch (error) {
-      alert(
-        error instanceof Error
-          ? `문의 전송 중 오류가 발생했습니다.\n\n${error.message}\n\n이메일 문의로 연결합니다.`
-          : "문의 전송 중 오류가 발생했습니다. 이메일 문의로 연결합니다."
-      );
-      handleEmailInquiry();
+    } catch {
+      window.location.href = mailtoHref;
     } finally {
       setIsSubmitting(false);
     }
@@ -376,38 +296,17 @@ export default function PublicInterestFoundationPage() {
   return (
     <div className="min-h-screen bg-[#f6f3ee] text-slate-900">
       <SiteHeader
-  mode="sub"
-  logoText="PUBLIC INTEREST FOUNDATION"
-  logoHref="/heritage-office"
-  inquiryHref="#contact"
-  menuItems={[
-    {
-      label: "공익법인설립",
-      href: "/public-interest-foundation",
-      isLink: true,
-    },
-    {
-      label: "사회적기업설립",
-      href: "/social-enterprise",
-      isLink: true,
-    },
-    {
-      label: "브랜딩서비스",
-      href: "/branding",
-      isLink: true,
-    },
-    {
-      label: "헤리티지오피스",
-      href: "/heritage-office",
-      isLink: true,
-    },
-    {
-      label: "에코피온",
-      href: "/consultant-profile",
-      isLink: true,
-    },
-  ]}
-/>
+        mode="sub"
+        logoText="NPOLAP"
+        logoHref="/public-interest-foundation"
+        inquiryHref="#contact"
+        menuItems={[
+          { label: "공익법인설립", href: "/public-interest-foundation", isLink: true },
+          { label: "사회적기업설립", href: "/social-enterprise", isLink: true },
+          { label: "브랜딩서비스", href: "/branding", isLink: true },
+          { label: "헤리티지오피스", href: "/heritage-office", isLink: true },
+        ]}
+      />
 
       <main>
         <section className="relative h-[100vh] w-full overflow-hidden pt-24 md:pt-28">
@@ -439,6 +338,8 @@ export default function PublicInterestFoundationPage() {
                 <br />
                 공익법인 설립 및 유산 설계 전문 컨설팅 그룹입니다.
               </p>
+
+              <FoundationChecklistHeroButtons />
             </div>
           </div>
         </section>
@@ -512,7 +413,7 @@ export default function PublicInterestFoundationPage() {
           </div>
         </section>
 
-                <section id="establishment" className="py-20 md:py-28">
+        <section id="establishment" className="py-20 md:py-28">
           <div className="mx-auto max-w-[1400px] px-6 md:px-10 lg:px-12">
             <SectionTitle
               badge="ESTABLISHMENT"
@@ -791,13 +692,12 @@ export default function PublicInterestFoundationPage() {
                   {isSubmitting ? "접수 중..." : "문의하기"}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={handleEmailInquiry}
+                <a
+                  href={mailtoHref}
                   className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50 md:px-7 md:py-4 md:text-base"
                 >
                   이메일로 문의하기
-                </button>
+                </a>
               </div>
             </form>
           </div>
@@ -805,15 +705,14 @@ export default function PublicInterestFoundationPage() {
       </main>
 
       <SiteFooter
-  leftText="NPO LAP"
-  rightItems={[
-    "공익법인설립",
-    "사회적기업설립",
-    "브랜딩서비스",
-    "헤리티지오피스",
-    "에코피온",
-  ]}
-/>
+        leftText="International Leaders Union"
+        rightItems={[
+          "공익법인설립",
+          "사회적기업설립",
+          "브랜딩서비스",
+          "헤리티지오피스",
+        ]}
+      />
     </div>
   );
 }

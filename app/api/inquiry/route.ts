@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type InquiryPayload = {
   organization?: string;
@@ -11,270 +11,225 @@ type InquiryPayload = {
   message?: string;
   sourcePage?: string;
   serviceType?: string;
-  status?: string;
-  manager?: string;
-  priority?: string;
-  memo?: string;
-  id?: string;
-  [key: string]: unknown;
 };
 
-type AppsScriptResponse = {
-  ok?: boolean;
-  items?: unknown[];
-  item?: unknown;
-  message?: string;
-  error?: string;
-  detail?: string;
-  [key: string]: unknown;
-};
-
-function getGoogleSheetWebhookUrl(): string {
-  return (
-    process.env.GOOGLE_SHEET_WEBHOOK_URL ||
-    process.env.GOOGLE_SCRIPT_URL ||
+function getAppsScriptUrl(): string {
+  const url =
     process.env.GOOGLE_APPS_SCRIPT_URL ||
+    process.env.GOOGLE_SCRIPT_URL ||
+    process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL ||
     process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL ||
-    process.env.APPS_SCRIPT_URL ||
-    process.env.INQUIRY_SCRIPT_URL ||
-    ""
-  );
+    "";
+
+  return url.trim();
 }
 
-function normalize(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function createMissingWebhookResponse(): NextResponse {
-  return NextResponse.json(
-    {
-      ok: false,
-      items: [],
-      message:
-        "GOOGLE_SHEET_WEBHOOK_URL 환경변수가 없습니다. Vercel 환경변수 또는 .env.local을 확인하세요.",
-    },
-    { status: 500 }
-  );
-}
-
-async function parseAppsScriptResponse(response: Response): Promise<{
-  ok: boolean;
-  status: number;
-  data: AppsScriptResponse | null;
-  rawText: string;
-}> {
+async function parseAppsScriptResponse(response: Response) {
   const rawText = await response.text();
 
   if (!rawText.trim()) {
     return {
-      ok: response.ok,
-      status: response.status,
-      data: null,
+      ok: false,
+      message: "Google Apps Script에서 빈 응답을 반환했습니다.",
+      detail: "",
       rawText,
     };
   }
 
   try {
-    const data = JSON.parse(rawText) as AppsScriptResponse;
-
-    return {
-      ok: response.ok && data.ok !== false,
-      status: response.status,
-      data,
-      rawText,
-    };
+    return JSON.parse(rawText);
   } catch {
     return {
       ok: false,
-      status: response.status,
-      data: null,
+      message: "Google Apps Script 응답을 JSON으로 해석하지 못했습니다.",
+      detail: rawText.slice(0, 1000),
       rawText,
     };
   }
 }
 
-async function forwardToAppsScript(
-  method: "GET" | "POST" | "PATCH",
-  payload?: Record<string, unknown>
-): Promise<NextResponse> {
-  const webhookUrl = getGoogleSheetWebhookUrl();
-
-  if (!webhookUrl) {
-    return createMissingWebhookResponse();
-  }
-
+export async function GET(): Promise<Response> {
   try {
-    const requestUrl =
-      method === "GET" ? `${webhookUrl}?t=${Date.now()}` : webhookUrl;
+    const appsScriptUrl = getAppsScriptUrl();
 
-    const response = await fetch(requestUrl, {
-      method: method === "GET" ? "GET" : "POST",
-      cache: "no-store",
-      headers:
-        method === "GET"
-          ? undefined
-          : {
-              "Content-Type": "application/json; charset=utf-8",
-              Accept: "application/json",
-            },
-      body:
-        method === "GET"
-          ? undefined
-          : JSON.stringify({
-              action: method === "PATCH" ? "update" : "create",
-              ...payload,
-            }),
-    });
-
-    const parsed = await parseAppsScriptResponse(response);
-
-    if (!parsed.ok) {
+    if (!appsScriptUrl) {
       return NextResponse.json(
         {
           ok: false,
+          message: "Google Apps Script URL 환경변수가 설정되지 않았습니다.",
+          detail:
+            ".env.local 또는 Vercel 환경변수에 GOOGLE_APPS_SCRIPT_URL 값을 설정하세요.",
           items: [],
-          message:
-            parsed.data?.message ||
-            parsed.data?.error ||
-            parsed.data?.detail ||
-            "Google Apps Script 처리 중 오류가 발생했습니다.",
-          status: parsed.status,
-          raw: parsed.data ?? parsed.rawText,
         },
-        { status: response.ok ? 500 : response.status }
+        { status: 500 }
       );
     }
 
-    if (method === "GET") {
+    const requestUrl = `${appsScriptUrl}${
+      appsScriptUrl.includes("?") ? "&" : "?"
+    }t=${Date.now()}`;
+
+    const response = await fetch(requestUrl, {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    const data = await parseAppsScriptResponse(response);
+
+    if (!response.ok) {
       return NextResponse.json(
         {
-          ok: true,
-          items: Array.isArray(parsed.data?.items) ? parsed.data.items : [],
+          ok: false,
+          message: "Google Apps Script 호출에 실패했습니다.",
+          detail: data?.detail || data?.message || `HTTP ${response.status}`,
+          appsScriptStatus: response.status,
+          items: [],
         },
-        { status: 200 }
+        { status: 502 }
+      );
+    }
+
+    if (data?.ok === false) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            data.message || "Google Apps Script 처리 중 오류가 발생했습니다.",
+          detail: data.detail || "",
+          received: data,
+          items: [],
+        },
+        { status: 502 }
       );
     }
 
     return NextResponse.json(
       {
         ok: true,
-        message:
-          parsed.data?.message ||
-          (method === "PATCH"
-            ? "문의 상태가 정상적으로 수정되었습니다."
-            : "문의가 정상적으로 접수되었습니다."),
-        item: parsed.data?.item ?? null,
-        data: parsed.data,
+        source: data?.source || "google-apps-script",
+        sheetName: data?.sheetName || "문의목록",
+        items: Array.isArray(data?.items) ? data.items : [],
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
     );
   } catch (error) {
-    console.error(`[INQUIRY ${method} API ERROR]:`, error);
-
     return NextResponse.json(
       {
         ok: false,
+        message: "문의 데이터를 불러오는 중 서버 오류가 발생했습니다.",
+        detail: error instanceof Error ? error.message : String(error),
         items: [],
-        message:
-          error instanceof Error
-            ? error.message
-            : "Google Apps Script 연결 중 오류가 발생했습니다.",
       },
       { status: 500 }
     );
   }
 }
 
-export async function GET(): Promise<Response> {
-  return forwardToAppsScript("GET");
-}
-
 export async function POST(request: Request): Promise<Response> {
   try {
+    const appsScriptUrl = getAppsScriptUrl();
+
+    if (!appsScriptUrl) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "Google Apps Script URL 환경변수가 설정되지 않았습니다.",
+          detail:
+            ".env.local 또는 Vercel 환경변수에 GOOGLE_APPS_SCRIPT_URL 값을 설정하세요.",
+        },
+        { status: 500 }
+      );
+    }
+
     const body = (await request.json()) as InquiryPayload;
 
-    const organization = normalize(body.organization);
-    const name = normalize(body.name);
-    const phone = normalize(body.phone);
-    const email = normalize(body.email);
-    const message = normalize(body.message);
-    const sourcePage = normalize(body.sourcePage) || "unknown";
-    const serviceType = normalize(body.serviceType) || "general";
+    const payload = {
+      action: "createInquiry",
+      organization: body.organization || "",
+      name: body.name || "",
+      phone: body.phone || "",
+      email: body.email || "",
+      message: body.message || "",
+      sourcePage: body.sourcePage || "",
+      serviceType: body.serviceType || "",
+      status: "new",
+      priority: "none",
+    };
 
-    if (!name || !phone || !email || !message) {
+    if (!payload.name || !payload.phone || !payload.email || !payload.message) {
       return NextResponse.json(
         {
           ok: false,
           message: "필수 항목이 누락되었습니다.",
-          detail: "성명, 연락처, 이메일, 문의 내용을 모두 입력해야 합니다.",
+          detail: "성명, 연락처, 이메일, 문의내용은 필수입니다.",
         },
         { status: 400 }
       );
     }
 
-    return forwardToAppsScript("POST", {
-      organization,
-      name,
-      phone,
-      email,
-      message,
-      sourcePage,
-      serviceType,
-    });
-  } catch (error) {
-    console.error("[INQUIRY POST PARSE ERROR]:", error);
-
-    return NextResponse.json(
-      {
-        ok: false,
-        message: "문의 요청 데이터를 처리하지 못했습니다.",
-        detail:
-          error instanceof Error
-            ? error.message
-            : "요청 본문을 JSON으로 해석하지 못했습니다.",
+    const response = await fetch(appsScriptUrl, {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8",
+        Accept: "application/json",
       },
-      { status: 400 }
-    );
-  }
-}
+      body: JSON.stringify(payload),
+    });
 
-export async function PATCH(request: Request): Promise<Response> {
-  try {
-    const body = (await request.json()) as InquiryPayload;
+    const data = await parseAppsScriptResponse(response);
 
-    if (!body.id) {
+    if (!response.ok) {
       return NextResponse.json(
         {
           ok: false,
-          message: "수정할 문의 ID가 없습니다.",
+          message: "Google Apps Script 저장 호출에 실패했습니다.",
+          detail: data?.detail || data?.message || `HTTP ${response.status}`,
+          appsScriptStatus: response.status,
         },
-        { status: 400 }
+        { status: 502 }
       );
     }
 
-    return forwardToAppsScript("PATCH", body);
-  } catch (error) {
-    console.error("[INQUIRY PATCH PARSE ERROR]:", error);
+    if (data?.ok === false) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            data.message || "Google Apps Script 저장 처리 중 오류가 발생했습니다.",
+          detail: data.detail || "",
+          received: data,
+        },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json(
       {
-        ok: false,
-        message: "문의 수정 요청 데이터를 처리하지 못했습니다.",
-        detail:
-          error instanceof Error
-            ? error.message
-            : "요청 본문을 JSON으로 해석하지 못했습니다.",
+        ok: true,
+        message: data?.message || "문의가 저장되었습니다.",
+        received: data,
       },
-      { status: 400 }
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "문의 저장 중 서버 오류가 발생했습니다.",
+        detail: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
     );
   }
-}
-
-export async function OPTIONS(): Promise<Response> {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      Allow: "GET,POST,PATCH,OPTIONS",
-    },
-  });
 }

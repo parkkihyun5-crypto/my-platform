@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 type InquiryItem = {
@@ -18,6 +18,10 @@ type InquiryItem = {
   priority?: string;
   memo?: string;
 };
+
+type LeadTypeFilter = "all" | "legalEntityChecklist";
+
+const LEGAL_ENTITY_CHECKLIST_MARKER = "[법인별 제출서류 체크리스트 결과]";
 
 const statusOptions = ["new", "consulting", "proposal", "contract"];
 
@@ -39,6 +43,10 @@ const priorityLabel: Record<string, string> = {
 };
 
 const managerOptions = ["", "박기현", "관리자", "상담담당", "브랜딩담당"];
+
+function isLegalEntityChecklistInquiry(item: InquiryItem): boolean {
+  return item.message.includes(LEGAL_ENTITY_CHECKLIST_MARKER);
+}
 
 function createGmailUrl({
   to,
@@ -134,12 +142,26 @@ function createProposalEmailUrl(item: InquiryItem) {
   });
 }
 
+function formatDate(value: string): string {
+  if (!value) return "-";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString("ko-KR");
+}
+
 export default function AdminPage() {
   const [items, setItems] = useState<InquiryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [leadTypeFilter, setLeadTypeFilter] =
+    useState<LeadTypeFilter>("all");
   const [selectedItem, setSelectedItem] = useState<InquiryItem | null>(null);
   const [lastUpdated, setLastUpdated] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -176,7 +198,7 @@ export default function AdminPage() {
     }
   }
 
-        function openProposalEmailFromList(
+  function openProposalEmailFromList(
     item: InquiryItem,
     preparedWindow?: Window | null
   ): void {
@@ -185,7 +207,7 @@ export default function AdminPage() {
         preparedWindow.close();
       }
 
-      alert("\uC774\uBA54\uC77C \uC8FC\uC18C\uAC00 \uC5C6\uB294 \uBB38\uC758\uC785\uB2C8\uB2E4.");
+      alert("이메일 주소가 없는 문의입니다.");
       return;
     }
 
@@ -196,7 +218,7 @@ export default function AdminPage() {
         preparedWindow.close();
       }
 
-      alert("\uACAC\uC801 \uBA54\uC77C \uC791\uC131\uCC3D\uC744 \uB9CC\uB4E4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.");
+      alert("견적 메일 작성창을 만들 수 없습니다.");
       return;
     }
 
@@ -209,7 +231,9 @@ export default function AdminPage() {
         // Ignore browser focus restrictions.
       }
 
-      alert("\uACAC\uC801 \uBA54\uC77C \uC791\uC131\uCC3D\uC744 \uC5F4\uC5C8\uC2B5\uB2C8\uB2E4. \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
+      alert(
+        "견적 메일 작성창을 열었습니다. 내용을 확인한 뒤 보내기를 눌러주세요."
+      );
       return;
     }
 
@@ -227,12 +251,16 @@ export default function AdminPage() {
         // Ignore browser security restrictions.
       }
 
-      alert("\uACAC\uC801 \uBA54\uC77C \uC791\uC131\uCC3D\uC744 \uC5F4\uC5C8\uC2B5\uB2C8\uB2E4. \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
+      alert(
+        "견적 메일 작성창을 열었습니다. 내용을 확인한 뒤 보내기를 눌러주세요."
+      );
       return;
     }
 
     window.location.href = proposalUrl;
-    alert("\uACAC\uC801 \uBA54\uC77C \uC791\uC131 \uD654\uBA74\uC73C\uB85C \uC5F0\uACB0\uD588\uC2B5\uB2C8\uB2E4. \uBA54\uC77C \uC571\uC5D0\uC11C \uB0B4\uC6A9\uC744 \uD655\uC778\uD55C \uB4A4 \uBCF4\uB0B4\uAE30\uB97C \uB20C\uB7EC\uC8FC\uC138\uC694.");
+    alert(
+      "견적 메일 작성 화면으로 연결했습니다. 메일 앱에서 내용을 확인한 뒤 보내기를 눌러주세요."
+    );
   }
 
   async function updateStatus(row: string, status: string) {
@@ -252,7 +280,7 @@ export default function AdminPage() {
       if (preparedProposalWindow) {
         try {
           preparedProposalWindow.document.write(
-            "<!doctype html><html><head><title>\uACAC\uC801 \uBA54\uC77C \uC900\uBE44 \uC911</title></head><body style='font-family:sans-serif;padding:24px;line-height:1.7;'><h3>\uACAC\uC801 \uBA54\uC77C \uC791\uC131\uCC3D\uC744 \uC900\uBE44\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4.</h3><p>\uC7A0\uC2DC\uB9CC \uAE30\uB2E4\uB824 \uC8FC\uC138\uC694.</p></body></html>"
+            "<!doctype html><html><head><title>견적 메일 준비 중</title></head><body style='font-family:sans-serif;padding:24px;line-height:1.7;'><h3>견적 메일 작성창을 준비하고 있습니다.</h3><p>잠시만 기다려 주세요.</p></body></html>"
           );
           preparedProposalWindow.document.close();
           preparedProposalWindow.opener = null;
@@ -281,7 +309,7 @@ export default function AdminPage() {
           preparedProposalWindow.close();
         }
 
-        alert(data.message || "\uC0C1\uD0DC \uBCC0\uACBD\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4.");
+        alert(data.message || "상태 변경에 실패했습니다.");
         return;
       }
 
@@ -311,12 +339,13 @@ export default function AdminPage() {
         preparedProposalWindow.close();
       }
 
-      alert("\uC0C1\uD0DC \uBCC0\uACBD \uC911 \uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4.");
+      alert("상태 변경 중 오류가 발생했습니다.");
     } finally {
       setSavingFieldId(null);
     }
   }
-async function updateAdminFields(
+
+  async function updateAdminFields(
     row: string,
     fields: {
       manager?: string;
@@ -426,7 +455,7 @@ async function updateAdminFields(
   }
 
   async function handleProposalClick(
-    event: React.MouseEvent<HTMLAnchorElement>,
+    event: MouseEvent<HTMLAnchorElement>,
     item: InquiryItem
   ) {
     if (!item.email?.trim()) {
@@ -447,7 +476,7 @@ async function updateAdminFields(
   }
 
   function handleGeneralEmailClick(
-    event: React.MouseEvent<HTMLAnchorElement>,
+    event: MouseEvent<HTMLAnchorElement>,
     item: InquiryItem
   ) {
     if (!item.email?.trim()) {
@@ -481,6 +510,7 @@ async function updateAdminFields(
       "담당자",
       "우선순위",
       "관리자메모",
+      "문의분류",
     ];
 
     const rows = filteredItems.map((item) => [
@@ -496,6 +526,7 @@ async function updateAdminFields(
       item.manager || "",
       priorityLabel[item.priority || "none"] || item.priority || "",
       item.memo || "",
+      isLegalEntityChecklistInquiry(item) ? "법인별 제출서류 체크리스트" : "",
     ]);
 
     const csv = [headers, ...rows]
@@ -571,6 +602,9 @@ async function updateAdminFields(
             item.manager,
             item.priority,
             item.memo,
+            isLegalEntityChecklistInquiry(item)
+              ? "법인별 제출서류 체크리스트 제출서류 체크리스트"
+              : "",
           ]
             .join(" ")
             .toLowerCase()
@@ -584,9 +618,19 @@ async function updateAdminFields(
       const matchesPriority =
         priorityFilter === "all" ? true : itemPriority === priorityFilter;
 
-      return matchesKeyword && matchesStatus && matchesPriority;
+      const matchesLeadType =
+        leadTypeFilter === "all"
+          ? true
+          : isLegalEntityChecklistInquiry(item);
+
+      return (
+        matchesKeyword &&
+        matchesStatus &&
+        matchesPriority &&
+        matchesLeadType
+      );
     });
-  }, [items, keyword, statusFilter, priorityFilter]);
+  }, [items, keyword, statusFilter, priorityFilter, leadTypeFilter]);
 
   const summary = useMemo(() => {
     return {
@@ -596,6 +640,9 @@ async function updateAdminFields(
         .length,
       proposalCount: items.filter((item) => item.status === "proposal").length,
       contractCount: items.filter((item) => item.status === "contract").length,
+      legalEntityChecklistCount: items.filter((item) =>
+        isLegalEntityChecklistInquiry(item)
+      ).length,
     };
   }, [items]);
 
@@ -626,12 +673,13 @@ async function updateAdminFields(
             >
               엑셀 다운로드
             </button>
-          <a
-            href="/admin/trash"
-            className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-          >
-            휴지통 보기
-          </a>
+
+            <a
+              href="/admin/trash"
+              className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+            >
+              휴지통 보기
+            </a>
 
             <button
               type="button"
@@ -657,7 +705,7 @@ async function updateAdminFields(
           </div>
         ) : null}
 
-        <div className="mt-8 grid gap-4 md:grid-cols-5">
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
           <SummaryCard title="전체 문의" value={summary.total} />
           <SummaryCard title="신규" value={summary.newCount} tone="amber" />
           <SummaryCard
@@ -675,13 +723,37 @@ async function updateAdminFields(
             value={summary.contractCount}
             tone="emerald"
           />
+
+          <button
+            type="button"
+            onClick={() =>
+              setLeadTypeFilter((prev) =>
+                prev === "legalEntityChecklist"
+                  ? "all"
+                  : "legalEntityChecklist"
+              )
+            }
+            className={`rounded-[28px] border p-5 text-left shadow-sm transition hover:-translate-y-[1px] ${
+              leadTypeFilter === "legalEntityChecklist"
+                ? "border-[#0B1F35] bg-[#0B1F35] text-white"
+                : "border-indigo-200 bg-indigo-50 text-indigo-800"
+            }`}
+          >
+            <div className="text-sm font-semibold">제출서류 체크리스트</div>
+            <div className="mt-3 text-3xl font-bold">
+              {summary.legalEntityChecklistCount}
+            </div>
+            <div className="mt-2 text-xs font-medium">
+              법인별 제출서류 결과 포함 문의
+            </div>
+          </button>
         </div>
 
         <section className="mt-8 rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <h2 className="text-lg font-bold text-[#0B1F35]">문의 목록</h2>
 
-            <div className="grid gap-3 md:grid-cols-[1fr_180px_180px] xl:w-[900px]">
+            <div className="grid gap-3 md:grid-cols-[1fr_170px_170px_210px] xl:w-[1120px]">
               <input
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
@@ -714,11 +786,24 @@ async function updateAdminFields(
                   </option>
                 ))}
               </select>
+
+              <select
+                value={leadTypeFilter}
+                onChange={(e) =>
+                  setLeadTypeFilter(e.target.value as LeadTypeFilter)
+                }
+                className="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#0B1F35]"
+              >
+                <option value="all">전체 문의유형</option>
+                <option value="legalEntityChecklist">
+                  제출서류 체크리스트
+                </option>
+              </select>
             </div>
           </div>
 
           <div className="mt-6 overflow-x-auto">
-            <table className="min-w-[1550px] border-separate border-spacing-y-3">
+            <table className="min-w-[1600px] border-separate border-spacing-y-3">
               <thead>
                 <tr className="text-left text-sm text-slate-500">
                   <th className="px-4 py-2 font-semibold">접수일시</th>
@@ -759,7 +844,18 @@ async function updateAdminFields(
                   filteredItems.map((item) => (
                     <tr key={item.id} className="align-top">
                       <TableCell first>{formatDate(item.createdAt)}</TableCell>
-                      <TableCell strong>{item.organization || "-"}</TableCell>
+
+                      <TableCell strong>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span>{item.organization || "-"}</span>
+                          {isLegalEntityChecklistInquiry(item) ? (
+                            <span className="inline-flex rounded-full border border-indigo-200 bg-indigo-100 px-2 py-0.5 text-[11px] font-bold tracking-[0.08em] text-indigo-700">
+                              제출서류
+                            </span>
+                          ) : null}
+                        </div>
+                      </TableCell>
+
                       <TableCell>{item.name || "-"}</TableCell>
                       <TableCell>{item.phone || "-"}</TableCell>
                       <TableCell>{item.email || "-"}</TableCell>
@@ -862,6 +958,12 @@ async function updateAdminFields(
                 <h2 className="mt-3 text-3xl font-bold text-[#0B1F35]">
                   {selectedItem.organization || "-"}
                 </h2>
+
+                {isLegalEntityChecklistInquiry(selectedItem) ? (
+                  <div className="mt-3 inline-flex rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-700">
+                    법인별 제출서류 체크리스트 결과 포함 문의
+                  </div>
+                ) : null}
               </div>
 
               <button
@@ -1011,23 +1113,18 @@ async function updateAdminFields(
                   href={createProposalEmailUrl(selectedItem)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(event) =>
-                    void handleProposalClick(event, selectedItem)
-                  }
+                  onClick={(event) => void handleProposalClick(event, selectedItem)}
                   className="inline-flex items-center justify-center rounded-full border border-violet-200 bg-violet-50 px-5 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-100"
                 >
-                  견적발송 메일 보내기
+                  견적발송
                 </a>
 
                 <button
                   type="button"
-                  disabled={deletingId === selectedItem.id}
                   onClick={() => void moveToTrash(selectedItem.id)}
-                  className="rounded-full border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
                 >
-                  {deletingId === selectedItem.id
-                    ? "휴지통 이동 중..."
-                    : "이 문의 휴지통 이동"}
+                  휴지통 이동
                 </button>
               </div>
             </div>
@@ -1045,32 +1142,29 @@ function SummaryCard({
 }: {
   title: string;
   value: number;
-  tone?: "slate" | "amber" | "blue" | "emerald" | "violet";
+  tone?: "slate" | "amber" | "blue" | "violet" | "emerald";
 }) {
-  const colorMap = {
-    slate: "text-[#0B1F35]",
-    amber: "text-amber-600",
-    blue: "text-blue-600",
-    emerald: "text-emerald-600",
-    violet: "text-violet-600",
+  const toneClass: Record<string, string> = {
+    slate: "border-slate-200 bg-white text-[#0B1F35]",
+    amber: "border-amber-200 bg-amber-50 text-amber-700",
+    blue: "border-blue-200 bg-blue-50 text-blue-700",
+    violet: "border-violet-200 bg-violet-50 text-violet-700",
+    emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
   };
 
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="text-sm font-semibold text-slate-500">{title}</div>
-
-      <div className={`mt-3 text-3xl font-bold ${colorMap[tone]}`}>
-        {value}
-      </div>
+    <div className={`rounded-[28px] border p-5 shadow-sm ${toneClass[tone]}`}>
+      <div className="text-sm font-semibold">{title}</div>
+      <div className="mt-3 text-3xl font-bold">{value}</div>
     </div>
   );
 }
 
 function TableCell({
   children,
-  first,
-  last,
-  strong,
+  first = false,
+  last = false,
+  strong = false,
 }: {
   children: ReactNode;
   first?: boolean;
@@ -1082,7 +1176,7 @@ function TableCell({
       className={`border-y border-slate-200 bg-[#FCFBF8] px-4 py-4 text-sm text-slate-700 ${
         first ? "rounded-l-[24px] border-l" : ""
       } ${last ? "rounded-r-[24px] border-r" : ""} ${
-        strong ? "font-semibold text-[#0B1F35]" : ""
+        strong ? "font-bold text-[#0B1F35]" : ""
       }`}
     >
       {children}
@@ -1096,15 +1190,15 @@ function StatusBadge({ status }: { status: string }) {
   const className =
     status === "contract"
       ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-      : status === "consulting"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
       : status === "proposal"
-      ? "border-violet-200 bg-violet-50 text-violet-700"
-      : "border-amber-200 bg-amber-50 text-amber-700";
+        ? "border-violet-200 bg-violet-50 text-violet-700"
+        : status === "consulting"
+          ? "border-blue-200 bg-blue-50 text-blue-700"
+          : "border-amber-200 bg-amber-50 text-amber-700";
 
   return (
     <span
-      className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}
+      className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${className}`}
     >
       {label}
     </span>
@@ -1115,22 +1209,9 @@ function DetailCard({ title, value }: { title: string; value?: string }) {
   return (
     <div className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] p-5">
       <div className="text-sm font-semibold text-slate-500">{title}</div>
-
-      <div className="mt-2 break-all text-lg font-bold text-[#0B1F35]">
+      <div className="mt-2 break-words text-lg font-bold text-[#0B1F35]">
         {value || "-"}
       </div>
     </div>
   );
 }
-
-function formatDate(value: string): string {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return value || "-";
-
-  return date.toLocaleString("ko-KR");
-}
-
-
-
-
