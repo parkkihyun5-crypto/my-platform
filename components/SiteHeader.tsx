@@ -321,17 +321,24 @@ export default function SiteHeader({
         .site-header-shell {
           --header-submenu-text: rgba(255, 255, 255, 0.88);
           --header-submenu-hover-bg: rgba(255, 255, 255, 0.06);
+          --header-open-bg: rgba(8, 26, 47, 0.78);
+          --header-open-shadow: 0 18px 48px rgba(2, 6, 23, 0.24);
           padding-bottom: 0;
         }
 
         .site-header-shell[data-scrolled="true"] {
           --header-submenu-text: rgba(11, 31, 53, 0.78);
           --header-submenu-hover-bg: rgba(184, 155, 94, 0.08);
+          --header-open-bg: rgba(255, 255, 255, 0.94);
+          --header-open-shadow: 0 18px 48px rgba(15, 23, 42, 0.1);
         }
 
         @media (min-width: 1280px) {
           .site-header-shell:hover,
           .site-header-shell:focus-within {
+            background: var(--header-open-bg);
+            box-shadow: var(--header-open-shadow);
+            backdrop-filter: blur(12px);
             padding-bottom: 204px;
           }
         }
