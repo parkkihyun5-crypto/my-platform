@@ -1291,7 +1291,7 @@ export default function LegalEntityAnchorChecklistSections() {
           </div>
         </div>
 
-        <div className="mt-14 space-y-14">
+        <div className="mt-8 space-y-8">
           {checklistSections.map((section, index) => {
             const sectionCheckedCount = getSectionCheckedCount(section);
             const sectionPercent = getSectionPercent(section);
@@ -1300,27 +1300,27 @@ export default function LegalEntityAnchorChecklistSections() {
               <article
                 key={section.id}
                 id={section.id}
-                className="scroll-mt-36 overflow-hidden rounded-[36px] border border-slate-200 bg-[#FCFBF8] shadow-[0_14px_38px_rgba(15,23,42,0.06)]"
+                className="scroll-mt-36 overflow-hidden rounded-[24px] border border-slate-200 bg-[#FCFBF8] shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
               >
                 <div className="grid gap-0 lg:grid-cols-[0.35fr_0.65fr]">
-                  <div className="bg-[#081A2F] p-6 text-white md:p-8">
-                    <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#E5C996]">
+                  <div className="bg-[#081A2F] p-4 text-white md:p-5">
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#E5C996]">
                       {section.badge}
                     </div>
 
-                    <div className="mt-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-white/8 text-lg font-bold text-[#E5C996]">
+                    <div className="mt-3 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-white/8 text-sm font-bold text-[#E5C996]">
                       {String(index + 1).padStart(2, "0")}
                     </div>
 
-                    <h3 className="mt-6 text-2xl font-bold leading-[1.35] md:text-3xl">
+                    <h3 className="mt-3 text-xl font-bold leading-snug md:text-2xl">
                       {section.title}
                     </h3>
 
-                    <p className="mt-5 text-sm leading-8 text-slate-300 md:text-base">
+                    <p className="mt-3 text-xs leading-5 text-slate-300 md:text-sm md:leading-6">
                       {section.description}
                     </p>
 
-                    <div className="mt-6 rounded-[22px] border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300">
+                    <div className="mt-3 rounded-[14px] border border-white/10 bg-white/5 p-3 text-xs leading-5 text-slate-300">
                       총 {section.rows.length}개 제출서류 항목 중{" "}
                       <span className="font-bold text-[#E5C996]">
                         {sectionCheckedCount}개
@@ -1328,17 +1328,17 @@ export default function LegalEntityAnchorChecklistSections() {
                       를 체크했습니다.
                     </div>
 
-                    <div className="mt-5 rounded-[22px] border border-white/10 bg-white/5 p-4">
+                    <div className="mt-3 rounded-[14px] border border-white/10 bg-white/5 p-3">
                       <div className="flex items-center justify-between gap-4">
-                        <div className="text-sm font-semibold text-slate-300">
+                        <div className="text-xs font-semibold text-slate-300">
                           법인별 준비도
                         </div>
-                        <div className="text-2xl font-bold text-[#E5C996]">
+                        <div className="text-xl font-bold text-[#E5C996]">
                           {sectionPercent}%
                         </div>
                       </div>
 
-                      <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/10">
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
                         <div
                           className="h-full rounded-full bg-[#E5C996] transition-all duration-500"
                           style={{ width: `${sectionPercent}%` }}
@@ -1346,7 +1346,7 @@ export default function LegalEntityAnchorChecklistSections() {
                       </div>
 
                       <div
-                        className={`mt-4 rounded-full border px-4 py-2 text-center text-sm font-bold ${getReadinessClass(
+                        className={`mt-2 rounded-full border px-3 py-1.5 text-center text-xs font-bold ${getReadinessClass(
                           sectionPercent
                         )}`}
                       >
@@ -1354,11 +1354,11 @@ export default function LegalEntityAnchorChecklistSections() {
                       </div>
                     </div>
 
-                    <div className="mt-5 grid gap-3">
+                    <div className="mt-3 grid gap-2">
                       <button
                         type="button"
                         onClick={() => resetSection(section.id)}
-                        className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/8 px-5 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-[1px] hover:bg-white/12"
+                        className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/8 px-4 py-2 text-xs font-semibold text-white transition-all duration-300 hover:-translate-y-[1px] hover:bg-white/12"
                       >
                         이 법인 체크 초기화
                       </button>
@@ -1366,23 +1366,23 @@ export default function LegalEntityAnchorChecklistSections() {
                       <button
                         type="button"
                         onClick={handleConsultingWithChecklistResult}
-                        className="inline-flex items-center justify-center rounded-full bg-[#E5C996] px-5 py-3 text-sm font-semibold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_18px_40px_rgba(229,201,150,0.24)]"
+                        className="inline-flex items-center justify-center rounded-full bg-[#E5C996] px-4 py-2 text-xs font-semibold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_18px_40px_rgba(229,201,150,0.24)]"
                       >
                         체크 결과로 상담 신청하기
                       </button>
                     </div>
                   </div>
 
-                  <div className="bg-white p-4 md:p-6">
-                    <div className="overflow-hidden rounded-[24px] border border-slate-200">
-                      <div className="grid grid-cols-[72px_1fr_1.2fr] bg-[#F8F6F1] text-sm font-bold text-[#0B1F35] md:grid-cols-[100px_1fr_1.25fr]">
-                        <div className="border-r border-slate-200 px-3 py-4 text-center">
+                  <div className="bg-white p-2 md:p-3">
+                    <div className="overflow-hidden rounded-[14px] border border-slate-200">
+                      <div className="grid grid-cols-[52px_1fr_1.2fr] bg-[#F8F6F1] text-xs font-bold text-[#0B1F35] md:grid-cols-[64px_1fr_1.25fr]">
+                        <div className="border-r border-slate-200 px-2 py-2 text-center">
                           체크
                         </div>
-                        <div className="border-r border-slate-200 px-4 py-4">
+                        <div className="border-r border-slate-200 px-2 py-2">
                           제출서류
                         </div>
-                        <div className="px-4 py-4">핵심 확인사항</div>
+                        <div className="px-2 py-2">핵심 확인사항</div>
                       </div>
 
                       {section.rows.map((row, rowIndex) => {
@@ -1393,15 +1393,15 @@ export default function LegalEntityAnchorChecklistSections() {
                             key={`${section.id}-${row.document}-${rowIndex}`}
                             type="button"
                             onClick={() => toggleRow(section.id, rowIndex)}
-                            className={`grid w-full grid-cols-[72px_1fr_1.2fr] border-t border-slate-200 text-left text-sm transition-all duration-300 md:grid-cols-[100px_1fr_1.25fr] ${
+                            className={`grid w-full grid-cols-[52px_1fr_1.2fr] border-t border-slate-200 text-left text-xs transition-all duration-300 md:grid-cols-[64px_1fr_1.25fr] ${
                               checked
                                 ? "bg-[#FBF5EA]"
                                 : "bg-white hover:bg-[#FCFBF8]"
                             }`}
                           >
-                            <div className="flex items-center justify-center border-r border-slate-200 px-3 py-4">
+                            <div className="flex items-center justify-center border-r border-slate-200 px-2 py-1.5">
                               <span
-                                className={`inline-flex h-8 w-8 items-center justify-center rounded-md border text-sm font-bold transition-all duration-300 ${
+                                className={`inline-flex h-5 w-5 items-center justify-center rounded border text-[10px] font-bold transition-all duration-300 ${
                                   checked
                                     ? "border-[#C9A96B] bg-[#C9A96B] text-white"
                                     : "border-slate-300 bg-white text-slate-400"
@@ -1411,9 +1411,9 @@ export default function LegalEntityAnchorChecklistSections() {
                               </span>
                             </div>
 
-                            <div className="border-r border-slate-200 px-4 py-4">
+                            <div className="border-r border-slate-200 px-2 py-1.5">
                               <div
-                                className={`mb-2 inline-flex rounded-full px-3 py-1 text-[11px] font-bold ${
+                                className={`mb-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
                                   checked
                                     ? "bg-white text-[#C9A96B]"
                                     : "bg-[#F8F6F1] text-[#C9A96B]"
@@ -1422,7 +1422,7 @@ export default function LegalEntityAnchorChecklistSections() {
                                 {row.category}
                               </div>
                               <div
-                                className={`font-bold leading-7 ${
+                                className={`font-bold leading-5 ${
                                   checked
                                     ? "text-[#081A2F]"
                                     : "text-[#0B1F35]"
@@ -1433,7 +1433,7 @@ export default function LegalEntityAnchorChecklistSections() {
                             </div>
 
                             <div
-                              className={`px-4 py-4 leading-7 ${
+                              className={`px-2 py-1.5 leading-5 ${
                                 checked
                                   ? "font-medium text-[#0B1F35]"
                                   : "text-slate-700"
@@ -1446,10 +1446,10 @@ export default function LegalEntityAnchorChecklistSections() {
                       })}
                     </div>
 
-                    <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <a
                         href="#legal-entity-checklist"
-                        className="inline-flex items-center justify-center rounded-full bg-[#081A2F] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(11,31,53,0.14)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_20px_45px_rgba(11,31,53,0.20)]"
+                        className="inline-flex items-center justify-center rounded-full bg-[#081A2F] px-4 py-2 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(11,31,53,0.14)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_20px_45px_rgba(11,31,53,0.20)]"
                       >
                         전체 준비도로 이동하기
                       </a>
@@ -1457,7 +1457,7 @@ export default function LegalEntityAnchorChecklistSections() {
                       <button
                         type="button"
                         onClick={handleConsultingWithChecklistResult}
-                        className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50"
+                        className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50"
                       >
                         체크 결과로 상담 신청하기
                       </button>
