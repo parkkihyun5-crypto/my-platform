@@ -80,6 +80,47 @@ function displayPriority(priority: string): string {
   return priorityLabel[priority] || priority || "미지정";
 }
 
+function extractLineValue(message: string, label: string): string {
+  if (!message) return "";
+
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = message.match(new RegExp(`${escapedLabel}\\s*:\\s*(.+)`));
+
+  return match?.[1]?.trim() ?? "";
+}
+
+function extractInquiryBody(message: string): string {
+  if (!message) return "";
+
+  const marker = "문의 내용:";
+  const markerIndex = message.indexOf(marker);
+
+  if (markerIndex < 0) return message.trim();
+
+  return message.slice(markerIndex + marker.length).trim();
+}
+
+function getConsultingType(item: TrashInquiryItem): string {
+  return (
+    extractLineValue(item.message, "상담 유형") ||
+    item.serviceType ||
+    item.organization ||
+    ""
+  );
+}
+
+function getCurrentStage(item: TrashInquiryItem): string {
+  return extractLineValue(item.message, "현재 단계");
+}
+
+function getConsultingMethod(item: TrashInquiryItem): string {
+  return extractLineValue(item.message, "희망 상담 방식");
+}
+
+function getDisplayMessage(item: TrashInquiryItem): string {
+  return extractInquiryBody(item.message);
+}
+
 function getTrashKey(item: TrashInquiryItem): string {
   return item.trashId || item.id || item.trashRow || "";
 }
@@ -179,6 +220,7 @@ export default function AdminTrashPage() {
   const [keyword, setKeyword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [workingId, setWorkingId] = useState<string | null>(null);
+  const [expandedCell, setExpandedCell] = useState<string | null>(null);
   const [dashboardDeletedRecords, setDashboardDeletedRecords] = useState<
     DashboardDeletedTrashRecord[]
   >([]);
@@ -247,7 +289,7 @@ export default function AdminTrashPage() {
   async function restoreInquiry(item: TrashInquiryItem) {
     const confirmed = window.confirm(
       `[복원 확인]\n\n${
-        item.organization || item.name || "선택한 문의"
+        getConsultingType(item) || item.name || "선택한 문의"
       }\n\n이 문의를 원본 문의목록으로 복원하시겠습니까?`
     );
 
@@ -307,7 +349,7 @@ export default function AdminTrashPage() {
   function dashboardDeleteInquiry(item: TrashInquiryItem) {
     const confirmed = window.confirm(
       `[대시보드 삭제 확인]\n\n${
-        item.organization || item.name || "선택한 문의"
+        getConsultingType(item) || item.name || "선택한 문의"
       }\n\n이 문의를 대시보드 휴지통 목록에서 삭제하시겠습니까?\n\nGoogle Sheet 휴지통에서는 즉시 삭제하지 않고, 7일 후 정리 대상이 됩니다.`
     );
 
@@ -327,7 +369,7 @@ export default function AdminTrashPage() {
       trashRow,
       deletedAt: new Date().toISOString(),
       scheduledDeleteAt: getScheduledDeleteDate(),
-      organization: item.organization || "",
+      organization: getConsultingType(item) || "",
       name: item.name || "",
       email: item.email || "",
       serviceType: item.serviceType || "",
@@ -424,6 +466,10 @@ export default function AdminTrashPage() {
         item.trashId,
         item.trashRow,
         item.organization,
+        getConsultingType(item),
+        getCurrentStage(item),
+        getConsultingMethod(item),
+        getDisplayMessage(item),
         item.name,
         item.phone,
         item.email,
@@ -549,7 +595,7 @@ export default function AdminTrashPage() {
             <input
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="기관명, 이름, 연락처, 이메일, 문의내용 검색"
+              placeholder="상담 유형, 성함, 현재 단계, 상담 방식, 문의내용 검색"
               className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0B1F35] xl:w-[520px]"
             />
           </div>
@@ -561,16 +607,33 @@ export default function AdminTrashPage() {
           ) : null}
 
           <div className="mt-6 overflow-x-auto">
-            <table className="min-w-[1500px] border-separate border-spacing-y-3">
+            <table className="w-full min-w-[1800px] table-fixed border-separate border-spacing-y-3">
+              <colgroup>
+                <col className="w-[140px]" />
+                <col className="w-[140px]" />
+                <col className="w-[170px]" />
+                <col className="w-[110px]" />
+                <col className="w-[130px]" />
+                <col className="w-[190px]" />
+                <col className="w-[150px]" />
+                <col className="w-[150px]" />
+                <col className="w-[240px]" />
+                <col className="w-[90px]" />
+                <col className="w-[100px]" />
+                <col className="w-[90px]" />
+                <col className="w-[130px]" />
+              </colgroup>
               <thead>
                 <tr className="text-left text-sm text-slate-500">
                   <th className="px-4 py-2 font-semibold">삭제일시</th>
                   <th className="px-4 py-2 font-semibold">접수일시</th>
-                  <th className="px-4 py-2 font-semibold">기관명</th>
-                  <th className="px-4 py-2 font-semibold">담당자명</th>
+                  <th className="px-4 py-2 font-semibold">상담 유형</th>
+                  <th className="px-4 py-2 font-semibold">성함</th>
                   <th className="px-4 py-2 font-semibold">연락처</th>
                   <th className="px-4 py-2 font-semibold">이메일</th>
-                  <th className="px-4 py-2 font-semibold">서비스유형</th>
+                  <th className="px-4 py-2 font-semibold">현재 단계</th>
+                  <th className="px-4 py-2 font-semibold">상담 방식</th>
+                  <th className="px-4 py-2 font-semibold">문의 내용</th>
                   <th className="px-4 py-2 font-semibold">상태</th>
                   <th className="px-4 py-2 font-semibold">우선순위</th>
                   <th className="px-4 py-2 font-semibold">복원</th>
@@ -582,7 +645,7 @@ export default function AdminTrashPage() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={11}
+                      colSpan={13}
                       className="rounded-2xl border border-slate-200 bg-[#FCFBF8] px-5 py-10 text-center text-sm font-semibold text-slate-500"
                     >
                       휴지통 목록을 불러오는 중입니다.
@@ -591,7 +654,7 @@ export default function AdminTrashPage() {
                 ) : filteredItems.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={11}
+                      colSpan={13}
                       className="rounded-2xl border border-slate-200 bg-[#FCFBF8] px-5 py-10 text-center text-sm font-semibold text-slate-500"
                     >
                       현재 표시할 휴지통 문의가 없습니다.
@@ -610,19 +673,45 @@ export default function AdminTrashPage() {
                         {formatDate(item.createdAt)}
                       </td>
                       <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4 font-bold text-[#0B1F35]">
-                        {item.organization || "-"}
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-type`}
+                          value={getConsultingType(item) || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
                       <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {item.name || "-"}
+                        <CompactCell value={item.name || "-"} />
                       </td>
                       <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {item.phone || "-"}
+                        <CompactCell value={item.phone || "-"} />
                       </td>
                       <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {item.email || "-"}
+                        <CompactCell value={item.email || "-"} />
                       </td>
                       <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {item.serviceType || "-"}
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-stage`}
+                          value={getCurrentStage(item) || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
+                      </td>
+                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-method`}
+                          value={getConsultingMethod(item) || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
+                      </td>
+                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-message`}
+                          value={getDisplayMessage(item) || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
                       <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
                         {displayStatus(item.status)}
@@ -684,8 +773,8 @@ export default function AdminTrashPage() {
                 <tr className="text-left text-sm text-slate-500">
                   <th className="px-4 py-2 font-semibold">대시보드 삭제일</th>
                   <th className="px-4 py-2 font-semibold">삭제예약일</th>
-                  <th className="px-4 py-2 font-semibold">기관명</th>
-                  <th className="px-4 py-2 font-semibold">담당자명</th>
+                  <th className="px-4 py-2 font-semibold">상담 유형</th>
+                  <th className="px-4 py-2 font-semibold">성함</th>
                   <th className="px-4 py-2 font-semibold">이메일</th>
                   <th className="px-4 py-2 font-semibold">서비스유형</th>
                   <th className="px-4 py-2 font-semibold">동기화 상태</th>
@@ -754,5 +843,42 @@ export default function AdminTrashPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+function CompactCell({ value }: { value: string }) {
+  return (
+    <div className="truncate" title={value}>
+      {value || "-"}
+    </div>
+  );
+}
+
+function ExpandableCell({
+  id,
+  value,
+  expandedCell,
+  setExpandedCell,
+}: {
+  id: string;
+  value: string;
+  expandedCell: string | null;
+  setExpandedCell: (value: string | null) => void;
+}) {
+  const isExpanded = expandedCell === id;
+
+  return (
+    <button
+      type="button"
+      title={value}
+      onClick={() => setExpandedCell(isExpanded ? null : id)}
+      className={`block w-full rounded-xl px-2 py-1 text-left transition ${
+        isExpanded
+          ? "whitespace-pre-wrap break-words bg-white text-[#0B1F35] shadow-sm"
+          : "truncate hover:bg-white/70"
+      }`}
+    >
+      {value || "-"}
+    </button>
   );
 }
