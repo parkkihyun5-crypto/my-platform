@@ -250,7 +250,7 @@ export default function SiteHeader({
   const currentLogoSrc = scrolled ? "/images/logo-dark.png" : "/images/logo-white.png";
   const mobileLogoSrc = "/images/logo-white.png";
 
-  const headerShellClass = `fixed inset-x-0 top-0 z-50 overflow-visible transition-all duration-700 ${
+  const headerShellClass = `site-header-shell fixed inset-x-0 top-0 z-50 overflow-visible transition-all duration-700 ${
     scrolled
       ? "border-b border-slate-200/75 bg-white/88 shadow-[0_18px_48px_rgba(15,23,42,0.08)] backdrop-blur-2xl"
       : "bg-[#081A2F]/22 backdrop-blur-[2px]"
@@ -314,6 +314,22 @@ export default function SiteHeader({
           scroll-behavior: smooth;
         }
 
+        .site-header-shell {
+          --header-submenu-bg: rgba(8, 26, 47, 0.72);
+          --header-submenu-border: rgba(229, 201, 150, 0.14);
+          --header-submenu-shadow: 0 16px 36px rgba(2, 6, 23, 0.22);
+          --header-submenu-text: rgba(255, 255, 255, 0.88);
+          --header-submenu-hover-bg: rgba(255, 255, 255, 0.06);
+        }
+
+        .site-header-shell[data-scrolled="true"] {
+          --header-submenu-bg: rgba(255, 255, 255, 0.88);
+          --header-submenu-border: rgba(203, 213, 225, 0.75);
+          --header-submenu-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+          --header-submenu-text: rgba(11, 31, 53, 0.78);
+          --header-submenu-hover-bg: rgba(184, 155, 94, 0.08);
+        }
+
         .eco-dropdown-wrap {
           position: relative;
           display: inline-flex;
@@ -352,10 +368,10 @@ export default function SiteHeader({
           padding: 12px 14px;
           text-align: center;
           white-space: nowrap;
-          background: rgba(8, 18, 32, 0.9);
-          border: 1px solid rgba(229, 201, 150, 0.16);
-          border-radius: 12px;
-          box-shadow: 0 18px 42px rgba(2, 6, 23, 0.3);
+          background: var(--header-submenu-bg);
+          border: 1px solid var(--header-submenu-border);
+          border-radius: 0 0 12px 12px;
+          box-shadow: var(--header-submenu-shadow);
           backdrop-filter: blur(10px);
           z-index: 100;
           opacity: 0;
@@ -379,10 +395,10 @@ export default function SiteHeader({
           padding: 12px 14px;
           text-align: center;
           white-space: nowrap;
-          background: rgba(8, 18, 32, 0.9);
-          border: 1px solid rgba(229, 201, 150, 0.16);
-          border-radius: 12px;
-          box-shadow: 0 18px 42px rgba(2, 6, 23, 0.3);
+          background: var(--header-submenu-bg);
+          border: 1px solid var(--header-submenu-border);
+          border-radius: 0 0 12px 12px;
+          box-shadow: var(--header-submenu-shadow);
           backdrop-filter: blur(10px);
           z-index: 100;
           opacity: 0;
@@ -408,7 +424,7 @@ export default function SiteHeader({
         .eco-dropdown-menu a {
           padding: 7px 12px;
           text-align: center;
-          color: rgba(255, 255, 255, 0.88);
+          color: var(--header-submenu-text);
           border-radius: 8px;
           transition:
             color 200ms ease,
@@ -420,11 +436,11 @@ export default function SiteHeader({
         .eco-dropdown-menu a:hover,
         .eco-dropdown-menu a:focus-visible {
           color: #d6bd7f;
-          background: rgba(255, 255, 255, 0.06);
+          background: var(--header-submenu-hover-bg);
         }
       `}</style>
 
-      <header className={headerShellClass}>
+      <header className={headerShellClass} data-scrolled={scrolled ? "true" : "false"}>
         <div className={headerInnerClass}>
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-8">
             <Link
