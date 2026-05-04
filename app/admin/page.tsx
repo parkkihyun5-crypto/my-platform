@@ -48,6 +48,47 @@ function isLegalEntityChecklistInquiry(item: InquiryItem): boolean {
   return item.message.includes(LEGAL_ENTITY_CHECKLIST_MARKER);
 }
 
+function extractLineValue(message: string, label: string): string {
+  if (!message) return "";
+
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = message.match(new RegExp(`${escapedLabel}\\s*:\\s*(.+)`));
+
+  return match?.[1]?.trim() ?? "";
+}
+
+function extractInquiryBody(message: string): string {
+  if (!message) return "";
+
+  const marker = "문의 내용:";
+  const markerIndex = message.indexOf(marker);
+
+  if (markerIndex < 0) return message.trim();
+
+  return message.slice(markerIndex + marker.length).trim();
+}
+
+function getConsultingType(item: InquiryItem): string {
+  return (
+    extractLineValue(item.message, "상담 유형") ||
+    item.serviceType ||
+    item.organization ||
+    ""
+  );
+}
+
+function getCurrentStage(item: InquiryItem): string {
+  return extractLineValue(item.message, "현재 단계");
+}
+
+function getConsultingMethod(item: InquiryItem): string {
+  return extractLineValue(item.message, "희망 상담 방식");
+}
+
+function getDisplayMessage(item: InquiryItem): string {
+  return extractInquiryBody(item.message);
+}
+
 function createGmailUrl({
   to,
   subject,
@@ -67,8 +108,10 @@ function createGeneralEmailUrl(item: InquiryItem) {
 
   if (!email) return "#";
 
+  const consultingType = getConsultingType(item);
+
   const subject = `[NPOLAP 상담 안내] ${
-    item.organization || item.name || "문의"
+    consultingType || item.name || "문의"
   } 관련 안내드립니다.`;
 
   const body = [
@@ -76,8 +119,9 @@ function createGeneralEmailUrl(item: InquiryItem) {
     "",
     "NPOLAP 문의를 남겨주셔서 감사합니다.",
     "",
-    `문의 서비스: ${item.serviceType || "-"}`,
-    `기관명: ${item.organization || "-"}`,
+    `상담 유형: ${consultingType || "-"}`,
+    `현재 단계: ${getCurrentStage(item) || "-"}`,
+    `희망 상담 방식: ${getConsultingMethod(item) || "-"}`,
     "",
     "남겨주신 내용을 검토한 뒤 상담 일정을 안내드리겠습니다.",
     "",
@@ -99,8 +143,10 @@ function createProposalEmailUrl(item: InquiryItem) {
 
   if (!email) return "#";
 
+  const consultingType = getConsultingType(item);
+
   const subject = `[NPOLAP 견적 안내] ${
-    item.organization || item.name || "문의"
+    consultingType || item.name || "문의"
   } 관련 견적 안내드립니다.`;
 
   const body = [
@@ -112,11 +158,12 @@ function createProposalEmailUrl(item: InquiryItem) {
     "",
     "────────────────────",
     "■ 문의 정보",
-    `기관명: ${item.organization || "-"}`,
-    `담당자명: ${item.name || "-"}`,
+    `상담 유형: ${consultingType || "-"}`,
+    `성함: ${item.name || "-"}`,
     `연락처: ${item.phone || "-"}`,
     `이메일: ${item.email || "-"}`,
-    `서비스유형: ${item.serviceType || "-"}`,
+    `현재 단계: ${getCurrentStage(item) || "-"}`,
+    `희망 상담 방식: ${getConsultingMethod(item) || "-"}`,
     "",
     "■ 견적 안내",
     "1. 기본 진단 및 상담",
@@ -407,7 +454,7 @@ export default function AdminPage() {
     const target = items.find((item) => item.id === row);
 
     const label = target
-      ? `${target.organization || "-"} / ${target.name || "-"}`
+      ? `${getConsultingType(target) || "-"} / ${target.name || "-"}`
       : "선택한 문의";
 
     const ok = window.confirm(
@@ -499,10 +546,12 @@ export default function AdminPage() {
   function downloadExcelCsv() {
     const headers = [
       "접수일시",
-      "기관명",
-      "담당자명",
+      "상담유형",
+      "성함",
       "연락처",
       "이메일",
+      "현재단계",
+      "희망상담방식",
       "문의내용",
       "유입페이지",
       "서비스유형",
@@ -515,11 +564,13 @@ export default function AdminPage() {
 
     const rows = filteredItems.map((item) => [
       formatDate(item.createdAt),
-      item.organization || "",
+      getConsultingType(item),
       item.name || "",
       item.phone || "",
       item.email || "",
-      item.message || "",
+      getCurrentStage(item),
+      getConsultingMethod(item),
+      getDisplayMessage(item),
       item.sourcePage || "",
       item.serviceType || "",
       statusLabel[item.status] || item.status || "신규",
@@ -588,6 +639,11 @@ export default function AdminPage() {
     const q = keyword.trim().toLowerCase();
 
     return items.filter((item) => {
+      const consultingType = getConsultingType(item);
+      const currentStage = getCurrentStage(item);
+      const consultingMethod = getConsultingMethod(item);
+      const displayMessage = getDisplayMessage(item);
+
       const matchesKeyword = !q
         ? true
         : [
@@ -595,6 +651,10 @@ export default function AdminPage() {
             item.name,
             item.phone,
             item.email,
+            consultingType,
+            currentStage,
+            consultingMethod,
+            displayMessage,
             item.message,
             item.sourcePage,
             item.serviceType,
@@ -757,7 +817,7 @@ export default function AdminPage() {
               <input
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                placeholder="기관명, 이름, 연락처, 이메일, 문의내용 검색"
+                placeholder="상담 유형, 성함, 연락처, 이메일, 현재 단계, 문의내용 검색"
                 className="w-full rounded-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0B1F35]"
               />
 
@@ -803,15 +863,17 @@ export default function AdminPage() {
           </div>
 
           <div className="mt-6 overflow-x-auto">
-            <table className="min-w-[1600px] border-separate border-spacing-y-3">
+            <table className="min-w-[1900px] border-separate border-spacing-y-3">
               <thead>
                 <tr className="text-left text-sm text-slate-500">
                   <th className="px-4 py-2 font-semibold">접수일시</th>
-                  <th className="px-4 py-2 font-semibold">기관명</th>
-                  <th className="px-4 py-2 font-semibold">담당자명</th>
+                  <th className="px-4 py-2 font-semibold">상담 유형</th>
+                  <th className="px-4 py-2 font-semibold">성함</th>
                   <th className="px-4 py-2 font-semibold">연락처</th>
                   <th className="px-4 py-2 font-semibold">이메일</th>
-                  <th className="px-4 py-2 font-semibold">서비스유형</th>
+                  <th className="px-4 py-2 font-semibold">현재 단계</th>
+                  <th className="px-4 py-2 font-semibold">상담 방식</th>
+                  <th className="px-4 py-2 font-semibold">문의 내용</th>
                   <th className="px-4 py-2 font-semibold">상태</th>
                   <th className="px-4 py-2 font-semibold">상태변경</th>
                   <th className="px-4 py-2 font-semibold">담당자</th>
@@ -825,7 +887,7 @@ export default function AdminPage() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={12}
+                      colSpan={14}
                       className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] px-4 py-10 text-center text-sm text-slate-500"
                     >
                       불러오는 중입니다.
@@ -834,7 +896,7 @@ export default function AdminPage() {
                 ) : filteredItems.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={12}
+                      colSpan={14}
                       className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] px-4 py-10 text-center text-sm text-slate-500"
                     >
                       표시할 문의가 없습니다.
@@ -847,7 +909,7 @@ export default function AdminPage() {
 
                       <TableCell strong>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span>{item.organization || "-"}</span>
+                          <span>{getConsultingType(item) || "-"}</span>
                           {isLegalEntityChecklistInquiry(item) ? (
                             <span className="inline-flex rounded-full border border-indigo-200 bg-indigo-100 px-2 py-0.5 text-[11px] font-bold tracking-[0.08em] text-indigo-700">
                               제출서류
@@ -859,7 +921,13 @@ export default function AdminPage() {
                       <TableCell>{item.name || "-"}</TableCell>
                       <TableCell>{item.phone || "-"}</TableCell>
                       <TableCell>{item.email || "-"}</TableCell>
-                      <TableCell>{item.serviceType || "-"}</TableCell>
+                      <TableCell>{getCurrentStage(item) || "-"}</TableCell>
+                      <TableCell>{getConsultingMethod(item) || "-"}</TableCell>
+                      <TableCell>
+                        <div className="max-w-[280px] whitespace-pre-wrap break-words leading-6">
+                          {getDisplayMessage(item) || "-"}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <StatusBadge status={item.status} />
                       </TableCell>
@@ -956,7 +1024,7 @@ export default function AdminPage() {
                 </div>
 
                 <h2 className="mt-3 text-3xl font-bold text-[#0B1F35]">
-                  {selectedItem.organization || "-"}
+                  {getConsultingType(selectedItem) || "-"}
                 </h2>
 
                 {isLegalEntityChecklistInquiry(selectedItem) ? (
@@ -976,9 +1044,21 @@ export default function AdminPage() {
             </div>
 
             <div className="mt-8 grid gap-4 md:grid-cols-2">
-              <DetailCard title="담당자명" value={selectedItem.name} />
+              <DetailCard
+                title="상담 유형"
+                value={getConsultingType(selectedItem)}
+              />
+              <DetailCard title="성함" value={selectedItem.name} />
               <DetailCard title="연락처" value={selectedItem.phone} />
               <DetailCard title="이메일" value={selectedItem.email} />
+              <DetailCard
+                title="현재 단계"
+                value={getCurrentStage(selectedItem)}
+              />
+              <DetailCard
+                title="희망 상담 방식"
+                value={getConsultingMethod(selectedItem)}
+              />
               <DetailCard title="유입페이지" value={selectedItem.sourcePage} />
               <DetailCard title="서비스유형" value={selectedItem.serviceType} />
 
@@ -1042,7 +1122,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="mt-3 whitespace-pre-wrap break-words text-sm leading-8 text-slate-700 md:text-base">
-                  {selectedItem.message || "-"}
+                  {getDisplayMessage(selectedItem) || "-"}
                 </div>
               </div>
 
