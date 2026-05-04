@@ -9,7 +9,7 @@ export default function LegalEntityChecklistPage() {
         mode="sub"
         logoText="NPOLAP"
         logoHref="/public-interest-foundation"
-        inquiryHref="/public-interest-foundation#contact"
+        inquiryHref="#legal-entity-checklist-inquiry"
         menuItems={[
           {
             label: "공익법인설립",
@@ -80,7 +80,7 @@ export default function LegalEntityChecklistPage() {
               </a>
 
               <a
-                href="/public-interest-foundation#contact"
+                href="#legal-entity-checklist-inquiry"
                 className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/8 px-6 py-3 text-sm font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-[1px] hover:bg-white/12 md:px-7 md:py-4 md:text-base"
               >
                 상담 신청하기

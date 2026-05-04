@@ -1,5 +1,8 @@
 "use client";
 
+import FormInput from "@/components/FormInput";
+import FormTextarea from "@/components/FormTextarea";
+import { submitInquiry } from "@/lib/inquiry-client";
 import { useMemo, useState } from "react";
 
 type ChecklistRow = {
@@ -22,6 +25,14 @@ type SelectedSectionSummary = {
   totalCount: number;
   percent: number;
   checkedRows: ChecklistRow[];
+};
+
+type InquiryFormState = {
+  organization: string;
+  name: string;
+  phone: string;
+  email: string;
+  message: string;
 };
 
 const CHECKLIST_STORAGE_KEY = "npolap_public_interest_checklist_result";
@@ -967,6 +978,14 @@ function getConsultingSummaryTitle(totalPercent: number): string {
 
 export default function LegalEntityAnchorChecklistSections() {
   const [checkedKeys, setCheckedKeys] = useState<string[]>([]);
+  const [form, setForm] = useState<InquiryFormState>({
+    organization: "",
+    name: "",
+    phone: "",
+    email: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const totalRows = useMemo(
     () =>
@@ -1087,13 +1106,103 @@ export default function LegalEntityAnchorChecklistSections() {
   function handleConsultingWithChecklistResult(): void {
     const message = buildLegalEntityChecklistMessage();
 
+    setForm((prev) => ({
+      ...prev,
+      message,
+    }));
+
     try {
       window.sessionStorage.setItem(CHECKLIST_STORAGE_KEY, message);
     } catch {
       // 브라우저 저장소 접근이 제한된 경우에도 페이지 이동은 정상 처리합니다.
     }
 
-    window.location.href = "/public-interest-foundation#contact";
+    window.setTimeout(() => {
+      document
+        .getElementById("legal-entity-checklist-inquiry")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  }
+
+  async function handleChecklistInquirySubmit(
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> {
+    e.preventDefault();
+
+    if (isSubmitting) return;
+
+    const message = form.message.trim()
+      ? form.message
+      : buildLegalEntityChecklistMessage();
+
+    if (
+      !form.name.trim() ||
+      !form.phone.trim() ||
+      !form.email.trim() ||
+      !message.trim()
+    ) {
+      alert("성명, 연락처, 이메일, 문의 내용을 모두 입력해 주세요.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await submitInquiry(
+        {
+          ...form,
+          message,
+        },
+        "public-interest-foundation/legal-entity-checklist",
+        "제출서류 체크리스트"
+      );
+
+      const rawText = await response.text();
+      let result: { ok?: boolean; message?: string; detail?: string } | null =
+        null;
+
+      if (rawText.trim()) {
+        try {
+          result = JSON.parse(rawText) as {
+            ok?: boolean;
+            message?: string;
+            detail?: string;
+          };
+        } catch {
+          result = null;
+        }
+      }
+
+      if (!response.ok || result?.ok === false) {
+        alert(
+          result?.detail
+            ? `${result.message ?? "문의 저장 실패"}\n\n${result.detail}`
+            : result?.message ??
+                `문의 저장 중 오류가 발생했습니다.\n\n상태코드: ${response.status}\n응답내용: ${
+                  rawText || "(빈 응답)"
+                }`
+        );
+        return;
+      }
+
+      setForm({
+        organization: "",
+        name: "",
+        phone: "",
+        email: "",
+        message: "",
+      });
+
+      alert("제출서류 체크리스트 상담 신청이 정상적으로 접수되었습니다.");
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? `문의 전송 중 오류가 발생했습니다.\n\n${error.message}`
+          : "문의 전송 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -1358,6 +1467,93 @@ export default function LegalEntityAnchorChecklistSections() {
               </article>
             );
           })}
+        </div>
+
+        <div
+          id="legal-entity-checklist-inquiry"
+          className="scroll-mt-36 pt-20"
+        >
+          <div className="mx-auto max-w-4xl text-center">
+            <div className="text-sm font-semibold uppercase tracking-[0.28em] text-[#C9A96B]">
+              Checklist Consulting
+            </div>
+
+            <h2 className="mt-4 text-3xl font-bold text-[#0B1F35] md:text-5xl">
+              제출서류 체크리스트 상담 신청
+            </h2>
+
+            <p className="mt-6 text-base leading-8 text-slate-600 md:text-lg md:leading-9">
+              체크 결과로 상담 신청하기를 누르면 선택한 제출서류 결과가 아래
+              문의내용에 자동 입력됩니다.
+            </p>
+          </div>
+
+          <form
+            onSubmit={handleChecklistInquirySubmit}
+            className="mt-14 rounded-[30px] border border-slate-200/90 bg-white p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] transition-all duration-500 ease-out hover:-translate-y-1 hover:border-slate-300/90 hover:shadow-[0_24px_60px_rgba(15,23,42,0.10)] focus-within:-translate-y-1 focus-within:border-[#0B1F35]/20 focus-within:shadow-[0_24px_60px_rgba(15,23,42,0.10)] md:p-10"
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormInput
+                value={form.organization}
+                onChange={(value) =>
+                  setForm((prev) => ({ ...prev, organization: value }))
+                }
+                placeholder="기관명"
+              />
+              <FormInput
+                value={form.name}
+                onChange={(value) =>
+                  setForm((prev) => ({ ...prev, name: value }))
+                }
+                placeholder="성명"
+              />
+              <FormInput
+                value={form.phone}
+                onChange={(value) =>
+                  setForm((prev) => ({ ...prev, phone: value }))
+                }
+                placeholder="연락처"
+              />
+              <FormInput
+                value={form.email}
+                onChange={(value) =>
+                  setForm((prev) => ({ ...prev, email: value }))
+                }
+                placeholder="이메일"
+                type="email"
+              />
+            </div>
+
+            <FormTextarea
+              value={form.message}
+              onChange={(value) =>
+                setForm((prev) => ({ ...prev, message: value }))
+              }
+              placeholder="체크 결과로 상담 신청하기를 누르면 선택한 제출서류 결과가 자동 입력됩니다."
+              className="mt-4"
+              rows={10}
+            />
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={handleConsultingWithChecklistResult}
+                className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-[#081A2F] transition-all duration-300 hover:-translate-y-[1px] hover:bg-slate-50 md:px-7 md:py-4 md:text-base"
+              >
+                체크 결과 다시 반영하기
+              </button>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`inline-flex items-center justify-center rounded-full bg-[#081A2F] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(11,31,53,0.14)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_20px_45px_rgba(11,31,53,0.20)] md:px-7 md:py-4 md:text-base ${
+                  isSubmitting ? "cursor-not-allowed opacity-70" : ""
+                }`}
+              >
+                {isSubmitting ? "접수 중..." : "상담 신청하기"}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </section>
