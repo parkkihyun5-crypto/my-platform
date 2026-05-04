@@ -213,6 +213,8 @@ export default function AdminPage() {
   const [lastUpdated, setLastUpdated] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [savingFieldId, setSavingFieldId] = useState<string | null>(null);
   const [detailMemo, setDetailMemo] = useState("");
   const [expandedCell, setExpandedCell] = useState<string | null>(null);
@@ -451,16 +453,18 @@ export default function AdminPage() {
     }
   }
 
-  async function moveToTrash(row: string) {
+  async function moveToTrash(row: string, options?: { skipConfirm?: boolean }) {
     const target = items.find((item) => item.id === row);
 
     const label = target
       ? `${getConsultingType(target) || "-"} / ${target.name || "-"}`
       : "선택한 문의";
 
-    const ok = window.confirm(
-      `[휴지통 이동 확인]\n\n${label}\n\n이 문의를 휴지통으로 이동하시겠습니까?\nGoogle Sheet의 원본 문의목록에서는 제거되고, 휴지통 시트와 삭제로그 시트에 기록됩니다.`
-    );
+    const ok =
+      options?.skipConfirm ||
+      window.confirm(
+        `[휴지통 이동 확인]\n\n${label}\n\n이 문의를 휴지통으로 이동하시겠습니까?\nGoogle Sheet의 원본 문의목록에서는 제거되고, 휴지통 시트와 삭제로그 시트에 기록됩니다.`
+      );
 
     if (!ok) return;
 
@@ -488,6 +492,7 @@ export default function AdminPage() {
       }
 
       setItems((prev) => prev.filter((item) => item.id !== row));
+      setSelectedIds((prev) => prev.filter((id) => id !== row));
 
       if (selectedItem?.id === row) {
         setSelectedItem(null);
@@ -499,6 +504,35 @@ export default function AdminPage() {
       alert("문의 휴지통 이동 중 오류가 발생했습니다.");
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function moveSelectedToTrash() {
+    const rows = selectedIds.filter((id) =>
+      filteredItems.some((item) => item.id === id)
+    );
+
+    if (rows.length === 0) {
+      alert("삭제할 문의를 선택해주세요.");
+      return;
+    }
+
+    const ok = window.confirm(
+      `[선택 삭제 확인]\n\n선택한 문의 ${rows.length}건을 휴지통으로 이동하시겠습니까?\nGoogle Sheet의 원본 문의목록에서는 제거되고, 휴지통 시트와 삭제로그 시트에 기록됩니다.`
+    );
+
+    if (!ok) return;
+
+    try {
+      setBulkDeleting(true);
+
+      for (const row of rows) {
+        await moveToTrash(row, { skipConfirm: true });
+      }
+
+      setSelectedIds([]);
+    } finally {
+      setBulkDeleting(false);
     }
   }
 
@@ -693,6 +727,13 @@ export default function AdminPage() {
     });
   }, [items, keyword, statusFilter, priorityFilter, leadTypeFilter]);
 
+  const filteredIds = filteredItems.map((item) => item.id);
+  const selectedVisibleIds = selectedIds.filter((id) =>
+    filteredIds.includes(id)
+  );
+  const allVisibleSelected =
+    filteredIds.length > 0 && selectedVisibleIds.length === filteredIds.length;
+
   const summary = useMemo(() => {
     return {
       total: items.length,
@@ -812,7 +853,20 @@ export default function AdminPage() {
 
         <section className="mt-8 rounded-[32px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <h2 className="text-lg font-bold text-[#0B1F35]">문의 목록</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-lg font-bold text-[#0B1F35]">문의 목록</h2>
+
+              <button
+                type="button"
+                disabled={selectedVisibleIds.length === 0 || bulkDeleting}
+                onClick={() => void moveSelectedToTrash()}
+                className="rounded border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {bulkDeleting
+                  ? "삭제 중..."
+                  : `선택 삭제 (${selectedVisibleIds.length})`}
+              </button>
+            </div>
 
             <div className="grid gap-3 md:grid-cols-[1fr_170px_170px_210px] xl:w-[1120px]">
               <input
@@ -864,39 +918,53 @@ export default function AdminPage() {
           </div>
 
           <div className="mt-6 overflow-x-auto">
-            <table className="w-full min-w-[1780px] table-fixed border-separate border-spacing-y-3">
+            <table className="w-full min-w-[1680px] table-fixed border-collapse bg-white text-xs">
               <colgroup>
-                <col className="w-[145px]" />
+                <col className="w-[42px]" />
+                <col className="w-[130px]" />
+                <col className="w-[150px]" />
+                <col className="w-[95px]" />
+                <col className="w-[115px]" />
                 <col className="w-[165px]" />
-                <col className="w-[95px]" />
                 <col className="w-[125px]" />
-                <col className="w-[180px]" />
-                <col className="w-[135px]" />
-                <col className="w-[140px]" />
-                <col className="w-[230px]" />
-                <col className="w-[85px]" />
-                <col className="w-[110px]" />
-                <col className="w-[110px]" />
+                <col className="w-[130px]" />
+                <col className="w-[210px]" />
+                <col className="w-[80px]" />
                 <col className="w-[105px]" />
-                <col className="w-[95px]" />
+                <col className="w-[105px]" />
+                <col className="w-[100px]" />
                 <col className="w-[100px]" />
               </colgroup>
               <thead>
-                <tr className="text-left text-sm text-slate-500">
-                  <th className="px-4 py-2 font-semibold">접수일시</th>
-                  <th className="px-4 py-2 font-semibold">상담 유형</th>
-                  <th className="px-4 py-2 font-semibold">성함</th>
-                  <th className="px-4 py-2 font-semibold">연락처</th>
-                  <th className="px-4 py-2 font-semibold">이메일</th>
-                  <th className="px-4 py-2 font-semibold">현재 단계</th>
-                  <th className="px-4 py-2 font-semibold">상담 방식</th>
-                  <th className="px-4 py-2 font-semibold">문의 내용</th>
-                  <th className="px-4 py-2 font-semibold">상태</th>
-                  <th className="px-4 py-2 font-semibold">상태변경</th>
-                  <th className="px-4 py-2 font-semibold">담당자</th>
-                  <th className="px-4 py-2 font-semibold">우선순위</th>
-                  <th className="px-4 py-2 font-semibold">상세</th>
-                  <th className="px-4 py-2 font-semibold">휴지통</th>
+                <tr className="bg-slate-100 text-left text-xs text-slate-600">
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      onChange={(event) =>
+                        setSelectedIds((prev) =>
+                          event.target.checked
+                            ? Array.from(new Set([...prev, ...filteredIds]))
+                            : prev.filter((id) => !filteredIds.includes(id))
+                        )
+                      }
+                      aria-label="현재 목록 전체 선택"
+                      className="h-4 w-4 rounded border-slate-400"
+                    />
+                  </th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">접수일시</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">상담 유형</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">성함</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">연락처</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">이메일</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">현재 단계</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">상담 방식</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">문의 내용</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">상태</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">상태변경</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">담당자</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">우선순위</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">상세</th>
                 </tr>
               </thead>
 
@@ -905,7 +973,7 @@ export default function AdminPage() {
                   <tr>
                     <td
                       colSpan={14}
-                      className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] px-4 py-10 text-center text-sm text-slate-500"
+                      className="border border-slate-300 bg-[#FCFBF8] px-4 py-10 text-center text-sm text-slate-500"
                     >
                       불러오는 중입니다.
                     </td>
@@ -914,7 +982,7 @@ export default function AdminPage() {
                   <tr>
                     <td
                       colSpan={14}
-                      className="rounded-[24px] border border-slate-200 bg-[#FCFBF8] px-4 py-10 text-center text-sm text-slate-500"
+                      className="border border-slate-300 bg-[#FCFBF8] px-4 py-10 text-center text-sm text-slate-500"
                     >
                       표시할 문의가 없습니다.
                     </td>
@@ -922,7 +990,31 @@ export default function AdminPage() {
                 ) : (
                   filteredItems.map((item) => (
                     <tr key={item.id} className="align-middle">
-                      <TableCell first>{formatDate(item.createdAt)}</TableCell>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(item.id)}
+                          disabled={bulkDeleting || deletingId === item.id}
+                          onChange={(event) =>
+                            setSelectedIds((prev) =>
+                              event.target.checked
+                                ? Array.from(new Set([...prev, item.id]))
+                                : prev.filter((id) => id !== item.id)
+                            )
+                          }
+                          aria-label={`${item.name || "문의"} 선택`}
+                          className="h-4 w-4 rounded border-slate-400"
+                        />
+                      </TableCell>
+
+                      <TableCell>
+                        <ExpandableCell
+                          id={`inquiry-${item.id}-createdAt`}
+                          value={formatDate(item.createdAt)}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
+                      </TableCell>
 
                       <TableCell strong>
                         <div className="flex items-center gap-2">
@@ -941,13 +1033,28 @@ export default function AdminPage() {
                       </TableCell>
 
                       <TableCell>
-                        <CompactCell value={item.name || "-"} />
+                        <ExpandableCell
+                          id={`inquiry-${item.id}-name`}
+                          value={item.name || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </TableCell>
                       <TableCell>
-                        <CompactCell value={item.phone || "-"} />
+                        <ExpandableCell
+                          id={`inquiry-${item.id}-phone`}
+                          value={item.phone || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </TableCell>
                       <TableCell>
-                        <CompactCell value={item.email || "-"} />
+                        <ExpandableCell
+                          id={`inquiry-${item.id}-email`}
+                          value={item.email || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </TableCell>
                       <TableCell>
                         <ExpandableCell
@@ -974,7 +1081,12 @@ export default function AdminPage() {
                         />
                       </TableCell>
                       <TableCell>
-                        <StatusBadge status={item.status} />
+                        <ExpandableCell
+                          id={`inquiry-${item.id}-status`}
+                          value={statusLabel[item.status] || item.status || "신규"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </TableCell>
                       <TableCell>
                         <select
@@ -983,7 +1095,7 @@ export default function AdminPage() {
                           onChange={(e) =>
                             void updateStatus(item.id, e.target.value)
                           }
-                          className="rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-60"
+                          className="w-full rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-semibold text-slate-700 disabled:opacity-60"
                         >
                           {statusOptions.map((status) => (
                             <option key={status} value={status}>
@@ -1001,7 +1113,7 @@ export default function AdminPage() {
                               manager: e.target.value,
                             })
                           }
-                          className="rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-60"
+                          className="w-full rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-semibold text-slate-700 disabled:opacity-60"
                         >
                           <option value="">미지정</option>
                           {managerOptions
@@ -1022,7 +1134,7 @@ export default function AdminPage() {
                               priority: e.target.value,
                             })
                           }
-                          className="rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-60"
+                          className="w-full rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-semibold text-slate-700 disabled:opacity-60"
                         >
                           {priorityOptions.map((priority) => (
                             <option key={priority} value={priority}>
@@ -1035,19 +1147,9 @@ export default function AdminPage() {
                         <button
                           type="button"
                           onClick={() => setSelectedItem(item)}
-                          className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                          className="w-full rounded border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                         >
                           상세보기
-                        </button>
-                      </TableCell>
-                      <TableCell last>
-                        <button
-                          type="button"
-                          disabled={deletingId === item.id}
-                          onClick={() => void moveToTrash(item.id)}
-                          className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {deletingId === item.id ? "이동 중..." : "휴지통"}
                         </button>
                       </TableCell>
                     </tr>
@@ -1287,33 +1389,19 @@ function SummaryCard({
 
 function TableCell({
   children,
-  first = false,
-  last = false,
   strong = false,
 }: {
   children: ReactNode;
-  first?: boolean;
-  last?: boolean;
   strong?: boolean;
 }) {
   return (
     <td
-      className={`border-y border-slate-200 bg-[#FCFBF8] px-3 py-3 text-sm text-slate-700 ${
-        first ? "rounded-l-[24px] border-l" : ""
-      } ${last ? "rounded-r-[24px] border-r" : ""} ${
+      className={`border border-slate-300 bg-white px-2 py-1 text-xs leading-5 text-slate-700 ${
         strong ? "font-bold text-[#0B1F35]" : ""
       }`}
     >
       {children}
     </td>
-  );
-}
-
-function CompactCell({ value }: { value: string }) {
-  return (
-    <div className="truncate" title={value}>
-      {value || "-"}
-    </div>
   );
 }
 
@@ -1335,10 +1423,10 @@ function ExpandableCell({
       type="button"
       title={value}
       onClick={() => setExpandedCell(isExpanded ? null : id)}
-      className={`block w-full rounded-xl px-2 py-1 text-left transition ${
+      className={`block w-full px-1 py-0.5 text-left transition ${
         isExpanded
-          ? "whitespace-pre-wrap break-words bg-white text-[#0B1F35] shadow-sm"
-          : "truncate hover:bg-white/70"
+          ? "whitespace-pre-wrap break-words bg-[#FFF7E8] text-[#0B1F35] shadow-sm"
+          : "truncate hover:bg-[#FFF7E8]"
       }`}
     >
       {value || "-"}

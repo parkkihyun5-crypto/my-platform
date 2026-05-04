@@ -607,37 +607,37 @@ export default function AdminTrashPage() {
           ) : null}
 
           <div className="mt-6 overflow-x-auto">
-            <table className="w-full min-w-[1800px] table-fixed border-separate border-spacing-y-3">
+            <table className="w-full min-w-[1700px] table-fixed border-collapse bg-white text-xs">
               <colgroup>
-                <col className="w-[140px]" />
-                <col className="w-[140px]" />
-                <col className="w-[170px]" />
-                <col className="w-[110px]" />
                 <col className="w-[130px]" />
-                <col className="w-[190px]" />
-                <col className="w-[150px]" />
-                <col className="w-[150px]" />
-                <col className="w-[240px]" />
-                <col className="w-[90px]" />
-                <col className="w-[100px]" />
-                <col className="w-[90px]" />
                 <col className="w-[130px]" />
+                <col className="w-[150px]" />
+                <col className="w-[95px]" />
+                <col className="w-[115px]" />
+                <col className="w-[165px]" />
+                <col className="w-[125px]" />
+                <col className="w-[130px]" />
+                <col className="w-[210px]" />
+                <col className="w-[80px]" />
+                <col className="w-[90px]" />
+                <col className="w-[80px]" />
+                <col className="w-[120px]" />
               </colgroup>
               <thead>
-                <tr className="text-left text-sm text-slate-500">
-                  <th className="px-4 py-2 font-semibold">삭제일시</th>
-                  <th className="px-4 py-2 font-semibold">접수일시</th>
-                  <th className="px-4 py-2 font-semibold">상담 유형</th>
-                  <th className="px-4 py-2 font-semibold">성함</th>
-                  <th className="px-4 py-2 font-semibold">연락처</th>
-                  <th className="px-4 py-2 font-semibold">이메일</th>
-                  <th className="px-4 py-2 font-semibold">현재 단계</th>
-                  <th className="px-4 py-2 font-semibold">상담 방식</th>
-                  <th className="px-4 py-2 font-semibold">문의 내용</th>
-                  <th className="px-4 py-2 font-semibold">상태</th>
-                  <th className="px-4 py-2 font-semibold">우선순위</th>
-                  <th className="px-4 py-2 font-semibold">복원</th>
-                  <th className="px-4 py-2 font-semibold">대시보드 삭제</th>
+                <tr className="bg-slate-100 text-left text-xs text-slate-600">
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">삭제일시</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">접수일시</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">상담 유형</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">성함</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">연락처</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">이메일</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">현재 단계</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">상담 방식</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">문의 내용</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">상태</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">우선순위</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">복원</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">대시보드 삭제</th>
                 </tr>
               </thead>
 
@@ -646,7 +646,7 @@ export default function AdminTrashPage() {
                   <tr>
                     <td
                       colSpan={13}
-                      className="rounded-2xl border border-slate-200 bg-[#FCFBF8] px-5 py-10 text-center text-sm font-semibold text-slate-500"
+                      className="border border-slate-300 bg-[#FCFBF8] px-5 py-10 text-center text-sm font-semibold text-slate-500"
                     >
                       휴지통 목록을 불러오는 중입니다.
                     </td>
@@ -655,7 +655,7 @@ export default function AdminTrashPage() {
                   <tr>
                     <td
                       colSpan={13}
-                      className="rounded-2xl border border-slate-200 bg-[#FCFBF8] px-5 py-10 text-center text-sm font-semibold text-slate-500"
+                      className="border border-slate-300 bg-[#FCFBF8] px-5 py-10 text-center text-sm font-semibold text-slate-500"
                     >
                       현재 표시할 휴지통 문의가 없습니다.
                     </td>
@@ -666,13 +666,23 @@ export default function AdminTrashPage() {
                       key={item.trashId || item.id}
                       className="text-sm text-slate-700"
                     >
-                      <td className="rounded-l-2xl border-y border-l border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {formatDate(item.deletedAt)}
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-deletedAt`}
+                          value={formatDate(item.deletedAt)}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {formatDate(item.createdAt)}
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-createdAt`}
+                          value={formatDate(item.createdAt)}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4 font-bold text-[#0B1F35]">
+                      <td className="border border-slate-300 bg-white px-2 py-1 font-bold text-[#0B1F35]">
                         <ExpandableCell
                           id={`trash-${getTrashKey(item)}-type`}
                           value={getConsultingType(item) || "-"}
@@ -680,16 +690,31 @@ export default function AdminTrashPage() {
                           setExpandedCell={setExpandedCell}
                         />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        <CompactCell value={item.name || "-"} />
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-name`}
+                          value={item.name || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        <CompactCell value={item.phone || "-"} />
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-phone`}
+                          value={item.phone || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        <CompactCell value={item.email || "-"} />
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-email`}
+                          value={item.email || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                      <td className="border border-slate-300 bg-white px-2 py-1">
                         <ExpandableCell
                           id={`trash-${getTrashKey(item)}-stage`}
                           value={getCurrentStage(item) || "-"}
@@ -697,7 +722,7 @@ export default function AdminTrashPage() {
                           setExpandedCell={setExpandedCell}
                         />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                      <td className="border border-slate-300 bg-white px-2 py-1">
                         <ExpandableCell
                           id={`trash-${getTrashKey(item)}-method`}
                           value={getConsultingMethod(item) || "-"}
@@ -705,7 +730,7 @@ export default function AdminTrashPage() {
                           setExpandedCell={setExpandedCell}
                         />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                      <td className="border border-slate-300 bg-white px-2 py-1">
                         <ExpandableCell
                           id={`trash-${getTrashKey(item)}-message`}
                           value={getDisplayMessage(item) || "-"}
@@ -713,27 +738,37 @@ export default function AdminTrashPage() {
                           setExpandedCell={setExpandedCell}
                         />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {displayStatus(item.status)}
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-status`}
+                          value={displayStatus(item.status)}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {displayPriority(item.priority)}
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`trash-${getTrashKey(item)}-priority`}
+                          value={displayPriority(item.priority)}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                      <td className="border border-slate-300 bg-white px-2 py-1">
                         <button
                           type="button"
                           disabled={workingId === item.id}
                           onClick={() => void restoreInquiry(item)}
-                          className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="w-full rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {workingId === item.id ? "처리 중..." : "복원"}
                         </button>
                       </td>
-                      <td className="rounded-r-2xl border-y border-r border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                      <td className="border border-slate-300 bg-white px-2 py-1">
                         <button
                           type="button"
                           onClick={() => dashboardDeleteInquiry(item)}
-                          className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                          className="w-full rounded border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                         >
                           대시보드 삭제
                         </button>
@@ -768,17 +803,27 @@ export default function AdminTrashPage() {
           </div>
 
           <div className="mt-6 overflow-x-auto">
-            <table className="min-w-[1200px] border-separate border-spacing-y-3">
+            <table className="w-full min-w-[1200px] table-fixed border-collapse bg-white text-xs">
+              <colgroup>
+                <col className="w-[130px]" />
+                <col className="w-[130px]" />
+                <col className="w-[150px]" />
+                <col className="w-[95px]" />
+                <col className="w-[165px]" />
+                <col className="w-[125px]" />
+                <col className="w-[260px]" />
+                <col className="w-[95px]" />
+              </colgroup>
               <thead>
-                <tr className="text-left text-sm text-slate-500">
-                  <th className="px-4 py-2 font-semibold">대시보드 삭제일</th>
-                  <th className="px-4 py-2 font-semibold">삭제예약일</th>
-                  <th className="px-4 py-2 font-semibold">상담 유형</th>
-                  <th className="px-4 py-2 font-semibold">성함</th>
-                  <th className="px-4 py-2 font-semibold">이메일</th>
-                  <th className="px-4 py-2 font-semibold">서비스유형</th>
-                  <th className="px-4 py-2 font-semibold">동기화 상태</th>
-                  <th className="px-4 py-2 font-semibold">기록 제거</th>
+                <tr className="bg-slate-100 text-left text-xs text-slate-600">
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">대시보드 삭제일</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">삭제예약일</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">상담 유형</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">성함</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">이메일</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">서비스유형</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">동기화 상태</th>
+                  <th className="border border-slate-300 px-2 py-1 font-semibold">기록 제거</th>
                 </tr>
               </thead>
 
@@ -787,7 +832,7 @@ export default function AdminTrashPage() {
                   <tr>
                     <td
                       colSpan={8}
-                      className="rounded-2xl border border-slate-200 bg-[#FCFBF8] px-5 py-10 text-center text-sm font-semibold text-slate-500"
+                      className="border border-slate-300 bg-[#FCFBF8] px-5 py-10 text-center text-sm font-semibold text-slate-500"
                     >
                       대시보드 삭제기록이 없습니다.
                     </td>
@@ -795,41 +840,73 @@ export default function AdminTrashPage() {
                 ) : (
                   filteredDashboardDeletedRecords.map((record) => (
                     <tr key={record.trashKey} className="text-sm text-slate-700">
-                      <td className="rounded-l-2xl border-y border-l border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {formatDate(record.deletedAt)}
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`record-${record.trashKey}-deletedAt`}
+                          value={formatDate(record.deletedAt)}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {formatDate(record.scheduledDeleteAt)}
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`record-${record.trashKey}-scheduledDeleteAt`}
+                          value={formatDate(record.scheduledDeleteAt)}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4 font-bold text-[#0B1F35]">
-                        {record.organization || "-"}
+                      <td className="border border-slate-300 bg-white px-2 py-1 font-bold text-[#0B1F35]">
+                        <ExpandableCell
+                          id={`record-${record.trashKey}-organization`}
+                          value={record.organization || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {record.name || "-"}
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`record-${record.trashKey}-name`}
+                          value={record.name || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {record.email || "-"}
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`record-${record.trashKey}-email`}
+                          value={record.email || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        {record.serviceType || "-"}
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`record-${record.trashKey}-serviceType`}
+                          value={record.serviceType || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="border-y border-slate-200 bg-[#FCFBF8] px-4 py-4">
-                        <div className="font-semibold">
-                          {record.syncStatus === "pending"
-                            ? "동기화 대기"
-                            : record.syncStatus === "synced"
-                              ? "동기화 완료"
-                              : "동기화 실패"}
-                        </div>
-                        <div className="mt-1 max-w-[280px] text-xs leading-5 text-slate-500">
-                          {record.syncMessage}
-                        </div>
+                      <td className="border border-slate-300 bg-white px-2 py-1">
+                        <ExpandableCell
+                          id={`record-${record.trashKey}-sync`}
+                          value={`${
+                            record.syncStatus === "pending"
+                              ? "동기화 대기"
+                              : record.syncStatus === "synced"
+                                ? "동기화 완료"
+                                : "동기화 실패"
+                          } ${record.syncMessage || ""}`}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </td>
-                      <td className="rounded-r-2xl border-y border-r border-slate-200 bg-[#FCFBF8] px-4 py-4">
+                      <td className="border border-slate-300 bg-white px-2 py-1">
                         <button
                           type="button"
                           onClick={() => removeDashboardRecord(record)}
-                          className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                          className="w-full rounded border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
                         >
                           기록 제거
                         </button>
@@ -843,14 +920,6 @@ export default function AdminTrashPage() {
         </section>
       </div>
     </main>
-  );
-}
-
-function CompactCell({ value }: { value: string }) {
-  return (
-    <div className="truncate" title={value}>
-      {value || "-"}
-    </div>
   );
 }
 
@@ -872,10 +941,10 @@ function ExpandableCell({
       type="button"
       title={value}
       onClick={() => setExpandedCell(isExpanded ? null : id)}
-      className={`block w-full rounded-xl px-2 py-1 text-left transition ${
+      className={`block w-full px-1 py-0.5 text-left transition ${
         isExpanded
-          ? "whitespace-pre-wrap break-words bg-white text-[#0B1F35] shadow-sm"
-          : "truncate hover:bg-white/70"
+          ? "whitespace-pre-wrap break-words bg-[#FFF7E8] text-[#0B1F35] shadow-sm"
+          : "truncate hover:bg-[#FFF7E8]"
       }`}
     >
       {value || "-"}
