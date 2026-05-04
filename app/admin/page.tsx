@@ -215,6 +215,7 @@ export default function AdminPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [savingFieldId, setSavingFieldId] = useState<string | null>(null);
   const [detailMemo, setDetailMemo] = useState("");
+  const [expandedCell, setExpandedCell] = useState<string | null>(null);
 
   async function loadInquiries(showLoading = false) {
     try {
@@ -863,7 +864,23 @@ export default function AdminPage() {
           </div>
 
           <div className="mt-6 overflow-x-auto">
-            <table className="min-w-[1900px] border-separate border-spacing-y-3">
+            <table className="w-full min-w-[1780px] table-fixed border-separate border-spacing-y-3">
+              <colgroup>
+                <col className="w-[145px]" />
+                <col className="w-[165px]" />
+                <col className="w-[95px]" />
+                <col className="w-[125px]" />
+                <col className="w-[180px]" />
+                <col className="w-[135px]" />
+                <col className="w-[140px]" />
+                <col className="w-[230px]" />
+                <col className="w-[85px]" />
+                <col className="w-[110px]" />
+                <col className="w-[110px]" />
+                <col className="w-[105px]" />
+                <col className="w-[95px]" />
+                <col className="w-[100px]" />
+              </colgroup>
               <thead>
                 <tr className="text-left text-sm text-slate-500">
                   <th className="px-4 py-2 font-semibold">접수일시</th>
@@ -904,29 +921,57 @@ export default function AdminPage() {
                   </tr>
                 ) : (
                   filteredItems.map((item) => (
-                    <tr key={item.id} className="align-top">
+                    <tr key={item.id} className="align-middle">
                       <TableCell first>{formatDate(item.createdAt)}</TableCell>
 
                       <TableCell strong>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span>{getConsultingType(item) || "-"}</span>
+                        <div className="flex items-center gap-2">
+                          <ExpandableCell
+                            id={`inquiry-${item.id}-type`}
+                            value={getConsultingType(item) || "-"}
+                            expandedCell={expandedCell}
+                            setExpandedCell={setExpandedCell}
+                          />
                           {isLegalEntityChecklistInquiry(item) ? (
-                            <span className="inline-flex rounded-full border border-indigo-200 bg-indigo-100 px-2 py-0.5 text-[11px] font-bold tracking-[0.08em] text-indigo-700">
+                            <span className="shrink-0 rounded-full border border-indigo-200 bg-indigo-100 px-2 py-0.5 text-[11px] font-bold tracking-[0.08em] text-indigo-700">
                               제출서류
                             </span>
                           ) : null}
                         </div>
                       </TableCell>
 
-                      <TableCell>{item.name || "-"}</TableCell>
-                      <TableCell>{item.phone || "-"}</TableCell>
-                      <TableCell>{item.email || "-"}</TableCell>
-                      <TableCell>{getCurrentStage(item) || "-"}</TableCell>
-                      <TableCell>{getConsultingMethod(item) || "-"}</TableCell>
                       <TableCell>
-                        <div className="max-w-[280px] whitespace-pre-wrap break-words leading-6">
-                          {getDisplayMessage(item) || "-"}
-                        </div>
+                        <CompactCell value={item.name || "-"} />
+                      </TableCell>
+                      <TableCell>
+                        <CompactCell value={item.phone || "-"} />
+                      </TableCell>
+                      <TableCell>
+                        <CompactCell value={item.email || "-"} />
+                      </TableCell>
+                      <TableCell>
+                        <ExpandableCell
+                          id={`inquiry-${item.id}-stage`}
+                          value={getCurrentStage(item) || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <ExpandableCell
+                          id={`inquiry-${item.id}-method`}
+                          value={getConsultingMethod(item) || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <ExpandableCell
+                          id={`inquiry-${item.id}-message`}
+                          value={getDisplayMessage(item) || "-"}
+                          expandedCell={expandedCell}
+                          setExpandedCell={setExpandedCell}
+                        />
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={item.status} />
@@ -1253,7 +1298,7 @@ function TableCell({
 }) {
   return (
     <td
-      className={`border-y border-slate-200 bg-[#FCFBF8] px-4 py-4 text-sm text-slate-700 ${
+      className={`border-y border-slate-200 bg-[#FCFBF8] px-3 py-3 text-sm text-slate-700 ${
         first ? "rounded-l-[24px] border-l" : ""
       } ${last ? "rounded-r-[24px] border-r" : ""} ${
         strong ? "font-bold text-[#0B1F35]" : ""
@@ -1261,6 +1306,43 @@ function TableCell({
     >
       {children}
     </td>
+  );
+}
+
+function CompactCell({ value }: { value: string }) {
+  return (
+    <div className="truncate" title={value}>
+      {value || "-"}
+    </div>
+  );
+}
+
+function ExpandableCell({
+  id,
+  value,
+  expandedCell,
+  setExpandedCell,
+}: {
+  id: string;
+  value: string;
+  expandedCell: string | null;
+  setExpandedCell: (value: string | null) => void;
+}) {
+  const isExpanded = expandedCell === id;
+
+  return (
+    <button
+      type="button"
+      title={value}
+      onClick={() => setExpandedCell(isExpanded ? null : id)}
+      className={`block w-full rounded-xl px-2 py-1 text-left transition ${
+        isExpanded
+          ? "whitespace-pre-wrap break-words bg-white text-[#0B1F35] shadow-sm"
+          : "truncate hover:bg-white/70"
+      }`}
+    >
+      {value || "-"}
+    </button>
   );
 }
 
