@@ -1375,9 +1375,12 @@ export default function LegalEntityAnchorChecklistSections() {
 
                   <div className="bg-white p-2 md:p-3">
                     <div className="overflow-hidden rounded-[14px] border border-slate-200">
-                      <div className="grid grid-cols-[52px_1fr_1.2fr] bg-[#F8F6F1] text-xs font-bold text-[#0B1F35] md:grid-cols-[64px_1fr_1.25fr]">
+                      <div className="grid min-w-[860px] grid-cols-[44px_76px_220px_1fr] bg-[#F8F6F1] text-xs font-bold text-[#0B1F35]">
                         <div className="border-r border-slate-200 px-2 py-2 text-center">
                           체크
+                        </div>
+                        <div className="border-r border-slate-200 px-2 py-2">
+                          구분
                         </div>
                         <div className="border-r border-slate-200 px-2 py-2">
                           제출서류
@@ -1393,15 +1396,15 @@ export default function LegalEntityAnchorChecklistSections() {
                             key={`${section.id}-${row.document}-${rowIndex}`}
                             type="button"
                             onClick={() => toggleRow(section.id, rowIndex)}
-                            className={`grid w-full grid-cols-[52px_1fr_1.2fr] border-t border-slate-200 text-left text-xs transition-all duration-300 md:grid-cols-[64px_1fr_1.25fr] ${
+                            className={`grid min-w-[860px] grid-cols-[44px_76px_220px_1fr] border-t border-slate-200 text-left text-xs transition-all duration-300 ${
                               checked
                                 ? "bg-[#FBF5EA]"
                                 : "bg-white hover:bg-[#FCFBF8]"
                             }`}
                           >
-                            <div className="flex items-center justify-center border-r border-slate-200 px-2 py-1.5">
+                            <div className="flex items-center justify-center border-r border-slate-200 px-2 py-1">
                               <span
-                                className={`inline-flex h-5 w-5 items-center justify-center rounded border text-[10px] font-bold transition-all duration-300 ${
+                                className={`inline-flex h-4 w-4 items-center justify-center rounded border text-[10px] font-bold transition-all duration-300 ${
                                   checked
                                     ? "border-[#C9A96B] bg-[#C9A96B] text-white"
                                     : "border-slate-300 bg-white text-slate-400"
@@ -1411,29 +1414,20 @@ export default function LegalEntityAnchorChecklistSections() {
                               </span>
                             </div>
 
-                            <div className="border-r border-slate-200 px-2 py-1.5">
-                              <div
-                                className={`mb-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                                  checked
-                                    ? "bg-white text-[#C9A96B]"
-                                    : "bg-[#F8F6F1] text-[#C9A96B]"
-                                }`}
-                              >
-                                {row.category}
-                              </div>
-                              <div
-                                className={`font-bold leading-5 ${
-                                  checked
-                                    ? "text-[#081A2F]"
-                                    : "text-[#0B1F35]"
-                                }`}
-                              >
-                                {row.document}
-                              </div>
+                            <div className="truncate border-r border-slate-200 px-2 py-1 font-bold leading-5 text-[#C9A96B]">
+                              {row.category}
                             </div>
 
                             <div
-                              className={`px-2 py-1.5 leading-5 ${
+                              className={`truncate border-r border-slate-200 px-2 py-1 font-bold leading-5 ${
+                                checked ? "text-[#081A2F]" : "text-[#0B1F35]"
+                              }`}
+                            >
+                              {row.document}
+                            </div>
+
+                            <div
+                              className={`truncate px-2 py-1 leading-5 ${
                                 checked
                                   ? "font-medium text-[#0B1F35]"
                                   : "text-slate-700"
