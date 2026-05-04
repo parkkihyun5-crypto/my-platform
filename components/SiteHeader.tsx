@@ -250,22 +250,22 @@ export default function SiteHeader({
   const currentLogoSrc = scrolled ? "/images/logo-dark.png" : "/images/logo-white.png";
   const mobileLogoSrc = "/images/logo-white.png";
 
-  const headerShellClass = `fixed inset-x-0 top-0 z-50 transition-all duration-700 ${
+  const headerShellClass = `fixed inset-x-0 top-0 z-50 overflow-visible transition-all duration-700 ${
     scrolled
       ? "border-b border-slate-200/75 bg-white/88 shadow-[0_18px_48px_rgba(15,23,42,0.08)] backdrop-blur-2xl"
       : "bg-[#081A2F]/22 backdrop-blur-[2px]"
   }`;
 
-  const headerInnerClass = `mx-auto max-w-[1600px] px-5 md:px-10 lg:px-12 transition-all duration-700 ${
+  const headerInnerClass = `mx-auto max-w-[1600px] overflow-visible px-5 transition-all duration-700 md:px-10 lg:px-12 ${
     scrolled ? "py-3 md:py-4" : "py-4 md:py-5"
   }`;
 
-  const desktopNavClass = "hidden items-center justify-center gap-10 xl:flex";
+  const desktopNavClass = "relative hidden items-center justify-center gap-10 overflow-visible xl:flex";
 
   const desktopMenuClass = `group relative inline-flex items-center rounded-full px-0 py-2 text-sm font-semibold tracking-[-0.01em] transition-all duration-300 md:text-[15px] ${
     scrolled
-      ? "text-[#0B1F35]/82 hover:text-[#B89B5E]"
-      : "text-white/94 hover:text-[#E5C996]"
+      ? "text-[#0B1F35]/82 hover:text-[#B89B5E] focus-visible:text-[#B89B5E]"
+      : "text-white/94 hover:text-[#D6BD7F] focus-visible:text-[#D6BD7F]"
   }`;
 
   const desktopMenuUnderlineClass =
@@ -273,8 +273,8 @@ export default function SiteHeader({
 
   const ecoTopLinkClass = `relative inline-flex items-center rounded-full px-0 py-2 text-sm font-semibold tracking-[-0.01em] transition-all duration-300 md:text-[15px] ${
     scrolled
-      ? "text-[#0B1F35]/82 hover:text-[#B89B5E]"
-      : "text-white/94 hover:text-[#E5C996]"
+      ? "text-[#0B1F35]/82 hover:text-[#B89B5E] focus-visible:text-[#B89B5E]"
+      : "text-white/94 hover:text-[#D6BD7F] focus-visible:text-[#D6BD7F]"
   }`;
 
   const ecoSubLinkClass = `block whitespace-nowrap py-1.5 text-sm font-semibold tracking-[-0.02em] transition-all duration-300 ${
@@ -318,12 +318,16 @@ export default function SiteHeader({
           position: relative;
           display: inline-flex;
           align-items: center;
+          justify-content: center;
+          overflow: visible;
         }
 
         .nav-dropdown-wrap {
           position: relative;
           display: inline-flex;
           align-items: center;
+          justify-content: center;
+          overflow: visible;
         }
 
         .nav-dropdown-wrap::after,
@@ -337,56 +341,86 @@ export default function SiteHeader({
         }
 
         .eco-dropdown-menu {
-          display: none;
           position: absolute;
-          top: 100%;
+          top: calc(100% + 8px);
           left: 50%;
           right: auto;
-          min-width: 190px;
-          transform: translateX(-50%);
-          padding: 10px 14px;
+          width: max-content;
+          min-width: 168px;
+          max-width: min(280px, calc(100vw - 32px));
+          transform: translateX(-50%) translateY(-8px);
+          padding: 12px 14px;
           text-align: center;
           white-space: nowrap;
-          background: transparent;
-          border: none;
-          box-shadow: none;
+          background: rgba(8, 18, 32, 0.9);
+          border: 1px solid rgba(229, 201, 150, 0.16);
+          border-radius: 12px;
+          box-shadow: 0 18px 42px rgba(2, 6, 23, 0.3);
+          backdrop-filter: blur(10px);
           z-index: 100;
-          animation: ecoDropdownTextFade 180ms ease-out forwards;
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+          transition:
+            opacity 240ms ease,
+            transform 240ms ease,
+            visibility 240ms ease;
         }
 
         .nav-dropdown-menu {
-          display: none;
           position: absolute;
-          top: 100%;
+          top: calc(100% + 8px);
           left: 50%;
           right: auto;
-          min-width: 190px;
-          transform: translateX(-50%);
-          padding: 10px 14px;
+          width: max-content;
+          min-width: 168px;
+          max-width: min(280px, calc(100vw - 32px));
+          transform: translateX(-50%) translateY(-8px);
+          padding: 12px 14px;
           text-align: center;
           white-space: nowrap;
-          background: transparent;
-          border: none;
-          box-shadow: none;
+          background: rgba(8, 18, 32, 0.9);
+          border: 1px solid rgba(229, 201, 150, 0.16);
+          border-radius: 12px;
+          box-shadow: 0 18px 42px rgba(2, 6, 23, 0.3);
+          backdrop-filter: blur(10px);
           z-index: 100;
-          animation: ecoDropdownTextFade 180ms ease-out forwards;
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+          transition:
+            opacity 240ms ease,
+            transform 240ms ease,
+            visibility 240ms ease;
         }
 
         .nav-dropdown-wrap:hover .nav-dropdown-menu,
-        .eco-dropdown-wrap:hover .eco-dropdown-menu {
-          display: block;
+        .nav-dropdown-wrap:focus-within .nav-dropdown-menu,
+        .eco-dropdown-wrap:hover .eco-dropdown-menu,
+        .eco-dropdown-wrap:focus-within .eco-dropdown-menu {
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
+          transform: translateX(-50%) translateY(0);
         }
 
-        @keyframes ecoDropdownTextFade {
-          from {
-            opacity: 0;
-            transform: translateX(-50%) translateY(6px);
-          }
+        .nav-dropdown-menu a,
+        .eco-dropdown-menu a {
+          padding: 7px 12px;
+          text-align: center;
+          color: rgba(255, 255, 255, 0.88);
+          border-radius: 8px;
+          transition:
+            color 200ms ease,
+            background-color 200ms ease;
+        }
 
-          to {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-          }
+        .nav-dropdown-menu a:hover,
+        .nav-dropdown-menu a:focus-visible,
+        .eco-dropdown-menu a:hover,
+        .eco-dropdown-menu a:focus-visible {
+          color: #d6bd7f;
+          background: rgba(255, 255, 255, 0.06);
         }
       `}</style>
 
