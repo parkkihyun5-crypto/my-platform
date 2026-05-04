@@ -89,19 +89,14 @@ const pageSubMenuItems: Record<string, SubMenuItem[]> = {
     { label: "실행 로드맵", href: "/heritage-office#heritage-roadmap" },
   ],
   "/eco-pion": [
-    { label: "에코피온이란", href: "/eco-pion#ecopion-intro" },
-    { label: "필요한 대상", href: "/eco-pion#ecopion-target" },
-    { label: "전환 구조", href: "/eco-pion#ecopion-transition" },
-    { label: "컨설팅 범위", href: "/eco-pion#ecopion-consulting" },
-    { label: "상담 신청", href: "/eco-pion#ecopion-contact" },
+    { label: "에코피언리더", href: "/consultant-profile/" },
+    { label: "에코피온이란", href: "/eco-pion/#ecopion-intro" },
+    { label: "필요한 대상", href: "/eco-pion/#ecopion-target" },
+    { label: "전환 구조", href: "/eco-pion/#ecopion-transition" },
+    { label: "컨설팅 범위", href: "/eco-pion/#ecopion-consulting" },
+    { label: "비공개 상담 신청", href: "/eco-pion/#ecopion-contact" },
   ],
-  "/consultant-profile": [
-    { label: "리더 소개", href: "/consultant-profile#leader-intro" },
-    { label: "핵심 철학", href: "/consultant-profile#leader-philosophy" },
-    { label: "활동 연혁", href: "/consultant-profile#leader-history" },
-    { label: "전문 영역", href: "/consultant-profile#leader-expertise" },
-    { label: "문의하기", href: "/consultant-profile#leader-contact" },
-  ],
+  "/consultant-profile": [],
 };
 
 function normalizeHref(label: string, href: string): string {
@@ -189,7 +184,7 @@ export default function SiteHeader({
 
   const ecoDesktopSubMenuItems =
     pathname === "/consultant-profile"
-      ? pageSubMenuItems["/consultant-profile"]
+      ? []
       : pageSubMenuItems["/eco-pion"];
 
   useEffect(() => {
@@ -344,7 +339,7 @@ export default function SiteHeader({
         .eco-dropdown-menu {
           display: none;
           position: absolute;
-          top: calc(100% + 8px);
+          top: 100%;
           left: 50%;
           min-width: 190px;
           transform: translateX(-50%);
@@ -361,7 +356,7 @@ export default function SiteHeader({
         .nav-dropdown-menu {
           display: none;
           position: absolute;
-          top: calc(100% + 8px);
+          top: 100%;
           left: 50%;
           min-width: 190px;
           transform: translateX(-50%);
@@ -451,17 +446,19 @@ export default function SiteHeader({
                   <span>{ecoMenuItem.label}</span>
                 </MenuLink>
 
-                <div className="eco-dropdown-menu">
-                  {ecoDesktopSubMenuItems.slice(0, 5).map((item) => (
-                    <Link
-                      key={`eco-sub-${item.href}`}
-                      href={item.href}
-                      className={ecoSubLinkClass}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
+                {ecoDesktopSubMenuItems.length > 0 ? (
+                  <div className="eco-dropdown-menu">
+                    {ecoDesktopSubMenuItems.map((item) => (
+                      <Link
+                        key={`eco-sub-${item.href}`}
+                        href={item.href}
+                        className={ecoSubLinkClass}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </nav>
 

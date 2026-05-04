@@ -189,7 +189,7 @@ const bottomPageMenu = [
   { label: "서비스구성", href: "#ecopion-consulting" },
   { label: "실행로드맵", href: "#process" },
   { label: "FAQ", href: "#faq" },
-  { label: "상담신청", href: "#ecopion-contact" },
+  { label: "비공개 상담 신청", href: "#ecopion-contact" },
 ];
 
 const siteMapItems = [
@@ -330,7 +330,7 @@ export default function EcoPionPage() {
     const ecoPionTaggedForm: InquiryFormState = {
       ...form,
       message: [
-        "[에코피온 컨설팅 상담 신청]",
+        "[비공개 상담 신청]",
         "",
         "유입페이지: /eco-pion",
         "상담유형: 내 자산의 공익 유산화 상담",
@@ -359,7 +359,7 @@ export default function EcoPionPage() {
 
         setShowSuccess(true);
         window.setTimeout(() => setShowSuccess(false), 3200);
-        alert("에코피온 컨설팅 상담 신청이 정상적으로 접수되었습니다.");
+        alert("비공개 상담 신청이 정상적으로 접수되었습니다.");
         return;
       }
 
@@ -381,7 +381,7 @@ export default function EcoPionPage() {
         setShowSuccess(true);
         window.setTimeout(() => setShowSuccess(false), 3200);
         alert(
-          "에코피온 컨설팅 상담 신청이 정상적으로 접수되었습니다. 관리자 보드에서는 헤리티지오피스 유입으로 표시될 수 있으나, 문의 내용에 에코피온 상담으로 기록됩니다."
+          "비공개 상담 신청이 정상적으로 접수되었습니다. 관리자 보드에서는 헤리티지오피스 유입으로 표시될 수 있으나, 문의 내용에 에코피온 상담으로 기록됩니다."
         );
         return;
       }
@@ -488,7 +488,7 @@ export default function EcoPionPage() {
                   href="#ecopion-contact"
                   className="inline-flex items-center justify-center rounded-full bg-[#E5C996] px-7 py-4 text-sm font-bold text-[#0B1F35] shadow-[0_18px_45px_rgba(229,201,150,0.24)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_24px_60px_rgba(229,201,150,0.34)] md:text-base"
                 >
-                  내 자산의 공익 유산화 상담 신청하기
+                  비공개 상담 신청
                 </a>
 
                 <a
@@ -783,7 +783,7 @@ export default function EcoPionPage() {
               <div className="rounded-[34px] border border-slate-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] md:p-10">
                 <SectionTitle
                   badge="Inquiry"
-                  title="에코피온 컨설팅 상담 신청"
+                  title="비공개 상담 신청"
                   desc="아래 내용을 남겨주시면 재단·박물관·미술관·공익법인 설립 가능성을 검토하여 상담 순서에 따라 연락드립니다."
                 />
 
@@ -843,7 +843,7 @@ export default function EcoPionPage() {
                     >
                       {isSubmitting
                         ? "접수 중입니다"
-                        : "내 자산의 공익 유산화 상담 신청하기"}
+                        : "비공개 상담 신청"}
                     </button>
 
                     <button
