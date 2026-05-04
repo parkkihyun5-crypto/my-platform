@@ -363,8 +363,8 @@ export default function SiteHeader({
           top: calc(100% + 12px);
           left: 50%;
           right: auto;
-          width: max-content;
-          min-width: 168px;
+          width: 184px;
+          min-width: 184px;
           max-width: min(280px, calc(100vw - 32px));
           transform: translateX(-50%) translateY(-8px);
           padding: 12px 14px;
@@ -390,8 +390,8 @@ export default function SiteHeader({
           top: calc(100% + 12px);
           left: 50%;
           right: auto;
-          width: max-content;
-          min-width: 168px;
+          width: 184px;
+          min-width: 184px;
           max-width: min(280px, calc(100vw - 32px));
           transform: translateX(-50%) translateY(-8px);
           padding: 12px 14px;
@@ -412,10 +412,10 @@ export default function SiteHeader({
             visibility 240ms ease;
         }
 
-        .nav-dropdown-wrap:hover .nav-dropdown-menu,
-        .nav-dropdown-wrap:focus-within .nav-dropdown-menu,
-        .eco-dropdown-wrap:hover .eco-dropdown-menu,
-        .eco-dropdown-wrap:focus-within .eco-dropdown-menu {
+        .site-header-shell:hover .nav-dropdown-menu,
+        .site-header-shell:focus-within .nav-dropdown-menu,
+        .site-header-shell:hover .eco-dropdown-menu,
+        .site-header-shell:focus-within .eco-dropdown-menu {
           opacity: 1;
           visibility: visible;
           pointer-events: auto;
@@ -424,6 +424,10 @@ export default function SiteHeader({
 
         .nav-dropdown-menu a,
         .eco-dropdown-menu a {
+          display: flex;
+          width: 100%;
+          align-items: center;
+          justify-content: center;
           padding: 7px 12px;
           text-align: center;
           color: var(--header-submenu-text);
