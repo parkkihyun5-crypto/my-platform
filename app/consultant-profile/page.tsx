@@ -157,7 +157,7 @@ export default function ConsultantProfilePage() {
               </div>
 
               <div className="mt-9 max-w-3xl text-base leading-8 text-slate-300 md:text-lg">
-                영리는 뿌리고 비영리는 열매입니다. 창업·금융·언론의 현장에서 체득한 자양분으로 경제적 수단으로 사회적 가치를 추구하는 가문을 설계합니다. 가문의 성취가 대를 이어 인류 문명에 기여하는 지속가능한 영속적인 로드맵을 제시합니다.
+                영리는 뿌리고 비영리는 가지와 열매입니다. 창업·금융·언론의 현장에서 체득한 자양분으로 경제적 수단으로 사회적 가치를 추구하는 가문을 설계합니다. 가문의 성취가 대를 이어 인류 문명에 기여하는 지속가능한 영속적인 로드맵을 제시합니다.
               </div>
 
               <div className="mt-11 flex flex-col gap-3 sm:flex-row">
