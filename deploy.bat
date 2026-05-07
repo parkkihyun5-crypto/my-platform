@@ -1,144 +1,189 @@
-﻿@echo off
-chcp 65001 > nul
-setlocal enabledelayedexpansion
+@echo off
+setlocal EnableExtensions DisableDelayedExpansion
 
-title NPOLAP 안전 배포 도구
+title NPOLAP One Click Build and Deploy
+
+set "CHECK_ONLY=0"
+if /i "%~1"=="--check" set "CHECK_ONLY=1"
 
 echo.
 echo ==========================================
-echo  NPOLAP 안전 빌드 + Git 자동 배포 실행
+echo  NPOLAP One Click Build and Deploy
 echo ==========================================
 echo.
 
-REM 현재 배치파일이 있는 위치로 이동
 cd /d "%~dp0"
 
-echo 현재 작업 폴더:
+echo Working directory:
 echo %cd%
 echo.
 
-REM Git 저장소 여부 확인
 if not exist ".git" (
-    echo [오류] 현재 폴더는 Git 저장소가 아닙니다.
+    echo [ERROR] This folder is not a Git repository.
+    echo Place deploy.bat in the project root folder.
+    echo Example: D:\projects\my-platform\deploy.bat
     echo.
-    echo 이 파일은 반드시 프로젝트 루트 폴더에 있어야 합니다.
-    echo 예시:
-    echo D:\projects\my-platform\deploy.bat
-    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
     pause
     exit /b 1
 )
 
-REM package.json 확인
 if not exist "package.json" (
-    echo [오류] package.json 파일을 찾을 수 없습니다.
+    echo [ERROR] package.json was not found.
+    echo Place deploy.bat in the Next.js project root folder.
     echo.
-    echo 이 파일은 반드시 Next.js 프로젝트 루트 폴더에 있어야 합니다.
-    echo 예시:
-    echo D:\projects\my-platform\deploy.bat
-    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
     pause
     exit /b 1
 )
 
-echo [1단계] 현재 Git 상태 확인 중...
+where git >nul 2>nul
+if errorlevel 1 (
+    echo [ERROR] Git was not found.
+    echo Check Git installation and PATH.
+    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
+    pause
+    exit /b 1
+)
+
+where npm.cmd >nul 2>nul
+if errorlevel 1 (
+    echo [ERROR] npm.cmd was not found.
+    echo Check Node.js installation and PATH.
+    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
+    pause
+    exit /b 1
+)
+
+for /f "delims=" %%B in ('git branch --show-current 2^>nul') do set "CURRENT_BRANCH=%%B"
+if not defined CURRENT_BRANCH (
+    echo [ERROR] Could not detect current Git branch.
+    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
+    pause
+    exit /b 1
+)
+
+git remote get-url origin >nul 2>nul
+if errorlevel 1 (
+    echo [ERROR] Git remote "origin" is not configured.
+    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
+    pause
+    exit /b 1
+)
+
+echo Current branch: %CURRENT_BRANCH%
 echo.
+
+echo [1/6] Current Git status
+echo ------------------------------------------
 git status --short
+echo ------------------------------------------
 echo.
 
-echo [2단계] 로컬 빌드 검사 실행 중...
-echo npm run build
+echo [2/6] Build check
+echo Command: npm.cmd run build
 echo.
 
-npm run build
-
+call npm.cmd run build
 if errorlevel 1 (
     echo.
     echo ==========================================
-    echo  [중단] 빌드 실패
+    echo  BUILD FAILED - DEPLOY STOPPED
     echo ==========================================
+    echo Fix the build error above before deploying.
     echo.
-    echo 빌드 오류가 있어 GitHub 업로드와 Vercel 배포를 중단했습니다.
-    echo 위쪽 빨간 오류 메시지에서 app/.../page.tsx:줄번호 를 확인하세요.
-    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
     pause
     exit /b 1
 )
 
 echo.
 echo ==========================================
-echo  빌드 성공
+echo  BUILD PASSED
 echo ==========================================
 echo.
 
-echo [3단계] 변경 파일 추가 중...
-git add .
-
-if errorlevel 1 (
+if "%CHECK_ONLY%"=="1" (
+    echo Check mode: build passed. No git add, commit, or push was run.
     echo.
-    echo [오류] git add 실행 중 문제가 발생했습니다.
-    pause
-    exit /b 1
-)
-
-echo.
-echo [4단계] 커밋할 변경사항 확인 중...
-git diff --cached --quiet
-
-if %errorlevel%==0 (
-    echo.
-    echo [안내] 커밋할 변경사항이 없습니다.
-    echo GitHub에 이미 최신 상태일 수 있습니다.
-    echo.
-    pause
     exit /b 0
 )
 
-echo.
-echo [5단계] 커밋 메시지 생성 중...
-set COMMIT_MSG=자동 배포 업데이트
-
-echo 커밋 메시지:
-echo %COMMIT_MSG%
+echo [3/6] Stage all changes
+echo Command: git add -A
 echo.
 
-echo [6단계] Git 커밋 실행 중...
+git add -A
+if errorlevel 1 (
+    echo.
+    echo [ERROR] git add failed.
+    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
+    pause
+    exit /b 1
+)
+
+echo [4/6] Staged Git status
+echo ------------------------------------------
+git status --short
+echo ------------------------------------------
+echo.
+
+git diff --cached --quiet
+if %errorlevel%==0 (
+    echo No new staged changes. Pushing current branch anyway.
+    echo.
+    goto PUSH_ONLY
+)
+
+for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format yyyy-MM-dd_HH-mm-ss"') do set "DEPLOY_TIME=%%T"
+if not defined DEPLOY_TIME set "DEPLOY_TIME=%DATE%_%TIME%"
+
+set "COMMIT_MSG=auto deploy %DEPLOY_TIME%"
+
+echo [5/6] Commit
+echo Commit message: %COMMIT_MSG%
+echo.
+
 git commit -m "%COMMIT_MSG%"
-
 if errorlevel 1 (
     echo.
-    echo [오류] Git 커밋 중 문제가 발생했습니다.
+    echo [ERROR] git commit failed.
+    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
     pause
     exit /b 1
 )
 
+:PUSH_ONLY
+echo [6/6] Push to GitHub
+echo Command: git push origin %CURRENT_BRANCH%
 echo.
-echo [7단계] GitHub로 업로드 중...
-git push
 
+git push origin "%CURRENT_BRANCH%"
 if errorlevel 1 (
     echo.
-    echo [오류] GitHub 업로드 중 문제가 발생했습니다.
+    echo [ERROR] git push failed.
+    echo Check internet, GitHub login, remote permission, and branch protection.
     echo.
-    echo 아래 내용을 확인하세요.
-    echo 1. GitHub 로그인 상태
-    echo 2. 원격 저장소 연결 상태
-    echo 3. 인터넷 연결 상태
-    echo 4. 브랜치 이름 main 또는 master 여부
-    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
     pause
     exit /b 1
 )
 
 echo.
 echo ==========================================
-echo  배포 요청 완료
+echo  DEPLOY REQUEST COMPLETE
 echo ==========================================
+echo GitHub push is complete.
+echo Vercel will start deployment automatically.
 echo.
-echo GitHub 업로드가 완료되었습니다.
-echo Vercel은 GitHub 변경사항을 감지한 뒤 자동 배포를 시작합니다.
-echo.
-echo Vercel 대시보드에서 배포 진행 상태를 확인하세요.
+echo Site:
+echo https://npolap.cloud
 echo.
 
 pause
