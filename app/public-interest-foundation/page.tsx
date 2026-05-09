@@ -164,35 +164,39 @@ const consultingPackages: PackageItem[] = [
   {
     id: "ngo-basic",
     subtitle: "Quick Start",
-    name: "임의단체 설립 패키지",
-    description: "기본형 설립 컨설팅, 정관 등 허가서류 추가 작성시 비용추가",
-    price: 500000,
+    name: "임의단체 설립 상담",
+    description: "기본형 설립 컨설팅 상담, 정관 등 허가서류 기본 양식 제공",
+    price: 300000,
   },
   {
     id: "association-pro",
     subtitle: "Association Pro",
-    name: "사단법인 설립 패키지",
-    description: "정관, 허가서류, 운영구조 설계를 포함한 표준형 패키지",
-    price: 3000000,
+    name: "사단법인 설립 상담",
+    description: "정관, 허가서류, 운영구조 설계를 포함한 표준형 양식 제공",
+    price: 1000000,
     popular: true,
   },
   {
     id: "foundation-premium",
     subtitle: "Foundation Premium",
-    name: "재단법인 설립 패키지",
-    description: "출연재산 구조와 허가 전략까지 포함한 고급 패키지",
-    price: 7000000,
+    name: "재단법인 설립 상담",
+    description: "출연재산 구조와 허가 전략까지 포함한 비공개 상담",
+    price: 10000000,
   },
   {
     id: "public-signature",
     subtitle: "Public Signature",
-    name: "공익법인 지정 패키지",
-    description: "공익성 요건과 지정 전략을 포함한 프리미엄 패키지",
-    price: 12000000,
+    name: "공익법인 지정 패키지 상담",
+    description: "공익성 요건과 지정 전략을 포함한 프리미엄 패키지 서비스",
+    price: 0,
   },
 ];
 
 function formatKRW(value: number): string {
+  if (value === 0) {
+    return "상담 후 견적";
+  }
+
   return new Intl.NumberFormat("ko-KR", {
     style: "currency",
     currency: "KRW",
@@ -605,7 +609,7 @@ export default function PublicInterestFoundationPage() {
                 </div>
 
                 <h3 className="mt-4 text-2xl font-bold md:text-3xl">
-                  컨설팅 서비스 선택
+                  컨설팅 상담 비용
                 </h3>
 
                 <div className="mt-6 space-y-4">

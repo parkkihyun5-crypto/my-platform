@@ -1,27 +1,45 @@
 @echo off
 setlocal EnableExtensions DisableDelayedExpansion
 
-title NPOLAP One Click Build and Deploy
+title NPOLAP my-platform One Click Full Deploy
+
+rem =====================================================
+rem  NPOLAP / my-platform One Click Full Deploy
+rem  - Builds the project
+rem  - Adds ALL project changes with git add -A
+rem  - Commits ALL staged changes
+rem  - Pushes to GitHub
+rem  - Vercel deploy starts automatically after GitHub push
+rem =====================================================
 
 set "CHECK_ONLY=0"
 if /i "%~1"=="--check" set "CHECK_ONLY=1"
 
+rem [IMPORTANT]
+rem If this deploy.bat is inside D:\projects\my-platform, keep PROJECT_DIR empty.
+rem If you want to run this file from Desktop, set the exact project path below.
+set "PROJECT_DIR=D:\projects\my-platform"
+
+if not "%PROJECT_DIR%"=="" (
+    cd /d "%PROJECT_DIR%"
+) else (
+    cd /d "%~dp0"
+)
+
 echo.
 echo ==========================================
-echo  NPOLAP One Click Build and Deploy
+echo  NPOLAP my-platform Full Deploy
 echo ==========================================
 echo.
-
-cd /d "%~dp0"
-
 echo Working directory:
 echo %cd%
 echo.
 
 if not exist ".git" (
     echo [ERROR] This folder is not a Git repository.
-    echo Place deploy.bat in the project root folder.
-    echo Example: D:\projects\my-platform\deploy.bat
+    echo Current folder: %cd%
+    echo Check PROJECT_DIR in deploy.bat.
+    echo Example: D:\projects\my-platform
     echo.
     if "%CHECK_ONLY%"=="1" exit /b 1
     pause
@@ -30,7 +48,8 @@ if not exist ".git" (
 
 if not exist "package.json" (
     echo [ERROR] package.json was not found.
-    echo Place deploy.bat in the Next.js project root folder.
+    echo This is not the Next.js project root folder.
+    echo Check PROJECT_DIR in deploy.bat.
     echo.
     if "%CHECK_ONLY%"=="1" exit /b 1
     pause
@@ -40,7 +59,7 @@ if not exist "package.json" (
 where git >nul 2>nul
 if errorlevel 1 (
     echo [ERROR] Git was not found.
-    echo Check Git installation and PATH.
+    echo Install Git or check PATH.
     echo.
     if "%CHECK_ONLY%"=="1" exit /b 1
     pause
@@ -50,7 +69,7 @@ if errorlevel 1 (
 where npm.cmd >nul 2>nul
 if errorlevel 1 (
     echo [ERROR] npm.cmd was not found.
-    echo Check Node.js installation and PATH.
+    echo Install Node.js or check PATH.
     echo.
     if "%CHECK_ONLY%"=="1" exit /b 1
     pause
@@ -68,7 +87,7 @@ if not defined CURRENT_BRANCH (
 
 git remote get-url origin >nul 2>nul
 if errorlevel 1 (
-    echo [ERROR] Git remote "origin" is not configured.
+    echo [ERROR] Git remote origin is not configured.
     echo.
     if "%CHECK_ONLY%"=="1" exit /b 1
     pause
@@ -78,16 +97,29 @@ if errorlevel 1 (
 echo Current branch: %CURRENT_BRANCH%
 echo.
 
-echo [1/6] Current Git status
+echo [1/7] Current Git status before build
 echo ------------------------------------------
 git status --short
 echo ------------------------------------------
 echo.
 
-echo [2/6] Build check
+echo [2/7] Install dependency check
+echo Command: npm.cmd install
+echo.
+call npm.cmd install
+if errorlevel 1 (
+    echo.
+    echo [ERROR] npm install failed.
+    echo.
+    if "%CHECK_ONLY%"=="1" exit /b 1
+    pause
+    exit /b 1
+)
+
+echo.
+echo [3/7] Build check
 echo Command: npm.cmd run build
 echo.
-
 call npm.cmd run build
 if errorlevel 1 (
     echo.
@@ -108,26 +140,24 @@ echo ==========================================
 echo.
 
 if "%CHECK_ONLY%"=="1" (
-    echo Check mode: build passed. No git add, commit, or push was run.
+    echo Check mode complete. No git add, commit, or push was run.
     echo.
     exit /b 0
 )
 
-echo [3/6] Stage all changes
+echo [4/7] Stage ALL my-platform changes
 echo Command: git add -A
 echo.
-
 git add -A
 if errorlevel 1 (
     echo.
-    echo [ERROR] git add failed.
+    echo [ERROR] git add -A failed.
     echo.
-    if "%CHECK_ONLY%"=="1" exit /b 1
     pause
     exit /b 1
 )
 
-echo [4/6] Staged Git status
+echo [5/7] Staged Git status
 echo ------------------------------------------
 git status --short
 echo ------------------------------------------
@@ -135,42 +165,38 @@ echo.
 
 git diff --cached --quiet
 if %errorlevel%==0 (
-    echo No new staged changes. Pushing current branch anyway.
+    echo No staged changes found. Push will still run to confirm branch sync.
     echo.
     goto PUSH_ONLY
 )
 
 for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format yyyy-MM-dd_HH-mm-ss"') do set "DEPLOY_TIME=%%T"
-if not defined DEPLOY_TIME set "DEPLOY_TIME=%DATE%_%TIME%"
+if not defined DEPLOY_TIME set "DEPLOY_TIME=manual-time"
 
-set "COMMIT_MSG=auto deploy %DEPLOY_TIME%"
+set "COMMIT_MSG=full deploy my-platform %DEPLOY_TIME%"
 
-echo [5/6] Commit
+echo [6/7] Commit ALL staged changes
 echo Commit message: %COMMIT_MSG%
 echo.
-
 git commit -m "%COMMIT_MSG%"
 if errorlevel 1 (
     echo.
     echo [ERROR] git commit failed.
     echo.
-    if "%CHECK_ONLY%"=="1" exit /b 1
     pause
     exit /b 1
 )
 
 :PUSH_ONLY
-echo [6/6] Push to GitHub
+echo [7/7] Push to GitHub
 echo Command: git push origin %CURRENT_BRANCH%
 echo.
-
 git push origin "%CURRENT_BRANCH%"
 if errorlevel 1 (
     echo.
     echo [ERROR] git push failed.
     echo Check internet, GitHub login, remote permission, and branch protection.
     echo.
-    if "%CHECK_ONLY%"=="1" exit /b 1
     pause
     exit /b 1
 )

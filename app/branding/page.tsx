@@ -121,8 +121,8 @@ const brandingServicePackages: BrandingServicePackage[] = [
 ];
 
 const brandingOptions: BrandingOption[] = [
-  { id: "naming", label: "네이밍 개발", price: 2000000 },
-  { id: "slogan", label: "슬로건 개발", price: 1000000 },
+  { id: "naming", label: "네이밍 개발", price: 0 },
+{ id: "slogan", label: "슬로건 개발", price: 0 },
   { id: "ppt", label: "PPT 템플릿", price: 1000000 },
   { id: "website", label: "홈페이지 UI 설계", price: 5000000 },
   { id: "sns", label: "SNS 브랜드 키트", price: 1000000 },
@@ -170,6 +170,10 @@ const trademarkSteps = [
 ];
 
 function formatKRW(value: number): string {
+  if (value === 0) {
+    return "상담 후 견적";
+  }
+
   return new Intl.NumberFormat("ko-KR", {
     style: "currency",
     currency: "KRW",
