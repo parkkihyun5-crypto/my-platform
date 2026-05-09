@@ -181,25 +181,25 @@ const certificationDocs = [
 const servicePackages = [
   {
     id: "basic",
-    title: "사회적기업 설립 기본형",
+    title: "사회적기업 설립 기본 상담",
     desc: "법인설립 구조 검토 + 기본 서류 방향 제시",
     price: 1500000,
   },
   {
     id: "cert",
-    title: "사회적기업 인증 준비형",
+    title: "사회적기업 인증 준비 컨설팅",
     desc: "인증 요건 진단 + 정관/증빙 보완",
     price: 2500000,
   },
   {
     id: "integrated",
-    title: "설립 + 인증 통합형",
+    title: "설립 + 인증 통합 컨설팅",
     desc: "법인설립부터 인증 준비, 현장실사 대응까지 통합 지원",
     price: 5000000,
   },
   {
     id: "governance",
-    title: "정관 · 거버넌스 보완형",
+    title: "정관 · 거버넌스 보완 컨설팅",
     desc: "의사결정구조, 이해관계자 참여, 정관 공증 대응",
     price: 1800000,
   },
