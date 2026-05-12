@@ -15,15 +15,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-
-  async rewrites() {
-    return [
-      {
-        source: "/parkkihyun",
-        destination: "/parkkihyun-profile.html",
-      },
-    ];
-  },
 };
 
 export default nextConfig;
