@@ -9,11 +9,6 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/parkkihyun-profile.html",
-        destination: "/parkkihyun",
-        permanent: true,
-      },
-      {
         source: "/parkkihyun/",
         destination: "/parkkihyun",
         permanent: true,
