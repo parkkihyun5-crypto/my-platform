@@ -8,16 +8,7 @@
 
   <link rel="canonical" href="https://npolap.cloud/parkkihyun" />
   <meta property="og:url" content="https://npolap.cloud/parkkihyun" />
-  <script>
-    (() => {
-      const canonicalPath = "/parkkihyun";
-      const normalizedPath = window.location.pathname.replace(/\/$/, "");
-      if (normalizedPath === canonicalPath && window.location.hash) {
-        window.history.replaceState(null, "", canonicalPath);
-      }
-    })();
-  </script>
-
+  
   <style>
     :root {
       --navy: #111827;
@@ -226,53 +217,56 @@
     }
 
     .profile-card {
-      position: relative;
-      max-width: 420px;
-      justify-self: end;
-      background:
-        linear-gradient(145deg, rgba(231, 204, 141, 0.26), rgba(255, 253, 248, 0.08) 38%, rgba(9, 15, 24, 0.76)),
-        linear-gradient(180deg, rgba(255, 253, 248, 0.12), rgba(255, 253, 248, 0.04));
-      border: 1px solid rgba(231, 204, 141, 0.28);
-      border-radius: 18px;
-      padding: 10px;
-      box-shadow: 0 22px 58px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 253, 248, 0.18);
-    }
+  position: relative;
+  width: 100%;
+  max-width: 395px;
+  justify-self: end;
+  margin-top: 52px;
+  background:
+    linear-gradient(145deg, rgba(255, 248, 232, 0.95), rgba(245, 234, 209, 0.74)),
+    var(--ivory);
+  border: 1px solid rgba(201, 162, 39, 0.56);
+  border-radius: 18px;
+  padding: 10px;
+  box-shadow: 0 24px 52px rgba(12, 35, 64, 0.22), inset 0 0 0 1px rgba(255, 248, 232, 0.82);
+}
 
-    .profile-card img {
-      width: 100%;
-      display: block;
-      border-radius: 12px;
-      aspect-ratio: 4 / 4.9;
-      object-fit: cover;
-      object-position: center top;
-    }
+.profile-card img {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+  aspect-ratio: 4 / 4.55;
+  object-fit: cover;
+  object-position: center top;
+  border: 1px solid rgba(12, 35, 64, 0.12);
+}
 
-    .profile-caption {
-      position: absolute;
-      left: 14px;
-      right: 14px;
-      bottom: 20px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, rgba(7, 11, 18, 0.72), rgba(15, 36, 30, 0.58));
-      backdrop-filter: blur(18px);
-      border: 1px solid rgba(231, 204, 141, 0.28);
-      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
-    }
+.profile-caption {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 18px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(12, 35, 64, 0.94), rgba(17, 24, 39, 0.88));
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(201, 162, 39, 0.58);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
+}
 
-    .profile-caption strong {
-      color: var(--gold-light);
-      font-weight: 900;
-    }
+.profile-caption p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
 
-    .profile-caption p {
-      color: rgba(255, 255, 255, 0.86);
-      font-size: 12px;
-      line-height: 1.35;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+.profile-caption strong {
+  color: var(--gold-light);
+  font-weight: 900;
+}
 
     section {
       padding: 66px 0;

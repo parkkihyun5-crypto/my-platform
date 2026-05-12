@@ -1,16 +1,21 @@
-import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: path.join(__dirname),
-  },
-
   async redirects() {
     return [
       {
         source: "/family-foundation",
         destination: "/heritage-office",
+        permanent: true,
+      },
+      {
+        source: "/parkkihyun-profile.html",
+        destination: "/parkkihyun",
+        permanent: true,
+      },
+      {
+        source: "/parkkihyun/",
+        destination: "/parkkihyun",
         permanent: true,
       },
     ];
@@ -19,7 +24,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/parkkihyun-profile",
+        source: "/parkkihyun",
         destination: "/parkkihyun-profile.html",
       },
     ];
