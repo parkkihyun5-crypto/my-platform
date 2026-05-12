@@ -16,6 +16,14 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  async rewrites() {
+    return [
+      {
+        source: "/parkkihyun-profile",
+        destination: "/parkkihyun-profile.html",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
