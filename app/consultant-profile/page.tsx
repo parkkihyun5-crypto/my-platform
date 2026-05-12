@@ -147,7 +147,7 @@ export default function ConsultantProfilePage() {
               <h1 className="text-[42px] font-bold leading-[1.08] tracking-[-0.055em] md:text-6xl xl:text-[80px]">
                 다음시대를 잇는
                 <br />
-                法人 구조 설계자
+                法人 구조 설계
               </h1>
 
               <div className="mt-8 max-w-3xl border-l border-[#E5C996]/45 pl-6">
@@ -197,7 +197,7 @@ export default function ConsultantProfilePage() {
               </h2>
 
               <p className="mt-3 max-w-3xl text-base leading-8 text-slate-700 md:text-lg md:leading-9">
-                혁신과 자본, 공공가치를 연결, 자산을 유산으로 지속가능한 신뢰구조를 설계하는 에코피온 전략가
+                혁신과 자본, 공공가치를 연결, 자산을 유산으로 지속가능한 신뢰구조를 설계하는 에코피온 NPOLAP 대표 컨설턴트
               </p>
             </div>
 
@@ -258,7 +258,7 @@ export default function ConsultantProfilePage() {
                     <div className="space-y-6 text-[15px] leading-8 text-slate-700 md:text-[17px] md:leading-9">
                       <p>
                         국제지도자연합(International Leaders Union) 사무총장 겸
-                        NPOLAP 대표. 대한민국 벤처창업 붐을 이끌었던 1세대 실무형
+                        에코피온 NPOLAP 대표. 대한민국 벤처창업 붐을 이끌었던 1세대 실무형
                         전략가로, 창업·금융·투자 분야의 현장 경험을 바탕으로
                         기업 성장 구조와 시장의 작동 원리를 체득했으며, 이후
                         국제협력과 공공 영역으로 활동 무대를 넓혀 국제사회의
