@@ -197,7 +197,7 @@ export default function ConsultantProfilePage() {
               </h2>
 
               <p className="mt-3 max-w-3xl text-base leading-8 text-slate-700 md:text-lg md:leading-9">
-                혁신과 자본, 공공가치를 연결, 자산을 유산으로 지속가능한 신뢰구조를 설계하는 에코피온 NPOLAP 대표 컨설턴트
+                혁신과 자본, 공공가치를 연결, 자산을 유산으로 지속가능한 구조를 설계하는 NPOLAP 대표 컨설턴트
               </p>
             </div>
 
@@ -499,9 +499,9 @@ export default function ConsultantProfilePage() {
             </h2>
 
             <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-slate-300 md:text-lg">
-              학교와 병원, 미술관과 박물관 같은 공익적 기반 위에 사회적 기업의 혁신을 더하고,
-              정교한 브랜딩으로 고유의 헤리티지를 정립하고, 시대를 불문하는 존재 가치를 증명합니다.
-              국경을 넘는 공공 협력 프로젝트를 통해 한 사람의 비전이 세계적인 영향력으로 이어지도록 에코피온의 가치를 설계합니다.
+              학교와 병원, 미술관과 박물관 같은 공익적 기반 위에 사회적 기업의 혁신을 더하고,<br />
+              정교한 브랜딩으로 고유의 헤리티지를 정립하고, 시대를 불문하는 존재 가치를 증명합니다.<br />
+              국경을 넘는 공공 협력 프로젝트를 통해 <br />한 사람의 비전이 세계적인 영향력으로 이어지도록 에코피온의 가치를 설계합니다.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
